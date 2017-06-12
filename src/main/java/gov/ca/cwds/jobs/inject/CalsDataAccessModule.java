@@ -11,16 +11,16 @@ import gov.ca.cwds.cals.persistence.dao.cms.IPlacementHomeDao;
 import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedClientDAO;
 import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
 import gov.ca.cwds.cals.persistence.model.calsns.AgeGroupType;
-import gov.ca.cwds.cals.persistence.model.cms.CountyLicenseCase;
 import gov.ca.cwds.cals.persistence.model.cms.LicenseStatus;
-import gov.ca.cwds.cals.persistence.model.cms.LicensingVisit;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedClient;
+import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedCountyLicenseCase;
+import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedLicensingVisit;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedOutOfHomePlacement;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedPlacementEpisode;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedPlacementHome;
-import gov.ca.cwds.cals.persistence.model.cms.StaffPerson;
 import gov.ca.cwds.cals.persistence.model.cms.State;
 import gov.ca.cwds.cals.persistence.model.cms.VisitType;
+import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedStaffPerson;
 import gov.ca.cwds.cals.persistence.model.fas.ComplaintReportLic802;
 import gov.ca.cwds.cals.persistence.model.fas.Rr809Dn;
 import gov.ca.cwds.cals.persistence.model.fas.Rrcpoc;
@@ -62,12 +62,11 @@ public class CalsDataAccessModule extends AbstractModule {
         .addAnnotatedClass(ReplicatedOutOfHomePlacement.class)
         .addAnnotatedClass(ReplicatedPlacementEpisode.class)
         .addAnnotatedClass(ReplicatedPlacementHome.class)
-        // todo Replicated...
-        .addAnnotatedClass(StaffPerson.class)
+        .addAnnotatedClass(ReplicatedCountyLicenseCase.class)
+        .addAnnotatedClass(ReplicatedLicensingVisit.class)
+        .addAnnotatedClass(ReplicatedStaffPerson.class)
         .addAnnotatedClass(FacilityType.class)
         .addAnnotatedClass(County.class)
-        .addAnnotatedClass(CountyLicenseCase.class)
-        .addAnnotatedClass(LicensingVisit.class)
         .addAnnotatedClass(VisitType.class)
         .addAnnotatedClass(State.class)
         .addAnnotatedClass(LicenseStatus.class)
