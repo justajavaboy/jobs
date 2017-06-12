@@ -6,12 +6,15 @@ import gov.ca.cwds.cals.inject.CalsnsSessionFactory;
 import gov.ca.cwds.cals.inject.FasSessionFactory;
 import gov.ca.cwds.cals.inject.LisSessionFactory;
 import gov.ca.cwds.cals.persistence.dao.calsns.AgeGroupTypeDao;
+import gov.ca.cwds.cals.persistence.dao.cms.IClientDao;
 import gov.ca.cwds.cals.persistence.dao.cms.IPlacementHomeDao;
+import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedClientDAO;
 import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
 import gov.ca.cwds.cals.persistence.model.calsns.AgeGroupType;
 import gov.ca.cwds.cals.persistence.model.cms.CountyLicenseCase;
 import gov.ca.cwds.cals.persistence.model.cms.LicenseStatus;
 import gov.ca.cwds.cals.persistence.model.cms.LicensingVisit;
+import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedClient;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedOutOfHomePlacement;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedPlacementEpisode;
 import gov.ca.cwds.cals.persistence.model.cms.rs.ReplicatedPlacementHome;
@@ -29,7 +32,6 @@ import gov.ca.cwds.cals.persistence.model.lisfas.LisDoFile;
 import gov.ca.cwds.cals.persistence.model.lisfas.LisFacFile;
 import gov.ca.cwds.cals.persistence.model.lisfas.LisTableFile;
 import gov.ca.cwds.cals.persistence.model.lisfas.VisitReasonType;
-import gov.ca.cwds.cals.persistence.dao.cms.ClientDao;
 import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
 import gov.ca.cwds.cals.persistence.dao.fas.ComplaintReportLic802Dao;
 import gov.ca.cwds.cals.persistence.dao.lis.FacilityTypeDao;
@@ -56,9 +58,9 @@ public class CalsDataAccessModule extends AbstractModule {
 
   public CalsDataAccessModule() {
     cmsSessionFactory = new Configuration().configure("jobs-cms-hibernate.cfg.xml")
-        //.addAnnotatedClass(Client.class) // todo Replicated...
+        .addAnnotatedClass(ReplicatedClient.class)
         .addAnnotatedClass(ReplicatedOutOfHomePlacement.class)
-        .addAnnotatedClass(ReplicatedPlacementEpisode.class) // todo
+        .addAnnotatedClass(ReplicatedPlacementEpisode.class)
         .addAnnotatedClass(ReplicatedPlacementHome.class)
         // todo Replicated...
         .addAnnotatedClass(StaffPerson.class)
@@ -102,11 +104,13 @@ public class CalsDataAccessModule extends AbstractModule {
     bind(SessionFactory.class).annotatedWith(LisSessionFactory.class).toInstance(lisSessionFactory);
     bind(SessionFactory.class).annotatedWith(CalsnsSessionFactory.class).toInstance(calsnsSessionFactory);
 
+    // schema: cwscms
+    bind(CountiesDao.class);
+    bind(IClientDao.class).to(ReplicatedClientDAO.class);
+    bind(IPlacementHomeDao.class).to(ReplicatedPlacementHomeDao.class);
+
     bind(ComplaintReportLic802Dao.class);
     bind(FacilityTypeDao.class);
-    bind(CountiesDao.class);
-    bind(ClientDao.class);
-    bind(IPlacementHomeDao.class).to(ReplicatedPlacementHomeDao.class);
     bind(LpaInformationDao.class);
     bind(InspectionDao.class);
 
