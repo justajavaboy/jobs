@@ -1,5 +1,6 @@
 package gov.ca.cwds.jobs.util.elastic;
 
+import gov.ca.cwds.cals.Identified;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -13,16 +14,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
-import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.jobs.JobsException;
 import gov.ca.cwds.jobs.util.JobWriter;
 
 /**
- * @author CWDS Elasticsearch Team
- * 
+ * @author CWDS TPT-2
+ *
  * @param <T> persistence class type
  */
-public class ElasticJobWriter<T extends PersistentObject> implements JobWriter<T> {
+public class ElasticJobWriter<T extends Identified<String>> implements JobWriter<T> {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticJobWriter.class);
   private Elasticsearch5xDao elasticsearchDao;
@@ -61,7 +61,7 @@ public class ElasticJobWriter<T extends PersistentObject> implements JobWriter<T
   public void write(List<T> items) throws Exception {
     items.stream().map(item -> {
       try {
-        return elasticsearchDao.bulkAdd(objectMapper, String.valueOf(item.getPrimaryKey()), item);
+        return elasticsearchDao.bulkAdd(objectMapper, item.getId(), item);
       } catch (JsonProcessingException e) {
         throw new JobsException(e);
       }

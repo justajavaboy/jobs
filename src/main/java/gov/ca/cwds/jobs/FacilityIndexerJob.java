@@ -2,10 +2,14 @@ package gov.ca.cwds.jobs;
 
 import java.io.File;
 
+import java.net.InetAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -43,7 +47,7 @@ import gov.ca.cwds.jobs.util.jdbc.RowMapper;
  * {@code run script: $java -cp jobs.jar gov.ca.cwds.jobs.FacilityIndexerJob path/to/config/file.yaml}
  * </pre>
  * 
- * @author CWDS Elasticsearch Team
+ * @author CWDS TPT-2
  */
 public class FacilityIndexerJob extends AbstractModule {
 
@@ -91,14 +95,12 @@ public class FacilityIndexerJob extends AbstractModule {
     if (config != null) {
       LOGGER.warn("Create NEW ES client");
       try {
-        // Settings settings =
-        // Settings.builder().put("cluster.name", config.getElasticsearchCluster()).build();
-
-        // DRS: Incompatible with ES 2.3.5. Won't connect.
-        // client = new PreBuiltTransportClient(settings);
-        // client.addTransportAddress(
-        // new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
-        // Integer.parseInt(config.getElasticsearchPort())));
+        Settings settings = Settings.builder()
+                .put("cluster.name", config.getElasticsearchCluster()).build();
+        client = new PreBuiltTransportClient(settings);
+        client.addTransportAddress(
+                new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
+                        Integer.parseInt(config.getElasticsearchPort())));
       } catch (Exception e) {
         LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
         throw new JobsException("Error initializing Elasticsearch client: " + e.getMessage(), e);

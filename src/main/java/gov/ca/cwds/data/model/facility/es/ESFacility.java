@@ -1,18 +1,17 @@
 package gov.ca.cwds.data.model.facility.es;
 
-import java.io.Serializable;
+import gov.ca.cwds.cals.Identified;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.rest.api.domain.DomainChef;
 
 /**
  * 
- * @author CWDS Elasticsearch Team
+ * @author CWDS TPT-2
  */
-public class ESFacility implements PersistentObject {
+public class ESFacility implements Identified<String> {
 
   /**
    * Default serialization.
@@ -204,10 +203,5 @@ public class ESFacility implements PersistentObject {
 
   public void setAddress(ESFacilityAddress address) {
     this.address = address;
-  }
-
-  @Override
-  public Serializable getPrimaryKey() {
-    return id;
   }
 }
