@@ -11,9 +11,11 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
+import gov.ca.cwds.cals.persistence.dao.cms.IPlacementHomeDao;
+import gov.ca.cwds.cals.service.mapper.FacilityMapper;
 import gov.ca.cwds.jobs.inject.CalsDataAccessModule;
 import gov.ca.cwds.cals.inject.MappingModule;
-import gov.ca.cwds.cals.inject.ServicesModule;
 import gov.ca.cwds.cals.service.FacilityCollectionService;
 import gov.ca.cwds.cals.service.dto.CollectionDTO;
 import gov.ca.cwds.cals.service.dto.FacilityDTO;
@@ -91,8 +93,13 @@ public class FacilityProfileIndexerJob extends AbstractModule {
     dataAccessModule2 = new CalsDataAccessModule();
     install(dataAccessModule2);
 
-    install(new ServicesModule());
     install(new MappingModule());
+  }
+
+  @Provides
+  @Inject
+  FacilityCollectionService provideFacilityCollectionService(IPlacementHomeDao placementHomeDao, CountiesDao countiesDao, FacilityMapper facilityMapper) {
+    return new FacilityCollectionService(placementHomeDao, countiesDao, facilityMapper);
   }
 
   // todo commonize
@@ -161,8 +168,9 @@ public class FacilityProfileIndexerJob extends AbstractModule {
       public void init() throws Exception {
         FacilityParameterObject facilityParameterObject = new FacilityParameterObject(CMS);
 
+        // todo transaction control might not be needed after removal @UnitOfWork(CMS) from the FacilityCollectionService
         Session cmsSession = dataAccessModule2.getCmsSessionFactory().getCurrentSession();
-         cmsSession.beginTransaction();
+        cmsSession.beginTransaction();
         facilityDTOIterator = ((CollectionDTO<FacilityDTO>) facilityCollectionService.find(facilityParameterObject)).getCollection().iterator();
         cmsSession.getTransaction().rollback();
         cmsSession.close();
@@ -170,7 +178,7 @@ public class FacilityProfileIndexerJob extends AbstractModule {
 
       @Override
       public void destroy() throws Exception {
-        // no op
+        dataAccessModule2.getCmsSessionFactory().close();
       }
     };
   }
