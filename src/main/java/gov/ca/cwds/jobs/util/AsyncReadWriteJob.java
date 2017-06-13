@@ -1,10 +1,11 @@
 package gov.ca.cwds.jobs.util;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.JobsException;
+import gov.ca.cwds.rest.api.ApiException;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author CWDS Elasticsearch Team
@@ -20,14 +21,14 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
   private List chunk = new LinkedList<>();
 
   /**
-   * @param reader reader
+   * @param reader    reader
    * @param processor processor
-   * @param writer writer
-   * @param <I> output reader type
-   * @param <O> output writer type
+   * @param writer    writer
+   * @param <I>       output reader type
+   * @param <O>       output writer type
    */
   public <I, O> AsyncReadWriteJob(JobReader<I> reader, JobProcessor<I, O> processor,
-      JobWriter<O> writer) {
+                                  JobWriter<O> writer) {
     this.reader = reader;
     this.processor = processor;
     this.writer = writer;
@@ -35,11 +36,10 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
 
   /**
    * Input type = Output Type, no mapping required
-   * 
+   *
    * @param reader reader
    * @param writer writer
-   * 
-   * @param <I> output reader type
+   * @param <I>    output reader type
    */
   public <I> AsyncReadWriteJob(JobReader<I> reader, JobWriter<I> writer) {
     this.reader = reader;
@@ -102,14 +102,35 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
   }
 
   @Override
-  public void init() throws Exception {
-    reader.init();
-    writer.init();
+  public void destroy() throws Exception {
+    writer.destroy();
   }
 
   @Override
-  public void destroy() throws Exception {
-    reader.destroy();
-    writer.destroy();
+  protected void producerInit() {
+    try {
+      reader.init();
+    } catch (Exception e) {
+      throw new ApiException(e);
+    }
   }
+
+  @Override
+  protected void consumerInit() {
+    try {
+      writer.init();
+    } catch (Exception e) {
+      throw new ApiException(e);
+    }
+  }
+
+  @Override
+  protected void producerDestroy() {
+    try {
+      reader.destroy();
+    } catch (Exception e) {
+      throw new ApiException(e);
+    }
+  }
+
 }

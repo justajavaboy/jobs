@@ -31,6 +31,9 @@ public class ElasticsearchConfiguration5x {
   @JsonProperty("elasticsearch.doctype")
   private String docType;
 
+  @JsonProperty("job.lis.reader.query")
+  private String lisReaderQuery;
+
   /**
    * @return the elasticsearch host
    */
@@ -65,5 +68,9 @@ public class ElasticsearchConfiguration5x {
    */
   public String getElasticsearchDocType() {
     return docType;
+  }
+
+  public String getLisReaderQuery() {
+    return lisReaderQuery;
   }
 }

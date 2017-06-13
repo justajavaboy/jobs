@@ -16,6 +16,7 @@ import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
 import gov.ca.cwds.cals.service.ReplicatedFacilityService;
 import gov.ca.cwds.cals.service.mapper.FacilityMapper;
 import gov.ca.cwds.inject.CmsSessionFactory;
+import gov.ca.cwds.jobs.facility.FacilityProfileReader;
 import gov.ca.cwds.jobs.inject.CalsDataAccessModule;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.cals.service.dto.FacilityDTO;
@@ -149,34 +150,8 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Provides
   @Named("facility-reader")
   @Inject
-  public JobReader itemReader(ReplicatedFacilityService facilityCollectionService, @CmsSessionFactory SessionFactory sessionFactory) {
-    // todo commonize
-    return new JobReader<FacilityDTO>() {
-      private Iterator<FacilityDTO> facilityDTOIterator;
-      private boolean started;
-
-      @Override
-      public FacilityDTO read() throws Exception {
-        if(!started) {
-          FacilityParameterObject facilityParameterObject = new FacilityParameterObject(new Date(0));
-          sessionFactory.getCurrentSession().beginTransaction();
-          facilityDTOIterator =  facilityCollectionService.facilitiesStream(facilityParameterObject).iterator();
-          started = true;
-        }
-        if(facilityDTOIterator.hasNext()) {
-          return facilityDTOIterator.next();
-        }
-        else {
-          sessionFactory.getCurrentSession().getTransaction().commit();
-          return null;
-        }
-      }
-
-      @Override
-      public void destroy() throws Exception {
-        sessionFactory.close();
-      }
-    };
+  public JobReader itemReader(ReplicatedFacilityService replicatedFacilityService, @CmsSessionFactory SessionFactory sessionFactory) {
+    return new FacilityProfileReader(sessionFactory, replicatedFacilityService);
   }
 
   @Provides
