@@ -12,12 +12,12 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
-import gov.ca.cwds.cals.persistence.dao.cms.IPlacementHomeDao;
+import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
+import gov.ca.cwds.cals.service.ReplicatedFacilityService;
 import gov.ca.cwds.cals.service.mapper.FacilityMapper;
+import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.CalsDataAccessModule;
 import gov.ca.cwds.cals.inject.MappingModule;
-import gov.ca.cwds.cals.service.FacilityCollectionService;
-import gov.ca.cwds.cals.service.dto.CollectionDTO;
 import gov.ca.cwds.cals.service.dto.FacilityDTO;
 import gov.ca.cwds.cals.web.rest.parameter.FacilityParameterObject;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
@@ -28,6 +28,7 @@ import gov.ca.cwds.jobs.util.JobWriter;
 import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
 import java.io.File;
 import java.net.InetAddress;
+import java.util.Date;
 import java.util.Iterator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,9 +38,7 @@ import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.hibernate.Session;
-
-import static gov.ca.cwds.cals.Constants.UnitOfWork.CMS;
+import org.hibernate.SessionFactory;
 
 /**
  * <p>
@@ -59,7 +58,6 @@ public class FacilityProfileIndexerJob extends AbstractModule {
 
   private File config;
 
-  private CalsDataAccessModule dataAccessModule2;
 
   // todo tests, run javadoc, sonar
 
@@ -87,19 +85,16 @@ public class FacilityProfileIndexerJob extends AbstractModule {
     }
   }
 
-  // todo commonize
   @Override
   protected void configure() {
-    dataAccessModule2 = new CalsDataAccessModule();
-    install(dataAccessModule2);
-
+    install(new CalsDataAccessModule());
     install(new MappingModule());
   }
 
   @Provides
   @Inject
-  FacilityCollectionService provideFacilityCollectionService(IPlacementHomeDao placementHomeDao, CountiesDao countiesDao, FacilityMapper facilityMapper) {
-    return new FacilityCollectionService(placementHomeDao, countiesDao, facilityMapper);
+  ReplicatedFacilityService provideFacilityCollectionService(ReplicatedPlacementHomeDao placementHomeDao, CountiesDao countiesDao, FacilityMapper facilityMapper) {
+    return new ReplicatedFacilityService(placementHomeDao, countiesDao, facilityMapper);
   }
 
   // todo commonize
@@ -154,31 +149,32 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Provides
   @Named("facility-reader")
   @Inject
-  public JobReader itemReader(FacilityCollectionService facilityCollectionService) {
+  public JobReader itemReader(ReplicatedFacilityService facilityCollectionService, @CmsSessionFactory SessionFactory sessionFactory) {
     // todo commonize
     return new JobReader<FacilityDTO>() {
       private Iterator<FacilityDTO> facilityDTOIterator;
+      private boolean started;
 
       @Override
       public FacilityDTO read() throws Exception {
-        return facilityDTOIterator.hasNext() ? facilityDTOIterator.next() : null;
-      }
-
-      @Override
-      public void init() throws Exception {
-        FacilityParameterObject facilityParameterObject = new FacilityParameterObject(CMS);
-
-        // todo transaction control might not be needed after removal @UnitOfWork(CMS) from the FacilityCollectionService
-        Session cmsSession = dataAccessModule2.getCmsSessionFactory().getCurrentSession();
-        cmsSession.beginTransaction();
-        facilityDTOIterator = ((CollectionDTO<FacilityDTO>) facilityCollectionService.find(facilityParameterObject)).getCollection().iterator();
-        cmsSession.getTransaction().rollback();
-        cmsSession.close();
+        if(!started) {
+          FacilityParameterObject facilityParameterObject = new FacilityParameterObject(new Date(0));
+          sessionFactory.getCurrentSession().beginTransaction();
+          facilityDTOIterator =  facilityCollectionService.facilitiesStream(facilityParameterObject).iterator();
+          started = true;
+        }
+        if(facilityDTOIterator.hasNext()) {
+          return facilityDTOIterator.next();
+        }
+        else {
+          sessionFactory.getCurrentSession().getTransaction().commit();
+          return null;
+        }
       }
 
       @Override
       public void destroy() throws Exception {
-        dataAccessModule2.getCmsSessionFactory().close();
+        sessionFactory.close();
       }
     };
   }

@@ -16,6 +16,7 @@
 		<property name="hibernate.connection.connectionTimeout">1000000</property>
 		<property name="hibernate.connection.loginTimeout">1000000</property>
 		<property name="hibernate.connection.keepAliveTimeOut">8</property>
+		<property name="hibernate.jdbc.use_scrollable_resultset">true</property>
 
 		<property name="connection_pool_size">2</property>
 		<property name="show_sql">true</property>
