@@ -21,7 +21,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
  */
 public class FacilityProfileIncrementalLoadDate implements IncrementalLoadDateStrategy {
   private static final String RUNNING_FILE_NAME = FacilityProfileIncrementalLoadDate.class.getSimpleName() + "-running";
-  private static final String DATE_FORMAT = "yyyy-MM-dd-HH.mm.ss";
+  private static final String DATE_FORMAT = "yyyy-MM-dd-HH.mm.ss.SSS";
   private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
   @Override
