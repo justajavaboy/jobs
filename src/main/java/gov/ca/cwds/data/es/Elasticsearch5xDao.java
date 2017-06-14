@@ -6,7 +6,9 @@ import java.io.IOException;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
@@ -145,9 +147,35 @@ public class Elasticsearch5xDao implements Closeable {
    */
   public IndexRequest bulkAdd(final ObjectMapper mapper, final String id, final Object obj)
       throws JsonProcessingException {
-    return new IndexRequest(getConfig().getElasticsearchAlias(),
-        getConfig().getElasticsearchDocType(), id).source(mapper.writeValueAsString(obj),
-            XContentType.JSON);
+    return client.prepareIndex(getConfig().getElasticsearchAlias(),
+        getConfig().getElasticsearchDocType(), id).setSource(mapper.writeValueAsBytes(obj), XContentType.JSON).request();
+  }
+
+  /**
+   * Prepare an upsert request for bulk operations.
+   *
+   * @param mapper
+   * @param id
+   * @param obj
+   * @return prepared UpdateRequest for upsert
+   * @throws JsonProcessingException
+   */
+  public UpdateRequest bulkUpsert(final ObjectMapper mapper, final String id, final Object obj)
+      throws JsonProcessingException {
+    IndexRequest indexRequest = bulkAdd(mapper, id, obj);
+    return client.prepareUpdate(getConfig().getElasticsearchAlias(),
+        getConfig().getElasticsearchDocType(), id).setDoc(mapper.writeValueAsBytes(obj), XContentType.JSON).setUpsert(indexRequest).request();
+  }
+
+  /**
+   * Prepare an delete request for bulk operations.
+   *
+   * @param id ES document id
+   * @return prepared DeleteRequest
+   */
+  public DeleteRequest bulkDelete(final String id) {
+    return client.prepareDelete(getConfig().getElasticsearchAlias(),
+        getConfig().getElasticsearchDocType(), id).request();
   }
 
   /**

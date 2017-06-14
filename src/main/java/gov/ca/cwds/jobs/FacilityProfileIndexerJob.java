@@ -14,18 +14,18 @@ import com.google.inject.name.Names;
 import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
 import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
 import gov.ca.cwds.cals.service.ReplicatedFacilityService;
+import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityDTO;
 import gov.ca.cwds.cals.service.mapper.FacilityMapper;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.facility.FacilityProfileReader;
 import gov.ca.cwds.jobs.inject.CalsDataAccessModule;
 import gov.ca.cwds.cals.inject.MappingModule;
-import gov.ca.cwds.cals.service.dto.FacilityDTO;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.es.ElasticsearchConfiguration5x;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 import gov.ca.cwds.jobs.util.JobReader;
 import gov.ca.cwds.jobs.util.JobWriter;
-import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
+import gov.ca.cwds.jobs.util.elastic.ReplicatedElasticJobWriter;
 import java.io.File;
 import java.net.InetAddress;
 import org.apache.logging.log4j.LogManager;
@@ -159,7 +159,7 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Named("facility-writer")
   @Inject
   public JobWriter itemWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
-    return new ElasticJobWriter<FacilityDTO>(elasticsearchDao, objectMapper);
+    return new ReplicatedElasticJobWriter<ReplicatedFacilityDTO>(elasticsearchDao, objectMapper);
   }
 
   @Provides

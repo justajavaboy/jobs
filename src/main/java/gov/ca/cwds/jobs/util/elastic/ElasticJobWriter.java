@@ -25,9 +25,9 @@ import gov.ca.cwds.jobs.util.JobWriter;
 public class ElasticJobWriter<T extends Identified<String>> implements JobWriter<T> {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticJobWriter.class);
-  private Elasticsearch5xDao elasticsearchDao;
-  private BulkProcessor bulkProcessor;
-  private ObjectMapper objectMapper;
+  protected Elasticsearch5xDao elasticsearchDao;
+  protected BulkProcessor bulkProcessor;
+  protected ObjectMapper objectMapper;
 
   /**
    * Constructor.
