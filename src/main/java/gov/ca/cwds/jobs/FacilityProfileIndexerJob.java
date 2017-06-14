@@ -14,6 +14,7 @@ import com.google.inject.name.Names;
 import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
 import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
 import gov.ca.cwds.cals.service.ReplicatedFacilityService;
+import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityDTO;
 import gov.ca.cwds.cals.service.mapper.FacilityMapper;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.CalsDataAccessModule;
@@ -41,23 +42,22 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.hibernate.SessionFactory;
 
 /**
- * <p>
- * Command line arguments:
- * </p>
+ * <p> Command line arguments: </p>
  *
  * <pre>
- * {@code run script: $java -cp jobs.jar gov.ca.cwds.jobs.FacilityProfileIndexerJob path/to/config/file.yaml}
+ * {@code run script: $java -cp jobs.jar gov.ca.cwds.jobs.FacilityProfileIndexerJob
+ * path/to/config/file.yaml}
  * </pre>
  *
  * @author CWDS TPT-2
  */
 public class FacilityProfileIndexerJob extends AbstractModule {
+
   private static final Logger LOGGER = LogManager.getLogger(FacilityProfileIndexerJob.class);
 
   private static final String JOB_NAME = "facility-profile-job";
 
   private File config;
-
 
   // todo tests, run javadoc, sonar
 
@@ -93,7 +93,9 @@ public class FacilityProfileIndexerJob extends AbstractModule {
 
   @Provides
   @Inject
-  ReplicatedFacilityService provideFacilityCollectionService(ReplicatedPlacementHomeDao placementHomeDao, CountiesDao countiesDao, FacilityMapper facilityMapper) {
+  ReplicatedFacilityService provideFacilityCollectionService(
+      ReplicatedPlacementHomeDao placementHomeDao, CountiesDao countiesDao,
+      FacilityMapper facilityMapper) {
     return new ReplicatedFacilityService(placementHomeDao, countiesDao, facilityMapper);
   }
 
@@ -110,7 +112,8 @@ public class FacilityProfileIndexerJob extends AbstractModule {
       );
       try {
         Settings settings = Settings.builder()
-            .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster()).build();
+            .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster())
+            .build();
         client = new PreBuiltTransportClient(settings);
         client.addTransportAddress(
             new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
@@ -127,7 +130,8 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Provides
   @Singleton
   @Inject
-  public Elasticsearch5xDao elasticsearchDao(Client client, ElasticsearchConfiguration5x configuration) {
+  public Elasticsearch5xDao elasticsearchDao(Client client,
+      ElasticsearchConfiguration5x configuration) {
     return new Elasticsearch5xDao(client, configuration);
   }
 
@@ -137,7 +141,8 @@ public class FacilityProfileIndexerJob extends AbstractModule {
     if (config != null) {
       try {
         configuration =
-            new ObjectMapper(new YAMLFactory()).readValue(config, ElasticsearchConfiguration5x.class);
+            new ObjectMapper(new YAMLFactory())
+                .readValue(config, ElasticsearchConfiguration5x.class);
       } catch (Exception e) {
         LOGGER.error("Error reading job configuration: {}", e.getMessage(), e);
         throw new JobsException("Error reading job configuration: " + e.getMessage(), e);
@@ -149,24 +154,26 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Provides
   @Named("facility-reader")
   @Inject
-  public JobReader itemReader(ReplicatedFacilityService facilityCollectionService, @CmsSessionFactory SessionFactory sessionFactory) {
+  public JobReader itemReader(ReplicatedFacilityService facilityCollectionService,
+      @CmsSessionFactory SessionFactory sessionFactory) {
     // todo commonize
-    return new JobReader<FacilityDTO>() {
-      private Iterator<FacilityDTO> facilityDTOIterator;
+    return new JobReader<ReplicatedFacilityDTO>() {
+      private Iterator<ReplicatedFacilityDTO> facilityDTOIterator;
       private boolean started;
 
       @Override
-      public FacilityDTO read() throws Exception {
-        if(!started) {
-          FacilityParameterObject facilityParameterObject = new FacilityParameterObject(new Date(0));
+      public ReplicatedFacilityDTO read() throws Exception {
+        if (!started) {
+          FacilityParameterObject facilityParameterObject = new FacilityParameterObject(
+              new Date(0));
           sessionFactory.getCurrentSession().beginTransaction();
-          facilityDTOIterator =  facilityCollectionService.facilitiesStream(facilityParameterObject).iterator();
+          facilityDTOIterator = facilityCollectionService.facilitiesStream(facilityParameterObject)
+              .iterator();
           started = true;
         }
-        if(facilityDTOIterator.hasNext()) {
+        if (facilityDTOIterator.hasNext()) {
           return facilityDTOIterator.next();
-        }
-        else {
+        } else {
           sessionFactory.getCurrentSession().getTransaction().commit();
           return null;
         }
