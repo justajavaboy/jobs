@@ -25,6 +25,7 @@ public abstract class ProducerConsumer<T> {
 
   private void consumer() {
     try {
+      consumerInit();
       while (!producerDone) {
         T item = queue.poll(2L, TimeUnit.SECONDS);
         if (item != null) {
@@ -38,6 +39,7 @@ public abstract class ProducerConsumer<T> {
     } catch (Exception e) {
       throw new JobsException(e);
     } finally {
+      consumerDestroy();
       producer.interrupt();
     }
 
@@ -45,6 +47,7 @@ public abstract class ProducerConsumer<T> {
 
   private void producer() {
     try {
+      producerInit();
       T o;
       try {
         while ((o = produce()) != null) {
@@ -54,7 +57,13 @@ public abstract class ProducerConsumer<T> {
         throw new JobsException(e);
       }
     } finally {
+      producerDestroy();
       producerDone = true;
     }
   }
+
+  protected void producerInit(){}
+  protected void consumerInit(){}
+  protected void producerDestroy(){}
+  protected void consumerDestroy(){}
 }
