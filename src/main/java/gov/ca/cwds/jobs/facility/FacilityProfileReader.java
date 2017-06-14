@@ -1,7 +1,7 @@
 package gov.ca.cwds.jobs.facility;
 
 import gov.ca.cwds.cals.service.ReplicatedFacilityService;
-import gov.ca.cwds.cals.service.dto.FacilityDTO;
+import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityDTO;
 import gov.ca.cwds.cals.web.rest.parameter.FacilityParameterObject;
 import gov.ca.cwds.jobs.util.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
@@ -13,8 +13,8 @@ import java.util.Iterator;
 /**
  * Created by TPT-2 team on 6/13/2017.
  */
-public class FacilityProfileReader implements JobReader<FacilityDTO> {
-  private Iterator<FacilityDTO> facilityDTOIterator;
+public class FacilityProfileReader implements JobReader<ReplicatedFacilityDTO> {
+  private Iterator<ReplicatedFacilityDTO> facilityDTOIterator;
   private SessionFactory sessionFactory;
   private ReplicatedFacilityService replicatedFacilityService;
   private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
@@ -34,7 +34,7 @@ public class FacilityProfileReader implements JobReader<FacilityDTO> {
   }
 
   @Override
-  public FacilityDTO read() throws Exception {
+  public ReplicatedFacilityDTO read() throws Exception {
     if (facilityDTOIterator.hasNext()){
       return facilityDTOIterator.next();
     } else {
