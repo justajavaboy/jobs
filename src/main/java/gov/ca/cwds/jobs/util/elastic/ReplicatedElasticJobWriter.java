@@ -36,15 +36,19 @@ public class ReplicatedElasticJobWriter<T extends ReplicatedDTO> extends Elastic
   public void write(List<T> items) throws Exception {
     items.stream().forEach(item -> {
       try {
-        if (REPLICATION_OPERATION_INSERT.equals(item.getReplicationOperation())) {
+        String replicationOperation = item.getReplicationOperation();
+        if (REPLICATION_OPERATION_INSERT.equals(replicationOperation)) {
           LOGGER.info("Preparing to insert item: ID {}", item.getId());
           bulkProcessor.add(elasticsearchDao.bulkAdd(objectMapper, item.getId(), item));
-        } else if (REPLICATION_OPERATION_UPDATE.equals(item.getReplicationOperation())) {
+        } else if (REPLICATION_OPERATION_UPDATE.equals(replicationOperation)) {
           LOGGER.info("Preparing to upsert item: ID {}", item.getId());
-          bulkProcessor.add(elasticsearchDao.bulkUpsert(objectMapper, item.getId(), item));
-        } else if (REPLICATION_OPERATION_DELETE.equals(item.getReplicationOperation())) {
+          //bulkProcessor.add(elasticsearchDao.bulkUpsert(objectMapper, item.getId(), item));
+          bulkProcessor.add(elasticsearchDao.bulkAdd(objectMapper, item.getId(), item));
+        } else if (REPLICATION_OPERATION_DELETE.equals(replicationOperation)) {
           LOGGER.info("Preparing to delete item: ID {}", item.getId());
           bulkProcessor.add(elasticsearchDao.bulkDelete(item.getId()));
+        } else {
+          throw new JobsException("Unsupported replication operation: "+ replicationOperation);
         }
       } catch (JsonProcessingException e) {
         throw new JobsException(e);
