@@ -46,7 +46,7 @@ dependencies {
 	compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
 	compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
 	compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
-    compile group: 'gov.ca.cwds.cals', name: 'cals-api', version: '3.1-SNAPSHOT'
+    compile group: 'gov.ca.cwds.cals', name: 'cals-api', version: '3.2-SNAPSHOT'
 
 	// NO LONGER DEPENDS ON API!! HALLELUJAH!!
 	// compile group: "gov.ca.cwds.api", name: "api", version: "0.22.928"

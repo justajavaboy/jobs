@@ -1,7 +1,7 @@
 package gov.ca.cwds.jobs.facility;
 
 import gov.ca.cwds.cals.service.ReplicatedFacilityService;
-import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityDTO;
+import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityCompositeDTO;
 import gov.ca.cwds.cals.web.rest.parameter.FacilityParameterObject;
 import gov.ca.cwds.jobs.util.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
@@ -13,8 +13,8 @@ import java.util.Iterator;
 /**
  * Created by TPT-2 team on 6/13/2017.
  */
-public class FacilityProfileReader implements JobReader<ReplicatedFacilityDTO> {
-  private Iterator<ReplicatedFacilityDTO> facilityDTOIterator;
+public class FacilityProfileReader implements JobReader<ReplicatedFacilityCompositeDTO> {
+  private Iterator<ReplicatedFacilityCompositeDTO> facilityDTOIterator;
   private SessionFactory sessionFactory;
   private ReplicatedFacilityService replicatedFacilityService;
   private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
@@ -34,7 +34,7 @@ public class FacilityProfileReader implements JobReader<ReplicatedFacilityDTO> {
   }
 
   @Override
-  public ReplicatedFacilityDTO read() throws Exception {
+  public ReplicatedFacilityCompositeDTO read() throws Exception {
     if (facilityDTOIterator.hasNext()){
       return facilityDTOIterator.next();
     } else {
@@ -44,7 +44,7 @@ public class FacilityProfileReader implements JobReader<ReplicatedFacilityDTO> {
 
   @Override
   public void destroy() throws Exception {
-    sessionFactory.getCurrentSession().getTransaction().commit();
+    sessionFactory.getCurrentSession().getTransaction().rollback();
     sessionFactory.close();
   }
 }

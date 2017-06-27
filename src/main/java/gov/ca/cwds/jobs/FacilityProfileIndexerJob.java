@@ -11,14 +11,16 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import gov.ca.cwds.cals.inject.ReplicatedCwsCmsDataAccessModule;
 import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
-import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPlacementHomeDao;
+import gov.ca.cwds.cals.persistence.dao.cms.ClientDao;
+import gov.ca.cwds.cals.persistence.dao.cms.PlacementHomeDao;
+import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPersistentEntityDao;
 import gov.ca.cwds.cals.service.ReplicatedFacilityService;
-import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityDTO;
+import gov.ca.cwds.cals.service.mapper.FacilityChildMapper;
 import gov.ca.cwds.cals.service.mapper.FacilityMapper;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.facility.FacilityProfileReader;
-import gov.ca.cwds.jobs.inject.CalsDataAccessModule;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.es.ElasticsearchConfiguration5x;
@@ -84,19 +86,21 @@ public class FacilityProfileIndexerJob extends AbstractModule {
 
   @Override
   protected void configure() {
-    install(new CalsDataAccessModule());
+    install(new ReplicatedCwsCmsDataAccessModule("jobs-cms-hibernate.cfg.xml"));
     install(new MappingModule());
   }
 
   @Provides
   @Inject
-  ReplicatedFacilityService provideFacilityCollectionService(
-      ReplicatedPlacementHomeDao placementHomeDao, CountiesDao countiesDao,
-      FacilityMapper facilityMapper) {
-    return new ReplicatedFacilityService(placementHomeDao, countiesDao, facilityMapper);
+  ReplicatedFacilityService provideReplicatedFacilityService(
+      PlacementHomeDao placementHomeDao, CountiesDao countiesDao,
+      FacilityMapper facilityMapper, ReplicatedPersistentEntityDao replicatedPersistentEntityDao,
+      ClientDao clientDao, FacilityChildMapper facilityChildMapper) {
+    return new ReplicatedFacilityService(null, null, placementHomeDao,
+        null, countiesDao, facilityMapper, null,
+        replicatedPersistentEntityDao, clientDao, facilityChildMapper);
   }
 
-  // todo commonize
   @Provides
   @Inject
   public Client elasticsearchClient(ElasticsearchConfiguration5x config) {
@@ -123,7 +127,6 @@ public class FacilityProfileIndexerJob extends AbstractModule {
     return client;
   }
 
-  // todo commonize
   @Provides
   @Singleton
   @Inject
@@ -151,7 +154,8 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Provides
   @Named("facility-reader")
   @Inject
-  public JobReader itemReader(ReplicatedFacilityService replicatedFacilityService, @CmsSessionFactory SessionFactory sessionFactory) {
+  public JobReader itemReader(ReplicatedFacilityService replicatedFacilityService,
+      @CmsSessionFactory SessionFactory sessionFactory) {
     return new FacilityProfileReader(sessionFactory, replicatedFacilityService);
   }
 
@@ -159,7 +163,7 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Named("facility-writer")
   @Inject
   public JobWriter itemWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
-    return new ReplicatedElasticJobWriter<ReplicatedFacilityDTO>(elasticsearchDao, objectMapper);
+    return new ReplicatedElasticJobWriter(elasticsearchDao, objectMapper);
   }
 
   @Provides
