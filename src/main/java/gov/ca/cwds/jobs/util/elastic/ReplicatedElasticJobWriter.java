@@ -2,8 +2,8 @@ package gov.ca.cwds.jobs.util.elastic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gov.ca.cwds.cals.RecordChangeOperation;
 import gov.ca.cwds.cals.ReplicatedCompositeDTO;
-import gov.ca.cwds.cals.ReplicationOperation;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.jobs.JobsException;
 import java.util.List;
@@ -32,13 +32,13 @@ public class ReplicatedElasticJobWriter extends ElasticJobWriter<ReplicatedCompo
   public void write(List<ReplicatedCompositeDTO> items) throws Exception {
     items.stream().forEach(item -> {
       try {
-        ReplicationOperation replicationOperation = item.getReplicationOperation();
+        RecordChangeOperation recordChangeOperation = item.getRecordChangeOperation();
 
         LOGGER.info("Preparing to delete item: ID {}", item.getId());
         bulkProcessor.add(elasticsearchDao.bulkDelete(item.getId()));
 
-        if (ReplicationOperation.I == replicationOperation
-            || ReplicationOperation.U == replicationOperation) {
+        if (RecordChangeOperation.I == recordChangeOperation
+            || RecordChangeOperation.U == recordChangeOperation) {
           LOGGER.info("Preparing to insert item: ID {}", item.getId());
           bulkProcessor.add(elasticsearchDao.bulkAdd(objectMapper, item.getId(), item.getDTO()));
         }

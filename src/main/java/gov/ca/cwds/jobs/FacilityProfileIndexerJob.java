@@ -16,7 +16,7 @@ import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
 import gov.ca.cwds.cals.persistence.dao.cms.ClientDao;
 import gov.ca.cwds.cals.persistence.dao.cms.PlacementHomeDao;
 import gov.ca.cwds.cals.persistence.dao.cms.rs.ReplicatedPersistentEntityDao;
-import gov.ca.cwds.cals.service.ReplicatedFacilityService;
+import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.mapper.FacilityChildMapper;
 import gov.ca.cwds.cals.service.mapper.FacilityMapper;
 import gov.ca.cwds.inject.CmsSessionFactory;
@@ -92,11 +92,11 @@ public class FacilityProfileIndexerJob extends AbstractModule {
 
   @Provides
   @Inject
-  ReplicatedFacilityService provideReplicatedFacilityService(
+  ChangedFacilityService provideChangedFacilityService(
       PlacementHomeDao placementHomeDao, CountiesDao countiesDao,
       FacilityMapper facilityMapper, ReplicatedPersistentEntityDao replicatedPersistentEntityDao,
       ClientDao clientDao, FacilityChildMapper facilityChildMapper) {
-    return new ReplicatedFacilityService(null, null, placementHomeDao,
+    return new ChangedFacilityService(null, null, placementHomeDao,
         null, countiesDao, facilityMapper, null,
         replicatedPersistentEntityDao, clientDao, facilityChildMapper);
   }
@@ -154,9 +154,9 @@ public class FacilityProfileIndexerJob extends AbstractModule {
   @Provides
   @Named("facility-reader")
   @Inject
-  public JobReader itemReader(ReplicatedFacilityService replicatedFacilityService,
+  public JobReader itemReader(ChangedFacilityService changedFacilityService,
       @CmsSessionFactory SessionFactory sessionFactory) {
-    return new FacilityProfileReader(sessionFactory, replicatedFacilityService);
+    return new FacilityProfileReader(sessionFactory, changedFacilityService);
   }
 
   @Provides
