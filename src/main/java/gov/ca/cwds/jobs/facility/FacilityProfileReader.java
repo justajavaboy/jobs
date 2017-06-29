@@ -1,7 +1,7 @@
 package gov.ca.cwds.jobs.facility;
 
 import gov.ca.cwds.cals.service.ChangedFacilityService;
-import gov.ca.cwds.cals.service.dto.rs.ReplicatedFacilityCompositeDTO;
+import gov.ca.cwds.cals.service.dto.ChangedFacilityDTO;
 import gov.ca.cwds.jobs.util.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
 import org.hibernate.SessionFactory;
@@ -12,28 +12,34 @@ import java.util.Iterator;
 /**
  * @author TPT-2 team
  */
-public class FacilityProfileReader implements JobReader<ReplicatedFacilityCompositeDTO> {
+public class FacilityProfileReader implements JobReader<ChangedFacilityDTO> {
 
-  private Iterator<ReplicatedFacilityCompositeDTO> facilityDTOIterator;
-  private SessionFactory sessionFactory;
+  private Iterator<ChangedFacilityDTO> facilityDTOIterator;
+  private SessionFactory fasSessionFactory;
+  private SessionFactory lisSessionFactory;
+  private SessionFactory cwsCmcSessionFactory;
   private ChangedFacilityService changedFacilityService;
   private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
 
-  public FacilityProfileReader(SessionFactory sessionFactory,
-      ChangedFacilityService changedFacilityService) {
+  public FacilityProfileReader(SessionFactory fasSessionFactory, SessionFactory lisSessionFactory,
+      SessionFactory cwsCmcSessionFactory, ChangedFacilityService changedFacilityService) {
     this.incrementalLoadDateStrategy = new FacilityProfileIncrementalLoadDate();
-    this.sessionFactory = sessionFactory;
+    this.fasSessionFactory = fasSessionFactory;
+    this.lisSessionFactory = lisSessionFactory;
+    this.cwsCmcSessionFactory = cwsCmcSessionFactory;
     this.changedFacilityService = changedFacilityService;
   }
 
   public void init() {
-    sessionFactory.getCurrentSession().beginTransaction();
     Date dateAfter = incrementalLoadDateStrategy.calculate();
+    fasSessionFactory.getCurrentSession().beginTransaction();
+    lisSessionFactory.getCurrentSession().beginTransaction();
+    cwsCmcSessionFactory.getCurrentSession().beginTransaction();
     facilityDTOIterator = changedFacilityService.changedFacilitiesStream(dateAfter).iterator();
   }
 
   @Override
-  public ReplicatedFacilityCompositeDTO read() throws Exception {
+  public ChangedFacilityDTO read() throws Exception {
     if (facilityDTOIterator.hasNext()) {
       return facilityDTOIterator.next();
     } else {
@@ -43,7 +49,22 @@ public class FacilityProfileReader implements JobReader<ReplicatedFacilityCompos
 
   @Override
   public void destroy() throws Exception {
-    sessionFactory.getCurrentSession().getTransaction().rollback();
-    sessionFactory.close();
+    try {
+      closeSessionFactory(fasSessionFactory);
+    } finally {
+      try {
+        closeSessionFactory(lisSessionFactory);
+      } finally {
+        closeSessionFactory(cwsCmcSessionFactory);
+      }
+    }
+  }
+
+  private void closeSessionFactory(SessionFactory sessionFactory) {
+    try {
+      sessionFactory.getCurrentSession().getTransaction().rollback();
+    } finally {
+      sessionFactory.close();
+    }
   }
 }

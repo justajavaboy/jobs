@@ -2,8 +2,8 @@ package gov.ca.cwds.jobs.util.elastic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gov.ca.cwds.cals.ChangedDTO;
 import gov.ca.cwds.cals.RecordChangeOperation;
-import gov.ca.cwds.cals.ReplicatedCompositeDTO;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.jobs.JobsException;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author CWDS TPT-2
  */
-public class ReplicatedElasticJobWriter extends ElasticJobWriter<ReplicatedCompositeDTO> {
+public class ReplicatedElasticJobWriter extends ElasticJobWriter<ChangedDTO> {
 
   private static final Logger LOGGER = LogManager.getLogger(ReplicatedElasticJobWriter.class);
 
@@ -29,7 +29,7 @@ public class ReplicatedElasticJobWriter extends ElasticJobWriter<ReplicatedCompo
   }
 
   @Override
-  public void write(List<ReplicatedCompositeDTO> items) throws Exception {
+  public void write(List<ChangedDTO> items) throws Exception {
     items.stream().forEach(item -> {
       try {
         RecordChangeOperation recordChangeOperation = item.getRecordChangeOperation();
