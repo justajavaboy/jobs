@@ -20,8 +20,10 @@ import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
 import gov.ca.cwds.cals.persistence.dao.cms.ClientDao;
 import gov.ca.cwds.cals.persistence.dao.cms.PlacementHomeDao;
 import gov.ca.cwds.cals.persistence.dao.cms.RecordChangeCwsCmsDao;
+import gov.ca.cwds.cals.persistence.dao.fas.InspectionDao;
 import gov.ca.cwds.cals.persistence.dao.fas.LisFacFileFasDao;
 import gov.ca.cwds.cals.persistence.dao.fas.LpaInformationDao;
+import gov.ca.cwds.cals.persistence.dao.fas.RecordChangeFasDao;
 import gov.ca.cwds.cals.persistence.dao.lis.LisFacFileLisDao;
 import gov.ca.cwds.cals.persistence.dao.lis.RecordChangeLisDao;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
@@ -107,12 +109,14 @@ public class FacilityProfileIndexerJob extends AbstractModule {
       LisFacFileLisDao lisFacFileLisDao, LisFacFileFasDao lisFacFileFasDao,
       PlacementHomeDao placementHomeDao, LpaInformationDao lpaInformationDao,
       CountiesDao countiesDao, FacilityMapper facilityMapper, FasFacilityMapper fasFacilityMapper,
-      RecordChangeLisDao recordChangeLisDao,
       RecordChangeCwsCmsDao recordChangeCwsCmsDao,
-      ClientDao clientDao, FacilityChildMapper facilityChildMapper) {
+      RecordChangeLisDao recordChangeLisDao,
+      RecordChangeFasDao recordChangeFasDao,
+      ClientDao clientDao, FacilityChildMapper facilityChildMapper,
+      InspectionDao inspectionDao) {
     return new ChangedFacilityService(lisFacFileLisDao, lisFacFileFasDao, placementHomeDao,
-        lpaInformationDao, countiesDao, facilityMapper, fasFacilityMapper, recordChangeLisDao,
-        recordChangeCwsCmsDao, clientDao, facilityChildMapper);
+        lpaInformationDao, countiesDao, facilityMapper, fasFacilityMapper, recordChangeCwsCmsDao,
+        recordChangeLisDao, recordChangeFasDao, clientDao, facilityChildMapper, inspectionDao);
   }
 
   @Provides

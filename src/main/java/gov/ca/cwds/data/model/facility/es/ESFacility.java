@@ -1,6 +1,6 @@
 package gov.ca.cwds.data.model.facility.es;
 
-import gov.ca.cwds.cals.Identified;
+import gov.ca.cwds.cals.Identifiable;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,7 @@ import gov.ca.cwds.rest.api.domain.DomainChef;
  * 
  * @author CWDS TPT-2
  */
-public class ESFacility implements Identified<String> {
+public class ESFacility implements Identifiable<String> {
 
   /**
    * Default serialization.

@@ -1,6 +1,6 @@
 package gov.ca.cwds.jobs.util.elastic;
 
-import gov.ca.cwds.cals.Identified;
+import gov.ca.cwds.cals.Identifiable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +22,7 @@ import gov.ca.cwds.jobs.util.JobWriter;
  *
  * @param <T> persistence class type
  */
-public class ElasticJobWriter<T extends Identified<String>> implements JobWriter<T> {
+public class ElasticJobWriter<T extends Identifiable<String>> implements JobWriter<T> {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticJobWriter.class);
   protected Elasticsearch5xDao elasticsearchDao;
