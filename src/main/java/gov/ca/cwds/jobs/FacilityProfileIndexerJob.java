@@ -18,7 +18,7 @@ import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.inject.LisSessionFactory;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.facility.FacilityProfileReader;
+import gov.ca.cwds.jobs.cals.facility.FacilityProfileReader;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.es.ElasticsearchConfiguration5x;

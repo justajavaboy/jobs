@@ -1,6 +1,6 @@
-package gov.ca.cwds.jobs.facility;
+package gov.ca.cwds.jobs.cals.facility;
 
-import gov.ca.cwds.jobs.util.IncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
 import gov.ca.cwds.rest.api.ApiException;
 
 import java.nio.file.Files;

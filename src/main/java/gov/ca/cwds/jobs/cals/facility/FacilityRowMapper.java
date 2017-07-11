@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.facility;
+package gov.ca.cwds.jobs.cals.facility;
 
 import gov.ca.cwds.jobs.util.jdbc.RowMapper;
 

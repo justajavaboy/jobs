@@ -1,6 +1,6 @@
-package gov.ca.cwds.jobs.facility;
+package gov.ca.cwds.jobs.cals.facility;
 
-import gov.ca.cwds.jobs.util.IncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
 import gov.ca.cwds.rest.api.ApiException;
 
 import java.nio.file.Files;
@@ -19,8 +19,8 @@ import static java.nio.file.StandardOpenOption.WRITE;
 /**
  * Created by TPT-2 team on 6/13/2017.
  */
-public class FacilityProfileIncrementalLoadDate implements IncrementalLoadDateStrategy {
-  private static final String RUNNING_FILE_NAME = FacilityProfileIncrementalLoadDate.class.getSimpleName() + "-running";
+public class FacilityIncrementalLoadDateStrategy implements IncrementalLoadDateStrategy {
+  static final String RUNNING_FILE_NAME = FacilityIncrementalLoadDateStrategy.class.getSimpleName() + "-running";
   private static final String DATE_FORMAT = "yyyy-MM-dd-HH.mm.ss.SSS";
   private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
 

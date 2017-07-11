@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.facility;
+package gov.ca.cwds.jobs.cals.facility;
 
 import gov.ca.cwds.data.model.facility.es.ESFacility;
 import gov.ca.cwds.data.model.facility.es.ESFacilityAddress;

@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.util;
+package gov.ca.cwds.jobs.cals;
 
 import gov.ca.cwds.rest.api.ApiException;
 

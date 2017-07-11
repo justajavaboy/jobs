@@ -1,8 +1,8 @@
-package gov.ca.cwds.jobs.facility;
+package gov.ca.cwds.jobs.cals.facility;
 
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.dto.ChangedFacilityDTO;
-import gov.ca.cwds.jobs.util.IncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
 import org.hibernate.SessionFactory;
 
@@ -23,7 +23,7 @@ public class FacilityProfileReader implements JobReader<ChangedFacilityDTO> {
 
   public FacilityProfileReader(SessionFactory fasSessionFactory, SessionFactory lisSessionFactory,
       SessionFactory cwsCmcSessionFactory, ChangedFacilityService changedFacilityService) {
-    this.incrementalLoadDateStrategy = new FacilityProfileIncrementalLoadDate();
+    this.incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
     this.fasSessionFactory = fasSessionFactory;
     this.lisSessionFactory = lisSessionFactory;
     this.cwsCmcSessionFactory = cwsCmcSessionFactory;
