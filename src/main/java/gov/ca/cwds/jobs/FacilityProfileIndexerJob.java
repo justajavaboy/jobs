@@ -11,25 +11,12 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import gov.ca.cwds.cals.inject.CwsCmsDataAccessModule;
 import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.FasSessionFactory;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.inject.LisSessionFactory;
-import gov.ca.cwds.cals.inject.ReplicatedCwsCmsDataAccessModule;
-import gov.ca.cwds.cals.persistence.dao.cms.CountiesDao;
-import gov.ca.cwds.cals.persistence.dao.cms.ClientDao;
-import gov.ca.cwds.cals.persistence.dao.cms.PlacementHomeDao;
-import gov.ca.cwds.cals.persistence.dao.cms.RecordChangeCwsCmsDao;
-import gov.ca.cwds.cals.persistence.dao.fas.InspectionDao;
-import gov.ca.cwds.cals.persistence.dao.fas.LisFacFileFasDao;
-import gov.ca.cwds.cals.persistence.dao.fas.LpaInformationDao;
-import gov.ca.cwds.cals.persistence.dao.fas.RecordChangeFasDao;
-import gov.ca.cwds.cals.persistence.dao.lis.LisFacFileLisDao;
-import gov.ca.cwds.cals.persistence.dao.lis.RecordChangeLisDao;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
-import gov.ca.cwds.cals.service.mapper.FacilityChildMapper;
-import gov.ca.cwds.cals.service.mapper.FacilityMapper;
-import gov.ca.cwds.cals.service.mapper.FasFacilityMapper;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.facility.FacilityProfileReader;
 import gov.ca.cwds.cals.inject.MappingModule;
@@ -97,26 +84,11 @@ public class FacilityProfileIndexerJob extends AbstractModule {
 
   @Override
   protected void configure() {
-    install(new ReplicatedCwsCmsDataAccessModule("jobs-cms-hibernate.cfg.xml"));
+    install(new CwsCmsDataAccessModule("jobs-cms-hibernate.cfg.xml"));
     install(new LisDataAccessModule("lis-hibernate.cfg.xml"));
     install(new FasDataAccessModule("fas-hibernate.cfg.xml"));
     install(new MappingModule());
-  }
-
-  @Provides
-  @Inject
-  ChangedFacilityService provideChangedFacilityService(
-      LisFacFileLisDao lisFacFileLisDao, LisFacFileFasDao lisFacFileFasDao,
-      PlacementHomeDao placementHomeDao, LpaInformationDao lpaInformationDao,
-      CountiesDao countiesDao, FacilityMapper facilityMapper, FasFacilityMapper fasFacilityMapper,
-      RecordChangeCwsCmsDao recordChangeCwsCmsDao,
-      RecordChangeLisDao recordChangeLisDao,
-      RecordChangeFasDao recordChangeFasDao,
-      ClientDao clientDao, FacilityChildMapper facilityChildMapper,
-      InspectionDao inspectionDao) {
-    return new ChangedFacilityService(lisFacFileLisDao, lisFacFileFasDao, placementHomeDao,
-        lpaInformationDao, countiesDao, facilityMapper, fasFacilityMapper, recordChangeCwsCmsDao,
-        recordChangeLisDao, recordChangeFasDao, clientDao, facilityChildMapper, inspectionDao);
+    bind(ChangedFacilityService.class);
   }
 
   @Provides

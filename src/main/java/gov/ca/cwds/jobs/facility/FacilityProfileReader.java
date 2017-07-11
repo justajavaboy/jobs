@@ -30,6 +30,7 @@ public class FacilityProfileReader implements JobReader<ChangedFacilityDTO> {
     this.changedFacilityService = changedFacilityService;
   }
 
+  @Override
   public void init() {
     Date dateAfter = incrementalLoadDateStrategy.calculate();
     fasSessionFactory.getCurrentSession().beginTransaction();
