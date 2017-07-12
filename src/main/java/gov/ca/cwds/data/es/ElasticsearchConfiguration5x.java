@@ -34,6 +34,12 @@ public class ElasticsearchConfiguration5x {
   @JsonProperty("job.lis.reader.query")
   private String lisReaderQuery;
 
+  @JsonProperty("elasticsearch.xpack.user")
+  private String user;
+
+  @JsonProperty("elasticsearch.xpack.password")
+  private String password;
+
   /**
    * @return the elasticsearch host
    */
@@ -72,5 +78,13 @@ public class ElasticsearchConfiguration5x {
 
   public String getLisReaderQuery() {
     return lisReaderQuery;
+  }
+
+  public String getUser() {
+    return user;
+  }
+
+  public String getPassword() {
+    return password;
   }
 }
