@@ -37,6 +37,7 @@ import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 import org.hibernate.SessionFactory;
 
 /**
@@ -109,10 +110,7 @@ public class FacilityIndexerJob extends AbstractModule {
           config.getElasticsearchCluster()
       );
       try {
-        Settings settings = Settings.builder()
-            .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster())
-            .build();
-        client = new PreBuiltTransportClient(settings);
+        client = createTransportClient(config);
         client.addTransportAddress(
             new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
                 Integer.parseInt(config.getElasticsearchPort())));
@@ -122,6 +120,18 @@ public class FacilityIndexerJob extends AbstractModule {
       }
     }
     return client;
+  }
+
+  private TransportClient createTransportClient(ElasticsearchConfiguration5x config) {
+    Settings.Builder settings = Settings.builder()
+            .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster());
+    if(config.getUser() != null && config.getPassword() != null) {
+      settings.put("xpack.security.user", config.getUser() + ":" + config.getPassword());
+      return new PreBuiltXPackTransportClient(settings.build());
+    }
+    else {
+      return new PreBuiltTransportClient(settings.build());
+    }
   }
 
   @Provides
