@@ -12,7 +12,7 @@ import java.util.Iterator;
 /**
  * @author TPT-2 team
  */
-public class FacilityProfileReader implements JobReader<ChangedFacilityDTO> {
+public class FacilityReader implements JobReader<ChangedFacilityDTO> {
 
   private Iterator<ChangedFacilityDTO> facilityDTOIterator;
   private SessionFactory fasSessionFactory;
@@ -21,7 +21,7 @@ public class FacilityProfileReader implements JobReader<ChangedFacilityDTO> {
   private ChangedFacilityService changedFacilityService;
   private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
 
-  public FacilityProfileReader(SessionFactory fasSessionFactory, SessionFactory lisSessionFactory,
+  FacilityReader(SessionFactory fasSessionFactory, SessionFactory lisSessionFactory,
       SessionFactory cwsCmcSessionFactory, ChangedFacilityService changedFacilityService) {
     this.incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
     this.fasSessionFactory = fasSessionFactory;

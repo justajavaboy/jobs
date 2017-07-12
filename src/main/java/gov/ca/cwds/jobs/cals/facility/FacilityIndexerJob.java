@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs;
+package gov.ca.cwds.jobs.cals.facility;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -18,7 +18,8 @@ import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.inject.LisSessionFactory;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.cals.facility.FacilityProfileReader;
+import gov.ca.cwds.jobs.Job;
+import gov.ca.cwds.jobs.JobsException;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.es.ElasticsearchConfiguration5x;
@@ -42,15 +43,15 @@ import org.hibernate.SessionFactory;
  * <p> Command line arguments: </p>
  *
  * <pre>
- * {@code run script: $java -cp jobs.jar gov.ca.cwds.jobs.FacilityProfileIndexerJob
+ * {@code run script: $java -cp jobs.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob
  * path/to/config/file.yaml}
  * </pre>
  *
  * @author CWDS TPT-2
  */
-public class FacilityProfileIndexerJob extends AbstractModule {
+public class FacilityIndexerJob extends AbstractModule {
 
-  private static final Logger LOGGER = LogManager.getLogger(FacilityProfileIndexerJob.class);
+  private static final Logger LOGGER = LogManager.getLogger(FacilityIndexerJob.class);
 
   private static final String JOB_NAME = "facility-profile-job";
 
@@ -63,18 +64,18 @@ public class FacilityProfileIndexerJob extends AbstractModule {
    *
    * @param config configuration file
    */
-  public FacilityProfileIndexerJob(File config) {
+  public FacilityIndexerJob(File config) {
     this.config = config;
   }
 
   public static void main(String[] args) {
     if (args.length == 0) {
       LOGGER.warn(
-          "usage: java -cp jobs.jar gov.ca.cwds.jobs.FacilityProfileIndexerJob path/to/config/file.yaml");
+          "usage: java -cp jobs.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob path/to/config/file.yaml");
     }
     try {
       File configFile = new File(args[0]);
-      Injector injector = Guice.createInjector(new FacilityProfileIndexerJob(configFile));
+      Injector injector = Guice.createInjector(new FacilityIndexerJob(configFile));
       Job job = injector.getInstance(Key.get(Job.class, Names.named(JOB_NAME)));
       job.run();
     } catch (Exception e) {
@@ -148,7 +149,7 @@ public class FacilityProfileIndexerJob extends AbstractModule {
       @FasSessionFactory SessionFactory fasSessionFactory,
       @LisSessionFactory SessionFactory lisSessionFactory,
       @CmsSessionFactory SessionFactory cwsCmcSessionFactory) {
-    return new FacilityProfileReader(fasSessionFactory, lisSessionFactory, cwsCmcSessionFactory,
+    return new FacilityReader(fasSessionFactory, lisSessionFactory, cwsCmcSessionFactory,
         changedFacilityService);
   }
 
