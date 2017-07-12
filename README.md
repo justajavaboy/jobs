@@ -28,10 +28,17 @@ Prerequisites are job dependent but typically you can expect the following to be
 
 ### Facility Indexer Job
 
-Main Class: gov.ca.cwds.jobs.FacilityIndexerJob
-run job using following command: 
+Main Class: gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob
+run job using command like the following: 
 ```bash
-$java -cp jobs.jar gov.ca.cwds.jobs.FacilityIndexerJob path/to/config/file.yaml
+$ java -DDB_FAS_JDBC_URL="jdbc:postgresql://192.168.99.100:5432/?currentSchema=fas" \
+         -DDB_FAS_USER="postgres_data" -DDB_FAS_PASSWORD="CHANGEME" \
+     -DDB_LIS_JDBC_URL="jdbc:postgresql://192.168.99.100:5432/?currentSchema=lis" \
+        -DDB_LIS_USER="postgres_data" -DDB_LIS_PASSWORD="CHANGEME" \
+     -DDB_CMS_JDBC_URL="jdbc:db2://192.168.99.100:50000/DB0TDEV" -DDB_CMS_SCHEMA="CWSCMSRS" \
+        -DDB_CMS_USER="db2inst1" -DDB_CMS_PASSWORD="CHANGEME" \
+     -cp build/libs/DocumentIndexerJob-0.24.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob \
+      config/facility.yaml
 ```
 #### Code overview
 In order to create new job you have to implement 2 interfaces: _JobReader_, _JobWriter_ and optional _JobProcessor_
