@@ -1,7 +1,5 @@
 package gov.ca.cwds.jobs.cals;
 
-import gov.ca.cwds.rest.api.ApiException;
-
 import java.util.Date;
 
 /**
@@ -10,8 +8,8 @@ import java.util.Date;
  */
 public interface IncrementalLoadDateStrategy {
   /**
-   *  Must be called inside batch transaction
+   * Must be called inside batch transaction
    * @return date after
    */
-  Date calculate() throws ApiException;
+  Date calculate();
 }

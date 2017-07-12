@@ -1,9 +1,10 @@
 package gov.ca.cwds.jobs.cals.facility;
 
 import gov.ca.cwds.jobs.cals.BaseIncrementalLoadDateStrategy;
+import java.time.LocalDateTime;
 
 /**
- * Created by TPT-2 team on 6/13/2017.
+ * @author CWDS TPT-2
  */
 public final class FacilityIncrementalLoadDateStrategy extends BaseIncrementalLoadDateStrategy {
 
@@ -12,5 +13,10 @@ public final class FacilityIncrementalLoadDateStrategy extends BaseIncrementalLo
   @Override
   protected String getDateFileName() {
     return RUNNING_FILE_NAME;
+  }
+
+  @Override
+  protected LocalDateTime getDateTimeForInitialLoad() {
+    return null;
   }
 }
