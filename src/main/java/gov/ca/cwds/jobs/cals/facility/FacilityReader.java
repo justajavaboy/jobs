@@ -20,10 +20,12 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
   private SessionFactory cwsCmcSessionFactory;
   private ChangedFacilityService changedFacilityService;
   private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
+  private IncrementalLoadDateStrategy lisIncrementalLoadDateStrategy;
 
   FacilityReader(SessionFactory fasSessionFactory, SessionFactory lisSessionFactory,
       SessionFactory cwsCmcSessionFactory, ChangedFacilityService changedFacilityService) {
     this.incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
+    this.lisIncrementalLoadDateStrategy = new LISFacilityIncrementalLoadDateStrategy();
     this.fasSessionFactory = fasSessionFactory;
     this.lisSessionFactory = lisSessionFactory;
     this.cwsCmcSessionFactory = cwsCmcSessionFactory;
@@ -33,10 +35,12 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
   @Override
   public void init() {
     Date dateAfter = incrementalLoadDateStrategy.calculate();
+    Date lisDateAfter = lisIncrementalLoadDateStrategy.calculate();
     fasSessionFactory.getCurrentSession().beginTransaction();
     lisSessionFactory.getCurrentSession().beginTransaction();
     cwsCmcSessionFactory.getCurrentSession().beginTransaction();
-    facilityDTOIterator = changedFacilityService.changedFacilitiesStream(dateAfter).iterator();
+    facilityDTOIterator = changedFacilityService.changedFacilitiesStream(dateAfter, lisDateAfter)
+        .iterator();
   }
 
   @Override
