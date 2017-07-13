@@ -2,8 +2,8 @@ package gov.ca.cwds.jobs.util.elastic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gov.ca.cwds.cals.ChangedDTO;
 import gov.ca.cwds.cals.RecordChangeOperation;
+import gov.ca.cwds.cals.service.dto.changed.ChangedDTO;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.jobs.JobsException;
 import java.util.List;

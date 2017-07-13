@@ -18,7 +18,7 @@ public final class LISFacilityIncrementalLoadDateStrategy extends BaseIncrementa
   private static final String DATE_FORMAT = "yyyy-MM-dd";
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
 
-  static final String RUNNING_FILE_NAME = "CALS_LIS_Facility_last_load_time";
+  public static final String RUNNING_FILE_NAME = "CALS_LIS_Facility_last_load_time";
 
   @Override
   protected String getDateFileName() {

@@ -1,7 +1,7 @@
 package gov.ca.cwds.jobs.cals.facility;
 
 import gov.ca.cwds.cals.service.ChangedFacilityService;
-import gov.ca.cwds.cals.service.dto.ChangedFacilityDTO;
+import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
 import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
 import org.hibernate.SessionFactory;

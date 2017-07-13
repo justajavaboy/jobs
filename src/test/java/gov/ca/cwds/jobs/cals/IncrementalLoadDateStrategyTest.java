@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.cals.facility;
+package gov.ca.cwds.jobs.cals;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -6,8 +6,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import gov.ca.cwds.jobs.cals.BaseIncrementalLoadDateStrategy;
-import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.cals.facility.FacilityIncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.cals.facility.LISFacilityIncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.cals.rfa.RFA1aFormIncrementalLoadDateStrategy;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,11 +25,9 @@ import org.junit.Test;
  */
 public class IncrementalLoadDateStrategyTest {
 
-  private static final String RUNNING_FILE_NAME = "test_last_load_time";
-
   @BeforeClass
   public static void beforeClass() throws IOException {
-    Files.deleteIfExists(Paths.get(RUNNING_FILE_NAME));
+    Files.deleteIfExists(Paths.get(RFA1aFormIncrementalLoadDateStrategy.RUNNING_FILE_NAME));
     Files.deleteIfExists(Paths.get(FacilityIncrementalLoadDateStrategy.RUNNING_FILE_NAME));
     Files.deleteIfExists(Paths.get(LISFacilityIncrementalLoadDateStrategy.RUNNING_FILE_NAME));
   }
@@ -39,14 +38,8 @@ public class IncrementalLoadDateStrategyTest {
   }
 
   @Test
-  public void testBaseIncrementalLoadDateStrategy() {
-    IncrementalLoadDateStrategy incrementalLoadDateStrategy = new BaseIncrementalLoadDateStrategy() {
-
-      @Override
-      protected String getDateFileName() {
-        return RUNNING_FILE_NAME;
-      }
-    };
+  public void testRFA1aFormIncrementalLoadDateStrategy() {
+    IncrementalLoadDateStrategy incrementalLoadDateStrategy = new RFA1aFormIncrementalLoadDateStrategy();
 
     LocalDateTime calculatedTime0 = toLocalDateTime(incrementalLoadDateStrategy.calculate());
     assertBefore(calculatedTime0, LocalDateTime.now().minusYears(99));
@@ -125,7 +118,8 @@ public class IncrementalLoadDateStrategyTest {
    * @param tBefore some moment in time
    * @param tAfter some moment in time
    */
-  private static void assertBetween(LocalDateTime tBetween, LocalDateTime tBefore, LocalDateTime tAfter) {
+  private static void assertBetween(LocalDateTime tBetween, LocalDateTime tBefore,
+      LocalDateTime tAfter) {
     assertBefore(tBefore, tBetween);
     assertAfter(tAfter, tBetween);
   }

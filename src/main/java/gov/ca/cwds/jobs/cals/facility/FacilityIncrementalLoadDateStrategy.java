@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  */
 public final class FacilityIncrementalLoadDateStrategy extends BaseIncrementalLoadDateStrategy {
 
-  static final String RUNNING_FILE_NAME = "CALS_Facility_last_load_time";
+  public static final String RUNNING_FILE_NAME = "CALS_Facility_last_load_time";
 
   @Override
   protected String getDateFileName() {
