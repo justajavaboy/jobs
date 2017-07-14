@@ -1,7 +1,7 @@
 package gov.ca.cwds.jobs.util;
 
 /**
- * @author CWDS Elasticsearch Team
+ * @author CWDS TPT-2
  * 
  * @param <T> type to read into
  */

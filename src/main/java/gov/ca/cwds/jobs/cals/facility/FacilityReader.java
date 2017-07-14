@@ -1,7 +1,11 @@
 package gov.ca.cwds.jobs.cals.facility;
 
+import com.google.inject.Inject;
+import gov.ca.cwds.cals.inject.FasSessionFactory;
+import gov.ca.cwds.cals.inject.LisSessionFactory;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
+import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
 import org.hibernate.SessionFactory;
@@ -14,22 +18,28 @@ import java.util.Iterator;
  */
 public class FacilityReader implements JobReader<ChangedFacilityDTO> {
 
-  private Iterator<ChangedFacilityDTO> facilityDTOIterator;
-  private SessionFactory fasSessionFactory;
-  private SessionFactory lisSessionFactory;
-  private SessionFactory cwsCmcSessionFactory;
-  private ChangedFacilityService changedFacilityService;
   private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
   private IncrementalLoadDateStrategy lisIncrementalLoadDateStrategy;
+  private Iterator<ChangedFacilityDTO> facilityDTOIterator;
 
-  FacilityReader(SessionFactory fasSessionFactory, SessionFactory lisSessionFactory,
-      SessionFactory cwsCmcSessionFactory, ChangedFacilityService changedFacilityService) {
+  @Inject
+  private ChangedFacilityService changedFacilityService;
+
+  @Inject
+  @FasSessionFactory
+  private SessionFactory fasSessionFactory;
+
+  @Inject
+  @LisSessionFactory
+  private SessionFactory lisSessionFactory;
+
+  @Inject
+  @CmsSessionFactory
+  private SessionFactory cwsCmcSessionFactory;
+
+  FacilityReader() {
     this.incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
     this.lisIncrementalLoadDateStrategy = new LISFacilityIncrementalLoadDateStrategy();
-    this.fasSessionFactory = fasSessionFactory;
-    this.lisSessionFactory = lisSessionFactory;
-    this.cwsCmcSessionFactory = cwsCmcSessionFactory;
-    this.changedFacilityService = changedFacilityService;
   }
 
   @Override
@@ -45,11 +55,7 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
 
   @Override
   public ChangedFacilityDTO read() throws Exception {
-    if (facilityDTOIterator.hasNext()) {
-      return facilityDTOIterator.next();
-    } else {
-      return null;
-    }
+    return facilityDTOIterator.hasNext() ? facilityDTOIterator.next() : null;
   }
 
   @Override
