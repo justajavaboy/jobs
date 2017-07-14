@@ -36,7 +36,7 @@ public abstract class BaseIncrementalLoadDateStrategy implements IncrementalLoad
   }
 
   @Override
-  public Date calculate() {
+  public LocalDateTime calculateLocalDateTime() {
     try {
       LocalDateTime now = LocalDateTime.now();
       Path runningFile = Paths.get(getDateFileName());
@@ -46,17 +46,23 @@ public abstract class BaseIncrementalLoadDateStrategy implements IncrementalLoad
 
       writeRunDateTime(runningFile, now);
 
-      return result == null ? null : Date.from(result.atZone(ZoneId.systemDefault()).toInstant());
+      return result;
 
     } catch (Exception e) {
-      throw new ApiException("Failed to calculate date after", e);
+      throw new ApiException("Failed to calculate date", e);
     }
+  }
+
+  @Override
+  public Date calculateDate() {
+    LocalDateTime result = calculateLocalDateTime();
+    return result == null ? null : Date.from(result.atZone(ZoneId.systemDefault()).toInstant());
   }
 
   private String readLastRunDateTimeString(Path runningFile) throws IOException {
     Optional<String> firstLine = Files.lines(runningFile).findFirst();
     if (!firstLine.isPresent()) {
-      throw new ApiException("Wrong date file format!");
+      throw new ApiException("Corrupted date file: " + runningFile);
     }
     return firstLine.get();
   }

@@ -41,14 +41,14 @@ public class IncrementalLoadDateStrategyTest {
   public void testRFA1aFormIncrementalLoadDateStrategy() {
     IncrementalLoadDateStrategy incrementalLoadDateStrategy = new RFA1aFormIncrementalLoadDateStrategy();
 
-    LocalDateTime calculatedTime0 = toLocalDateTime(incrementalLoadDateStrategy.calculate());
+    LocalDateTime calculatedTime0 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
     assertBefore(calculatedTime0, LocalDateTime.now().minusYears(99));
 
-    LocalDateTime calculatedTime1 = toLocalDateTime(incrementalLoadDateStrategy.calculate());
+    LocalDateTime calculatedTime1 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
     LocalDateTime now = LocalDateTime.now();
     assertBetween(calculatedTime1, now.minusMinutes(1), now);
 
-    LocalDateTime calculatedTime2 = toLocalDateTime(incrementalLoadDateStrategy.calculate());
+    LocalDateTime calculatedTime2 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
     assertAfter(calculatedTime2, calculatedTime1);
   }
 
@@ -56,14 +56,14 @@ public class IncrementalLoadDateStrategyTest {
   public void testFacilityIncrementalLoadDateStrategy() {
     IncrementalLoadDateStrategy incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
 
-    Date calculatedDate0 = incrementalLoadDateStrategy.calculate();
+    Date calculatedDate0 = incrementalLoadDateStrategy.calculateDate();
     assertThat(calculatedDate0, is(nullValue()));
 
-    LocalDateTime calculatedTime1 = toLocalDateTime(incrementalLoadDateStrategy.calculate());
+    LocalDateTime calculatedTime1 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
     LocalDateTime now = LocalDateTime.now();
     assertBetween(calculatedTime1, now.minusMinutes(1), now);
 
-    LocalDateTime calculatedTime2 = toLocalDateTime(incrementalLoadDateStrategy.calculate());
+    LocalDateTime calculatedTime2 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
     assertAfter(calculatedTime2, calculatedTime1);
   }
 
@@ -73,13 +73,13 @@ public class IncrementalLoadDateStrategyTest {
 
     LocalDate now = LocalDate.now();
 
-    LocalDate calculatedDate0 = toLocalDate(incrementalLoadDateStrategy.calculate());
+    LocalDate calculatedDate0 = toLocalDate(incrementalLoadDateStrategy.calculateDate());
     assertBefore(calculatedDate0, now.minusYears(99));
 
-    LocalDate calculatedDate1 = toLocalDate(incrementalLoadDateStrategy.calculate());
+    LocalDate calculatedDate1 = toLocalDate(incrementalLoadDateStrategy.calculateDate());
     assertBetween(calculatedDate1, now.minusDays(2), now);
 
-    LocalDate calculatedDate2 = toLocalDate(incrementalLoadDateStrategy.calculate());
+    LocalDate calculatedDate2 = toLocalDate(incrementalLoadDateStrategy.calculateDate());
     assertThat(calculatedDate2, is(equalTo(calculatedDate1)));
   }
 

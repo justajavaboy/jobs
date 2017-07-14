@@ -31,7 +31,7 @@ public final class LISFacilityIncrementalLoadDateStrategy extends BaseIncrementa
   }
 
   @Override
-  public Date calculate() {
+  public Date calculateDate() {
     try {
       LocalDate date = LocalDate.now();
       Path runningFile = Paths.get(getDateFileName());

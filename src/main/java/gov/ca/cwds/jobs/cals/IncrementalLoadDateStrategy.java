@@ -1,5 +1,6 @@
 package gov.ca.cwds.jobs.cals;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -7,9 +8,16 @@ import java.util.Date;
  * Calculates date for incremental load
  */
 public interface IncrementalLoadDateStrategy {
+
   /**
    * Must be called inside batch transaction
-   * @return date after
+   * @return date
    */
-  Date calculate();
+  LocalDateTime calculateLocalDateTime();
+
+  /**
+   * Must be called inside batch transaction
+   * @return date
+   */
+  Date calculateDate();
 }

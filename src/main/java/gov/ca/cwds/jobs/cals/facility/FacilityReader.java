@@ -44,8 +44,8 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
 
   @Override
   public void init() {
-    Date dateAfter = incrementalLoadDateStrategy.calculate();
-    Date lisDateAfter = lisIncrementalLoadDateStrategy.calculate();
+    Date dateAfter = incrementalLoadDateStrategy.calculateDate();
+    Date lisDateAfter = lisIncrementalLoadDateStrategy.calculateDate();
     fasSessionFactory.getCurrentSession().beginTransaction();
     lisSessionFactory.getCurrentSession().beginTransaction();
     cwsCmcSessionFactory.getCurrentSession().beginTransaction();
