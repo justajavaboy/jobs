@@ -3,3 +3,5 @@ elasticsearch.port: 9300
 elasticsearch.cluster: elasticsearch
 elasticsearch.alias: facilities
 elasticsearch.doctype: facility
+elasticsearch.xpack.user: elastic
+elasticsearch.xpack.password: changeme
