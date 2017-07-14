@@ -62,7 +62,9 @@ dependencies {
 	// compile group: "gov.ca.cwds.api", name: "api", version: "0.22.928"
 
 	// Exclude transitive dependencies.
-	compile ('gov.ca.cwds.api:api-core:0.24.259') {
+    //TODO: change after api-core merge.
+    //TODO: api-core branch: https://github.com/ca-cwds/api-core/tree/elastic-5.5.0-security
+	compile ('gov.ca.cwds.api:api-core:0.25') {
 	    exclude group: 'org.glassfish.jersey.core'
 	}
 	

@@ -29,6 +29,8 @@ import gov.ca.cwds.jobs.util.JobWriter;
 import gov.ca.cwds.jobs.util.elastic.ReplicatedElasticJobWriter;
 import java.io.File;
 import java.net.InetAddress;
+
+import gov.ca.cwds.jobs.util.elastic.XPackUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
@@ -36,8 +38,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 import org.hibernate.SessionFactory;
 
 /**
@@ -125,14 +125,9 @@ public class FacilityIndexerJob extends AbstractModule {
   private TransportClient createTransportClient(ElasticsearchConfiguration5x config) {
     Settings.Builder settings = Settings.builder()
             .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster());
-    if(config.getUser() != null && config.getPassword() != null) {
-      settings.put("xpack.security.user", config.getUser() + ":" + config.getPassword());
-      return new PreBuiltXPackTransportClient(settings.build());
-    }
-    else {
-      return new PreBuiltTransportClient(settings.build());
-    }
+    return XPackUtils.secureClient(config.getUser(), config.getPassword(), settings);
   }
+
 
   @Provides
   @Singleton
