@@ -1,14 +1,10 @@
 package gov.ca.cwds.jobs.cals.facility;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import gov.ca.cwds.cals.inject.CwsCmsDataAccessModule;
 import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
-import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCALSIndexerJob;
-import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,18 +35,11 @@ public final class FacilityIndexerJob extends BaseCALSIndexerJob<FacilityReader>
       LOGGER.warn(
           "usage: java -cp jobs.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob path/to/config/file.yaml");
     }
-    try {
-      final File configFile = new File(args[0]);
-      final Injector injector = Guice.createInjector(new FacilityIndexerJob(configFile));
-      Job job = injector.getInstance(Job.class);
-      job.run();
-    } catch (Exception e) {
-      LOGGER.fatal("ERROR: ", e.getMessage(), e);
-    }
+    new FacilityIndexerJob(args[0]).run();
   }
 
-  private FacilityIndexerJob(File config) {
-    super(config, FacilityReader.class);
+  private FacilityIndexerJob(String configFileName) {
+    super(configFileName, FacilityReader.class);
   }
 
   @Override

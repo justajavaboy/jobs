@@ -1,12 +1,8 @@
 package gov.ca.cwds.jobs.cals.rfa;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import gov.ca.cwds.cals.inject.CalsnsDataAccessModule;
 import gov.ca.cwds.cals.service.rfa.RFA1aFormsCollectionService;
-import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCALSIndexerJob;
-import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,19 +27,11 @@ public final class RFA1aFormIndexerJob extends BaseCALSIndexerJob<RFA1aFormReade
       LOGGER.warn(
           "usage: java -cp jobs.jar gov.ca.cwds.jobs.cals.rfa.RFA1aFormIndexerJob path/to/config/file.yaml");
     }
-
-    try {
-      final File configFile = new File(args[0]);
-      final Injector injector = Guice.createInjector(new RFA1aFormIndexerJob(configFile));
-      Job job = injector.getInstance(Job.class);
-      job.run();
-    } catch (Exception e) {
-      LOGGER.fatal("ERROR: ", e.getMessage(), e);
-    }
+    new RFA1aFormIndexerJob(args[0]).run();
   }
 
-  private RFA1aFormIndexerJob(File config) {
-    super(config, RFA1aFormReader.class);
+  private RFA1aFormIndexerJob(String configFileName) {
+    super(configFileName, RFA1aFormReader.class);
   }
 
   @Override

@@ -3,7 +3,9 @@ package gov.ca.cwds.jobs.cals;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import gov.ca.cwds.cals.inject.MappingModule;
@@ -14,7 +16,7 @@ import gov.ca.cwds.jobs.JobsException;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 import gov.ca.cwds.jobs.util.JobReader;
 import gov.ca.cwds.jobs.util.JobWriter;
-import gov.ca.cwds.jobs.util.elastic.ReplicatedElasticJobWriter;
+import gov.ca.cwds.jobs.util.elastic.CalsElasticJobWriter;
 import java.io.File;
 import java.net.InetAddress;
 import org.apache.logging.log4j.LogManager;
@@ -38,8 +40,8 @@ public abstract class BaseCALSIndexerJob<R extends JobReader> extends AbstractMo
 
   private Class<R> readerClass;
 
-  protected BaseCALSIndexerJob(File config, Class<R> readerClass) {
-    this.config = config;
+  protected BaseCALSIndexerJob(String configFileName, Class<R> readerClass) {
+    this.config = new File(configFileName);
     this.readerClass = readerClass;
   }
 
@@ -49,10 +51,20 @@ public abstract class BaseCALSIndexerJob<R extends JobReader> extends AbstractMo
     bind(JobReader.class).to(readerClass);
   }
 
+  protected final void run() {
+    try {
+      final Injector injector = Guice.createInjector(this);
+      Job job = injector.getInstance(Job.class);
+      job.run();
+    } catch (RuntimeException e) {
+      LOGGER.fatal("ERROR: ", e.getMessage(), e);
+    }
+  }
+
   @Provides
   @Inject
   public JobWriter provideItemWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
-    return new ReplicatedElasticJobWriter(elasticsearchDao, objectMapper);
+    return new CalsElasticJobWriter(elasticsearchDao, objectMapper);
   }
 
   @Provides

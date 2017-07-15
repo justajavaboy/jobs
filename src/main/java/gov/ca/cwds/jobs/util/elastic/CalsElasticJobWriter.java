@@ -13,9 +13,9 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author CWDS TPT-2
  */
-public class ReplicatedElasticJobWriter extends ElasticJobWriter<ChangedDTO> {
+public class CalsElasticJobWriter extends ElasticJobWriter<ChangedDTO> {
 
-  private static final Logger LOGGER = LogManager.getLogger(ReplicatedElasticJobWriter.class);
+  private static final Logger LOGGER = LogManager.getLogger(CalsElasticJobWriter.class);
 
   /**
    * Constructor.
@@ -23,7 +23,7 @@ public class ReplicatedElasticJobWriter extends ElasticJobWriter<ChangedDTO> {
    * @param elasticsearchDao ES DAO
    * @param objectMapper Jackson object mapper
    */
-  public ReplicatedElasticJobWriter(Elasticsearch5xDao elasticsearchDao,
+  public CalsElasticJobWriter(Elasticsearch5xDao elasticsearchDao,
       ObjectMapper objectMapper) {
     super(elasticsearchDao, objectMapper);
   }
