@@ -1,5 +1,5 @@
 elasticsearch.host: localhost
 elasticsearch.port: 9300
 elasticsearch.cluster: elasticsearch
-elasticsearch.alias: RFA1aForms
-elasticsearch.doctype: RFA1aForm
+elasticsearch.alias: rfa1aforms
+elasticsearch.doctype: rfa1aform
