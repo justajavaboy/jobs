@@ -1,8 +1,16 @@
 package gov.ca.cwds.jobs.cals.rfa;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Provides;
 import gov.ca.cwds.cals.inject.CalsnsDataAccessModule;
+import gov.ca.cwds.cals.service.dto.changed.ChangedRFA1aFormDTO;
 import gov.ca.cwds.cals.service.rfa.RFA1aFormsCollectionService;
+import gov.ca.cwds.data.es.Elasticsearch5xDao;
+import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCALSIndexerJob;
+import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
+import gov.ca.cwds.jobs.util.elastic.CalsElasticJobWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +26,7 @@ config/CALS_RFA1aForm-my.yaml}
  *
  * @author CWDS TPT-2
  */
-public final class RFA1aFormIndexerJob extends BaseCALSIndexerJob<RFA1aFormReader> {
+public final class RFA1aFormIndexerJob extends BaseCALSIndexerJob {
 
   private static final Logger LOGGER = LogManager.getLogger(RFA1aFormIndexerJob.class);
 
@@ -31,13 +39,36 @@ public final class RFA1aFormIndexerJob extends BaseCALSIndexerJob<RFA1aFormReade
   }
 
   private RFA1aFormIndexerJob(String configFileName) {
-    super(configFileName, RFA1aFormReader.class);
+    super(configFileName);
   }
 
   @Override
   protected void configure() {
     super.configure();
     install(new CalsnsDataAccessModule("calsns-hibernate.cfg.xml"));
+    bind(RFA1aFormReader.class);
+    bind(RFA1aFormElasticJobWriter.class);
     bind(RFA1aFormsCollectionService.class);
+  }
+
+  @Provides
+  @Inject
+  public Job provideJob(RFA1aFormReader jobReader, RFA1aFormElasticJobWriter jobWriter) {
+    return new AsyncReadWriteJob(jobReader, jobWriter);
+  }
+
+  static class RFA1aFormElasticJobWriter extends CalsElasticJobWriter<ChangedRFA1aFormDTO> {
+
+    /**
+     * Constructor.
+     *
+     * @param elasticsearchDao ES DAO
+     * @param objectMapper Jackson object mapper
+     */
+    @Inject
+    public RFA1aFormElasticJobWriter(Elasticsearch5xDao elasticsearchDao,
+        ObjectMapper objectMapper) {
+      super(elasticsearchDao, objectMapper);
+    }
   }
 }

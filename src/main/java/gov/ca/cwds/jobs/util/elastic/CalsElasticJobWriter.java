@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author CWDS TPT-2
  */
-public class CalsElasticJobWriter extends ElasticJobWriter<ChangedDTO> {
+public class CalsElasticJobWriter<T extends ChangedDTO<?>> extends ElasticJobWriter<T> {
 
   private static final Logger LOGGER = LogManager.getLogger(CalsElasticJobWriter.class);
 
@@ -29,7 +29,7 @@ public class CalsElasticJobWriter extends ElasticJobWriter<ChangedDTO> {
   }
 
   @Override
-  public void write(List<ChangedDTO> items) throws Exception {
+  public void write(List<T> items) throws Exception {
     items.stream().forEach(item -> {
       try {
         RecordChangeOperation recordChangeOperation = item.getRecordChangeOperation();

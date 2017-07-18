@@ -1,10 +1,18 @@
 package gov.ca.cwds.jobs.cals.facility;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Provides;
 import gov.ca.cwds.cals.inject.CwsCmsDataAccessModule;
 import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
+import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
+import gov.ca.cwds.data.es.Elasticsearch5xDao;
+import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCALSIndexerJob;
+import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
+import gov.ca.cwds.jobs.util.elastic.CalsElasticJobWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,7 +32,7 @@ config/facility.yaml}
  *
  * @author CWDS TPT-2
  */
-public final class FacilityIndexerJob extends BaseCALSIndexerJob<FacilityReader> {
+public final class FacilityIndexerJob extends BaseCALSIndexerJob {
 
   private static final Logger LOGGER = LogManager.getLogger(FacilityIndexerJob.class);
 
@@ -39,7 +47,7 @@ public final class FacilityIndexerJob extends BaseCALSIndexerJob<FacilityReader>
   }
 
   private FacilityIndexerJob(String configFileName) {
-    super(configFileName, FacilityReader.class);
+    super(configFileName);
   }
 
   @Override
@@ -48,6 +56,28 @@ public final class FacilityIndexerJob extends BaseCALSIndexerJob<FacilityReader>
     install(new CwsCmsDataAccessModule("jobs-cms-hibernate.cfg.xml"));
     install(new LisDataAccessModule("lis-hibernate.cfg.xml"));
     install(new FasDataAccessModule("fas-hibernate.cfg.xml"));
+    bind(FacilityReader.class);
+    bind(FacilityElasticJobWriter.class);
     bind(ChangedFacilityService.class);
+  }
+
+  @Provides
+  @Inject
+  public Job provideJob(FacilityReader jobReader, FacilityElasticJobWriter jobWriter) {
+    return new AsyncReadWriteJob(jobReader, jobWriter);
+  }
+
+  static class FacilityElasticJobWriter extends CalsElasticJobWriter<ChangedFacilityDTO> {
+
+    /**
+     * Constructor.
+     *
+     * @param elasticsearchDao ES DAO
+     * @param objectMapper Jackson object mapper
+     */
+    @Inject
+    FacilityElasticJobWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
+      super(elasticsearchDao, objectMapper);
+    }
   }
 }

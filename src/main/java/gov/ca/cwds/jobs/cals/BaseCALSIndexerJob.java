@@ -13,10 +13,6 @@ import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.es.ElasticsearchConfiguration5x;
 import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.JobsException;
-import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
-import gov.ca.cwds.jobs.util.JobReader;
-import gov.ca.cwds.jobs.util.JobWriter;
-import gov.ca.cwds.jobs.util.elastic.CalsElasticJobWriter;
 import java.io.File;
 import java.net.InetAddress;
 import org.apache.logging.log4j.LogManager;
@@ -32,23 +28,19 @@ import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 /**
  * @author CWDS TPT-2
  */
-public abstract class BaseCALSIndexerJob<R extends JobReader> extends AbstractModule {
+public abstract class BaseCALSIndexerJob extends AbstractModule {
 
   private static final Logger LOGGER = LogManager.getLogger(BaseCALSIndexerJob.class);
 
   private File config;
 
-  private Class<R> readerClass;
-
-  protected BaseCALSIndexerJob(String configFileName, Class<R> readerClass) {
+  protected BaseCALSIndexerJob(String configFileName) {
     this.config = new File(configFileName);
-    this.readerClass = readerClass;
   }
 
   @Override
   protected void configure() {
     install(new MappingModule());
-    bind(JobReader.class).to(readerClass);
   }
 
   protected final void run() {
@@ -59,18 +51,6 @@ public abstract class BaseCALSIndexerJob<R extends JobReader> extends AbstractMo
     } catch (RuntimeException e) {
       LOGGER.fatal("ERROR: ", e.getMessage(), e);
     }
-  }
-
-  @Provides
-  @Inject
-  public JobWriter provideItemWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
-    return new CalsElasticJobWriter(elasticsearchDao, objectMapper);
-  }
-
-  @Provides
-  @Inject
-  public Job provideJob(JobReader jobReader, JobWriter jobWriter) {
-    return new AsyncReadWriteJob(jobReader, jobWriter);
   }
 
   @Provides
