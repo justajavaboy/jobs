@@ -36,8 +36,6 @@ public final class FacilityIndexerJob extends BaseCALSIndexerJob {
 
   private static final Logger LOGGER = LogManager.getLogger(FacilityIndexerJob.class);
 
-  // todo tests, run javadoc, sonar
-
   public static void main(String[] args) {
     if (args.length == 0) {
       LOGGER.warn(

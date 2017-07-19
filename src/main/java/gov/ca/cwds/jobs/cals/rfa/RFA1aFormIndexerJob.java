@@ -19,9 +19,9 @@ import org.apache.logging.log4j.Logger;
  *
  * <pre>
  * {@code run script: $ java -DDB_CALSNS_JDBC_URL="jdbc:postgresql://192.168.99.100:5432/?currentSchema=calsns" \
--DDB_CALSNS_USER="postgres_data" -DDB_CALSNS_PASSWORD="postgres_data" \
+-DDB_CALSNS_USER="postgres_data" -DDB_CALSNS_PASSWORD="CHANGEME" \
 -cp build/libs/DocumentIndexerJob-0.24.jar gov.ca.cwds.jobs.cals.rfa.RFA1aFormIndexerJob \
-config/CALS_RFA1aForm-my.yaml}
+config/CALS_RFA1aForm.yaml}
  * </pre>
  *
  * @author CWDS TPT-2
