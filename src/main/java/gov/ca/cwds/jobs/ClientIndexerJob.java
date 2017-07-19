@@ -43,6 +43,11 @@ public class ClientIndexerJob extends BasePersonIndexerJob<ReplicatedClient> {
   }
 
   @Override
+  protected boolean isSensitive(ReplicatedClient t) {
+    return !(t.getSensitivityIndicator() != null && "N".equals(t.getSensitivityIndicator()));
+  }
+
+  @Override
   protected List<Pair<String, String>> getPartitionRanges() {
     List<Pair<String, String>> ret = new ArrayList<>();
     ret.add(Pair.of(" ", "B3bMRWu8NV"));
@@ -74,7 +79,7 @@ public class ClientIndexerJob extends BasePersonIndexerJob<ReplicatedClient> {
     try {
       runJob(ClientIndexerJob.class, args);
     } catch (JobsException e) {
-      LOGGER.error("STOPPING BATCH: " + e.getMessage(), e);
+      LOGGER.fatal("STOPPING BATCH: " + e.getMessage(), e);
       throw e;
     }
   }

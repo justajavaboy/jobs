@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.hibernate.SessionFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -234,6 +235,26 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
   }
 
   /**
+   * Filter sensitive records.
+   * 
+   * @param t bean to check
+   * @return true if sensitive
+   */
+  protected boolean isSensitive(T t) {
+    return false;
+  }
+
+  /**
+   * 
+   * @param id primary key
+   * @return bulk delete request
+   * @throws JsonProcessingException unable to parse
+   */
+  public DeleteRequest bulkDelete(String id) throws JsonProcessingException {
+    return new DeleteRequest("people", "person", id);
+  }
+
+  /**
    * Fetch all records for the next batch run, either by bucket or last successful run date.
    * 
    * @param lastSuccessfulRunTime last time the batch ran successfully.
@@ -260,7 +281,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
                 pers.getSsn(), pers.getClass().getName(), mapper.writeValueAsString(p));
 
             // Bulk indexing! MUCH faster than indexing one doc at a time.
-            bp.add(esDao.bulkAdd(mapper, esp.getId(), esp));
+            bp.add(
+                isSensitive(p) ? bulkDelete(esp.getId()) : esDao.bulkAdd(mapper, esp.getId(), esp));
           } catch (JsonProcessingException e) {
             throw new JobsException("JSON error", e);
           }
