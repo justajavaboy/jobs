@@ -245,6 +245,16 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
   }
 
   /**
+   * Mark records for deletion.
+   * 
+   * @param t bean to check
+   * @return true if marked for deletion
+   */
+  protected boolean isDelete(T t) {
+    return false;
+  }
+
+  /**
    * 
    * @param id primary key
    * @return bulk delete request
@@ -281,8 +291,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
                 pers.getSsn(), pers.getClass().getName(), mapper.writeValueAsString(p));
 
             // Bulk indexing! MUCH faster than indexing one doc at a time.
-            bp.add(
-                isSensitive(p) ? bulkDelete(esp.getId()) : esDao.bulkAdd(mapper, esp.getId(), esp));
+            bp.add(isSensitive(p) || isDelete(p) ? bulkDelete(esp.getId())
+                : esDao.bulkAdd(mapper, esp.getId(), esp));
           } catch (JsonProcessingException e) {
             throw new JobsException("JSON error", e);
           }
@@ -343,8 +353,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
               pers.getSsn(), pers.getClass().getName(), mapper.writeValueAsString(p));
 
           // Bulk indexing! MUCH faster than indexing one doc at a time.
-          bp.add(
-              isSensitive(p) ? bulkDelete(esp.getId()) : esDao.bulkAdd(mapper, esp.getId(), esp));
+          bp.add(isSensitive(p) || isDelete(p) ? bulkDelete(esp.getId())
+              : esDao.bulkAdd(mapper, esp.getId(), esp));
         } catch (JsonProcessingException e) {
           throw new JobsException("JSON error", e);
         }
@@ -494,4 +504,3 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
   }
 
 }
-

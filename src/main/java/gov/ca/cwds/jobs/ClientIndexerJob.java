@@ -13,6 +13,7 @@ import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
@@ -45,6 +46,11 @@ public class ClientIndexerJob extends BasePersonIndexerJob<ReplicatedClient> {
   @Override
   protected boolean isSensitive(ReplicatedClient t) {
     return !(t.getSensitivityIndicator() != null && "N".equals(t.getSensitivityIndicator()));
+  }
+
+  @Override
+  protected boolean isDelete(ReplicatedClient t) {
+    return t.getReplicationOperation() == CmsReplicationOperation.D;
   }
 
   @Override
