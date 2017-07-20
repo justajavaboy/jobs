@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.dao.cms.ReplicatedClientDao;
+import gov.ca.cwds.dao.cms.ReplicatedClientR1Dao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 
 /**
@@ -25,7 +25,7 @@ public class ClientIndexerJobTest {
 
   @Test
   public void instantiation() throws Exception {
-    ReplicatedClientDao clientDao = null;
+    ReplicatedClientR1Dao clientDao = null;
     ElasticsearchDao elasticsearchDao = null;
     String lastJobRunTimeFilename = null;
     ObjectMapper mapper = null;

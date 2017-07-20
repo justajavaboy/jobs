@@ -21,7 +21,7 @@ import com.google.inject.Provides;
 import gov.ca.cwds.dao.DocumentMetadataDao;
 import gov.ca.cwds.dao.cms.DocumentMetadataDaoImpl;
 import gov.ca.cwds.dao.cms.ReplicatedAttorneyDao;
-import gov.ca.cwds.dao.cms.ReplicatedClientDao;
+import gov.ca.cwds.dao.cms.ReplicatedClientR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualDao;
 import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
@@ -46,7 +46,7 @@ import gov.ca.cwds.data.persistence.cms.ReferralClient;
 import gov.ca.cwds.data.persistence.cms.StaffPerson;
 import gov.ca.cwds.data.persistence.cms.SystemCodeDaoFileImpl;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
@@ -119,12 +119,12 @@ public class JobsGuiceInjector extends AbstractModule {
             .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
             .addAnnotatedClass(ReplicatedServiceProvider.class).addAnnotatedClass(StaffPerson.class)
             .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
-            .addAnnotatedClass(ReplicatedClient.class).buildSessionFactory());
+            .addAnnotatedClass(ReplicatedClientR1.class).buildSessionFactory());
 
     // Register required DAO classes.
     bind(DocumentMetadataDao.class).to(DocumentMetadataDaoImpl.class);
 
-    bind(ReplicatedClientDao.class);
+    bind(ReplicatedClientR1Dao.class);
     bind(ReplicatedReporterDao.class);
     bind(ReplicatedAttorneyDao.class);
     bind(ReplicatedCollateralIndividualDao.class);
