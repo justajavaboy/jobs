@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.dao.cms.ReplicatedAttorneyDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney;
+import gov.ca.cwds.jobs.config.StaticSessionFactory;
 
 /**
  * 
@@ -33,8 +34,7 @@ public class AttorneyIndexerJobTest {
 
   @BeforeClass
   public static void beforeClass() {
-    sessionFactory =
-        new Configuration().configure("test-cms-hibernate.cfg.xml").buildSessionFactory();
+    sessionFactory = StaticSessionFactory.getSessionFactory();
     attorneyDao = new ReplicatedAttorneyDao(sessionFactory);
   }
 
@@ -73,15 +73,14 @@ public class AttorneyIndexerJobTest {
 
   @Test
   public void testfindAllUpdatedAfterNamedQueryExists() throws Exception {
-    Query query = session.getNamedQuery(
-        "gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney.findAllUpdatedAfter");
+    Query query =
+        session.getNamedQuery(ReplicatedAttorney.class.getName() + ".findAllUpdatedAfter");
     assertThat(query, is(notNullValue()));
   }
 
   @Test
   public void testFindAllByBucketExists() throws Exception {
-    Query query = session
-        .getNamedQuery("gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney.findAllByBucket");
+    Query query = session.getNamedQuery(ReplicatedAttorney.class.getName() + ".findAllByBucket");
     assertThat(query, is(notNullValue()));
   }
 

@@ -15,8 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.NamedNativeQueries;
 import org.hibernate.annotations.NamedNativeQuery;
@@ -28,9 +26,10 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientAddress;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
+import gov.ca.cwds.data.std.ApiObjectIdentity;
 
 /**
- * Entity bean for Materialized Query Table (MQT), ES_CLIENT_ADDRESS.
+ * Entity bean for view VW_LST_CLIENT_ADDRESS.
  * 
  * <p>
  * Implements {@link ApiGroupNormalizer} and converts to {@link ReplicatedClient}.
@@ -39,19 +38,36 @@ import gov.ca.cwds.data.std.ApiGroupNormalizer;
  * @author CWDS API Team
  */
 @Entity
-@Table(name = "ES_CLIENT_ADDRESS")
+@Table(name = "VW_LST_CLIENT_ADDRESS")
 @NamedNativeQueries({
     // #145240149: find ALL client/address recs affected by changes.
     @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfter",
-        query = "SELECT x.* FROM {h-schema}ES_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
-            + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}ES_CLIENT_ADDRESS x1 "
+        query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
+            + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
             + "WHERE x1.LAST_CHG > CAST(:after AS TIMESTAMP) "
             + ") ORDER BY CLT_IDENTIFIER FOR READ ONLY ",
+        resultClass = EsClientAddress.class, readOnly = true),
+
+    @NamedNativeQuery(
+        name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithUnlimitedAccess",
+        query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
+            + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
+            + "WHERE x1.LAST_CHG > CAST(:after AS TIMESTAMP) "
+            + ") AND x.CLT_SENSTV_IND = 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY ",
+        resultClass = EsClientAddress.class, readOnly = true),
+
+    @NamedNativeQuery(
+        name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithLimitedAccess",
+        query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
+            + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
+            + "WHERE x1.LAST_CHG > CAST(:after AS TIMESTAMP) "
+            + ") AND x.CLT_SENSTV_IND != 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY ",
         resultClass = EsClientAddress.class, readOnly = true)})
-public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<ReplicatedClient> {
+public class EsClientAddress extends ApiObjectIdentity
+    implements PersistentObject, ApiGroupNormalizer<ReplicatedClient> {
 
   /**
-   * Default.
+   * Default serialization.
    */
   private static final long serialVersionUID = 1L;
 
@@ -454,7 +470,8 @@ public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<Rep
    */
   public static EsClientAddress extract(ResultSet rs) throws SQLException {
     EsClientAddress ret = new EsClientAddress();
-
+    ret.setCltSensitivityIndicator(rs.getString("CLT_SENSTV_IND"));
+    ret.setCltSoc158SealedClientIndicator(rs.getString("CLT_SOC158_IND"));
     ret.setCltAdjudicatedDelinquentIndicator(rs.getString("CLT_ADJDEL_IND"));
     ret.setCltAdoptionStatusCode(rs.getString("CLT_ADPTN_STCD"));
     ret.setCltAlienRegistrationNumber(rs.getString("CLT_ALN_REG_NO"));
@@ -512,9 +529,8 @@ public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<Rep
     ret.setCltReligionType(rs.getShort("CLT_RLGN_TPC"));
     ret.setCltSecondaryLanguageType(rs.getShort("CLT_S_LANG_TC"));
     ret.setCltSensitiveHlthInfoOnFileIndicator(rs.getString("CLT_SNTV_HLIND"));
-    ret.setCltSensitivityIndicator(rs.getString("CLT_SENSTV_IND"));
     ret.setCltSoc158PlacementCode(rs.getString("CLT_SOCPLC_CD"));
-    ret.setCltSoc158SealedClientIndicator(rs.getString("CLT_SOC158_IND"));
+
     ret.setCltSocialSecurityNumChangedCode(rs.getString("CLT_SSN_CHG_CD"));
     ret.setCltSocialSecurityNumber(rs.getString("CLT_SS_NO"));
     ret.setCltSuffixTitleDescription(rs.getString("CLT_SUFX_TLDSC"));
@@ -563,7 +579,6 @@ public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<Rep
     ret.setAdrStreetSuffixCd(rs.getShort("ADR_ST_SFX_C"));
     ret.setAdrUnitDesignationCd(rs.getShort("ADR_UNT_DSGC"));
     ret.setAdrUnitNumber(rs.getString("ADR_UNIT_NO"));
-
     return ret;
   }
 
@@ -649,6 +664,7 @@ public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<Rep
       ret.setTribalMembrshpVerifctnIndicatorVar(getCltTribalMembrshpVerifctnIndicatorVar());
       ret.setUnemployedParentCode(getCltUnemployedParentCode());
       ret.setZippyCreatedIndicator(getCltZippyCreatedIndicator());
+      ret.setReplicationDate(getCltReplicationDate());
     }
 
     // Client Address:
@@ -691,6 +707,8 @@ public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<Rep
         adr.setUnitNumber(getAdrUnitNumber());
         adr.setZip(getAdrZip());
         adr.setZip4(getAdrZip4());
+        adr.setReplicationDate(getAdrReplicationDate());
+        adr.setReplicationOperation(getAdrReplicationOperation());
         rca.addAddress(adr);
       }
     }
@@ -1582,26 +1600,6 @@ public class EsClientAddress implements PersistentObject, ApiGroupNormalizer<Rep
   @Override
   public Serializable getPrimaryKey() {
     return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public final int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this, false);
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public final boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
   public Date getLastChange() {

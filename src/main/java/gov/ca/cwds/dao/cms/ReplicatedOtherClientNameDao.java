@@ -6,7 +6,6 @@ import com.google.inject.Inject;
 
 import gov.ca.cwds.data.BaseDaoImpl;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
-import gov.ca.cwds.data.std.BatchBucketDao;
 import gov.ca.cwds.inject.CmsSessionFactory;
 
 /**
@@ -16,8 +15,7 @@ import gov.ca.cwds.inject.CmsSessionFactory;
  * @see CmsSessionFactory
  * @see SessionFactory
  */
-public class ReplicatedOtherClientNameDao extends BaseDaoImpl<ReplicatedOtherClientName>
-    implements BatchBucketDao<ReplicatedOtherClientName> {
+public class ReplicatedOtherClientNameDao extends BaseDaoImpl<ReplicatedOtherClientName> {
 
   /**
    * Constructor

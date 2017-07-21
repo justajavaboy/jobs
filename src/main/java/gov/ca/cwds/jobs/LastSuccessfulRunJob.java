@@ -13,8 +13,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.ca.cwds.jobs.util.JobLogUtils;
 
 /**
  * Abstract base class for all batch jobs based on last successful run time.
@@ -23,7 +25,7 @@ import org.apache.logging.log4j.Logger;
  */
 public abstract class LastSuccessfulRunJob implements Job {
 
-  private static final Logger LOGGER = LogManager.getLogger(LastSuccessfulRunJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LastSuccessfulRunJob.class);
 
   /**
    * Last run file date format. NOT thread-safe!
@@ -33,7 +35,7 @@ public abstract class LastSuccessfulRunJob implements Job {
   /**
    * Completion flag for fatal errors.
    */
-  protected boolean fatalError = false;
+  protected volatile boolean fatalError = false;
 
   private String lastRunTimeFilename;
 
@@ -71,30 +73,31 @@ public abstract class LastSuccessfulRunJob implements Job {
         ret = jobDateFormat.parse(br.readLine().trim());
       } catch (FileNotFoundException e) {
         fatalError = true;
-        LOGGER.error("Caught FileNotFoundException: {}", e.getMessage(), e);
-        throw new JobsException(e);
+        JobLogUtils.raiseError(LOGGER, e, "Caught FileNotFoundException: {}", e.getMessage());
       } catch (IOException e) {
         fatalError = true;
-        LOGGER.error("Caught IOException: {}", e.getMessage(), e);
-        throw new JobsException(e);
+        JobLogUtils.raiseError(LOGGER, e, "Caught IOException: {}", e.getMessage());
       } catch (ParseException e) {
         fatalError = true;
-        LOGGER.error("Caught ParseException: {}", e.getMessage(), e);
-        throw new JobsException(e);
+        JobLogUtils.raiseError(LOGGER, e, "Caught ParseException: {}", e.getMessage());
       }
     }
 
     return ret;
   }
 
-  private void writeLastSuccessfulRunTime(Date datetime) {
-    if (datetime != null && !StringUtils.isBlank(this.lastRunTimeFilename)) {
+  /**
+   * Write the timestamp IF the job succeeded.
+   * 
+   * @param datetime date and time to store
+   */
+  protected void writeLastSuccessfulRunTime(Date datetime) {
+    if (datetime != null && !StringUtils.isBlank(this.lastRunTimeFilename) && !fatalError) {
       try (BufferedWriter w = new BufferedWriter(new FileWriter(lastRunTimeFilename))) {
         w.write(jobDateFormat.format(datetime));
       } catch (IOException e) {
         fatalError = true;
-        LOGGER.error("Caught IOException: {}", e.getMessage(), e);
-        throw new JobsException("Unable to write timestamp parameter file", e);
+        JobLogUtils.raiseError(LOGGER, e, "Failed to write timestamp file: {}", e.getMessage());
       }
     }
   }

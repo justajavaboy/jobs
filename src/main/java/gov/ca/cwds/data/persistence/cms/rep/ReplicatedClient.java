@@ -1,10 +1,10 @@
 package gov.ca.cwds.data.persistence.cms.rep;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,10 +14,6 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.annotations.NamedNativeQueries;
 import org.hibernate.annotations.NamedNativeQuery;
 import org.hibernate.annotations.Type;
@@ -26,22 +22,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.BaseClient;
+import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.std.ApiAddressAware;
 import gov.ca.cwds.data.std.ApiMultipleAddressesAware;
 import gov.ca.cwds.data.std.ApiMultipleLanguagesAware;
 import gov.ca.cwds.data.std.ApiMultiplePhonesAware;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.data.std.ApiPhoneAware;
+import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
  * {@link PersistentObject} representing a Client as a {@link CmsReplicatedEntity} in the replicated
  * schema.
  * 
  * <p>
- * Entity class EsClientAddress for Materialized Query Table ES_CLIENT_ADDRESS now holds the named
- * queries below. These are left here for tracking purposes and will be removed in the near future.
+ * Entity class {@link EsClientAddress} for Materialized Query Table ES_CLIENT_ADDRESS now holds the
+ * named queries below. These are left here for tracking purposes and will be removed in the near
+ * future.
  * </p>
  * 
  * @author CWDS API Team
@@ -74,8 +75,7 @@ import gov.ca.cwds.data.std.ApiPhoneAware;
         query = "select {a.*}, {b.*}, {c.*} from {h-schema}CLIENT_T a "
             + "LEFT OUTER JOIN {h-schema}CL_ADDRT b ON a.IDENTIFIER = b.FKCLIENT_T and b.EFF_END_DT is null "
             + "LEFT OUTER JOIN {h-schema}ADDRS_T c ON b.FKADDRS_T = c.IDENTIFIER "
-            + "where a.SOC158_IND ='N' and a.SENSTV_IND = 'N' "
-            + "AND a.IDENTIFIER BETWEEN :min_id and :max_id for read only",
+            + "WHERE a.IDENTIFIER BETWEEN :min_id and :max_id for read only",
         resultClass = ReplicatedClient.class, readOnly = true,
         comment = "b,a.clientAddresses;c,b.addresses")})
 @Entity
@@ -152,16 +152,8 @@ public class ReplicatedClient extends BaseClient
   @JsonIgnore
   @Override
   public ApiAddressAware[] getAddresses() {
-    List<ApiAddressAware> ret = new ArrayList<>();
-    if (this.clientAddresses != null && !this.clientAddresses.isEmpty()) {
-      for (ReplicatedClientAddress clAddr : this.clientAddresses) {
-        for (ReplicatedAddress addr : clAddr.getAddresses()) {
-          ret.add(addr);
-        }
-      }
-    }
-
-    return ret.toArray(new ApiAddressAware[0]);
+    return clientAddresses.stream().flatMap(ca -> ca.addresses.stream())
+        .collect(Collectors.toList()).toArray(new ApiAddressAware[0]);
   }
 
   // ============================
@@ -171,18 +163,10 @@ public class ReplicatedClient extends BaseClient
   @JsonIgnore
   @Override
   public ApiPhoneAware[] getPhones() {
-    List<ApiPhoneAware> phones = new ArrayList<>();
-    if (this.clientAddresses != null && !this.clientAddresses.isEmpty()) {
-      for (ReplicatedClientAddress clAddr : this.clientAddresses) {
-        for (ReplicatedAddress addr : clAddr.getAddresses()) {
-          for (ApiPhoneAware phone : addr.getPhones()) {
-            phones.add(phone);
-          }
-        }
-      }
-    }
-
-    return phones.toArray(new ApiPhoneAware[0]);
+    // STREAMS.
+    return clientAddresses.stream().flatMap(ca -> ca.addresses.stream())
+        .flatMap(adr -> Arrays.stream(adr.getPhones())).collect(Collectors.toList())
+        .toArray(new ApiPhoneAware[0]);
   }
 
   // =======================
@@ -218,23 +202,10 @@ public class ReplicatedClient extends BaseClient
     return getId();
   }
 
-  // ==============
-  // IDENTITY:
-  // ==============
-
   @Override
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-  }
-
-  @Override
-  public final int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this, false);
-  }
-
-  @Override
-  public final boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
+  public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
+    return ElasticTransformer.createLegacyDescriptor(getId(), getReplicationDate(),
+        LegacyTable.CLIENT);
   }
 
 }

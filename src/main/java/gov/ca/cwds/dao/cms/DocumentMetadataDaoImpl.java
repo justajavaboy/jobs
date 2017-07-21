@@ -33,7 +33,7 @@ public class DocumentMetadataDaoImpl implements DocumentMetadataDao {
   @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(DocumentMetadataDaoImpl.class);
 
-  private static final String TIMESTAMP_FORMAT = "YYYY-MM-DD HH24:MI:SS";
+  private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH24:mm:ss";
 
   /**
    * WARNING: NOT thread safe!
@@ -63,9 +63,8 @@ public class DocumentMetadataDaoImpl implements DocumentMetadataDao {
     // TODO - abstract out transaction management.
     // See story #134542407.
     final Session session = sessionFactory.getCurrentSession();
-    Transaction txn = null;
+    Transaction txn = session.beginTransaction();
     try {
-      txn = session.beginTransaction();
       Query query = session.getNamedQuery("findByLastJobRunTimeMinusOneMinute")
           .setString("lastJobRunTime", dateFormat.format(lastJobRunTime));
       ImmutableList.Builder<DocumentMetadata> documentMetadatas = new ImmutableList.Builder<>();
@@ -73,9 +72,7 @@ public class DocumentMetadataDaoImpl implements DocumentMetadataDao {
       txn.commit();
       return documentMetadatas.build();
     } catch (HibernateException h) {
-      if (txn != null) {
-        txn.rollback();
-      }
+      txn.rollback();
       throw new DaoException(h);
     } finally {
       session.close();

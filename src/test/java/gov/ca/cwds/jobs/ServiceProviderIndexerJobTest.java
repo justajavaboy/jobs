@@ -1,13 +1,15 @@
 package gov.ca.cwds.jobs;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.util.List;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
+import gov.ca.cwds.jobs.config.StaticSessionFactory;
 
 /**
  * @author CWDS API Team
@@ -33,8 +36,9 @@ public class ServiceProviderIndexerJobTest {
 
   @BeforeClass
   public static void beforeClass() {
-    sessionFactory =
-        new Configuration().configure("test-cms-hibernate.cfg.xml").buildSessionFactory();
+    // sessionFactory =
+    // new Configuration().configure("test-cms-hibernate.cfg.xml").buildSessionFactory();
+    sessionFactory = StaticSessionFactory.getSessionFactory();
     serviceProviderDao = new ReplicatedServiceProviderDao(sessionFactory);
   }
 
@@ -78,5 +82,69 @@ public class ServiceProviderIndexerJobTest {
     assertThat(query, is(notNullValue()));
   }
 
-}
+  @Test
+  public void type() throws Exception {
+    assertThat(ServiceProviderIndexerJob.class, notNullValue());
+  }
 
+  @Test
+  public void instantiation() throws Exception {
+    ReplicatedServiceProviderDao dao = null;
+    ElasticsearchDao esDao = null;
+    String lastJobRunTimeFilename = null;
+    ObjectMapper mapper = null;
+    SessionFactory sessionFactory = null;
+    ServiceProviderIndexerJob target =
+        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+    assertThat(target, notNullValue());
+  }
+
+  @Test
+  public void getLegacySourceTable_Args__() throws Exception {
+    ReplicatedServiceProviderDao dao = null;
+    ElasticsearchDao esDao = null;
+    String lastJobRunTimeFilename = null;
+    ObjectMapper mapper = null;
+    SessionFactory sessionFactory = null;
+    ServiceProviderIndexerJob target =
+        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+    // given
+    // e.g. : given(mocked.called()).willReturn(1);
+    // when
+    String actual = target.getLegacySourceTable();
+    // then
+    // e.g. : verify(mocked).called();
+    String expected = "SVC_PVRT";
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPartitionRanges_Args__() throws Exception {
+    ReplicatedServiceProviderDao dao = null;
+    ElasticsearchDao esDao = null;
+    String lastJobRunTimeFilename = null;
+    ObjectMapper mapper = null;
+    SessionFactory sessionFactory = null;
+    ServiceProviderIndexerJob target =
+        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+    // given
+    // e.g. : given(mocked.called()).willReturn(1);
+    // when
+    List actual = target.getPartitionRanges();
+    // then
+    // e.g. : verify(mocked).called();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  // @Test
+  public void main_Args__StringArray() throws Exception {
+    // given
+    String[] args = new String[] {};
+    // e.g. : given(mocked.called()).willReturn(1);
+    // when
+    ServiceProviderIndexerJob.main(args);
+    // then
+    // e.g. : verify(mocked).called();
+  }
+
+}

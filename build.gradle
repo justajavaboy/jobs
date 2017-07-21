@@ -19,12 +19,12 @@ apply plugin: 'jacoco'
 
 project.ext {
     log4jVersion = "2.8"
-    elasticsearchVersion = "5.3.2"
+    elasticsearchVersion = "5.5.0"
     calsApiVersion =  '3.4-SNAPSHOT'
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
 }
 
-version = 0.24
+version = 0.27
 
 repositories {
     mavenLocal()
@@ -43,11 +43,22 @@ dependencies {
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: elasticsearchVersion
     compile group: 'org.elasticsearch.client', name: 'transport', version: elasticsearchVersion
     compile "org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion
+    compile ("org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion)
+    compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
 
 	compile group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
+
+	// LOGGING:
 	compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4jVersion
   	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4jVersion
-  	
+	compile group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4jVersion
+	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+	compile group: 'org.slf4j', name: 'slf4j-ext', version: '1.7.25'
+	// compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+
+    // CALS API for CALS Jobs
+    compile group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion
+
 	compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
 	compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
 	compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
@@ -57,20 +68,23 @@ dependencies {
 	// compile group: "gov.ca.cwds.api", name: "api", version: "0.22.928"
 
 	// Exclude transitive dependencies.
-	compile ('gov.ca.cwds.api:api-core:0.24.259') {
+	compile ('gov.ca.cwds.api:api-core:0.27.374') {
 	    exclude group: 'org.glassfish.jersey.core'
+        exclude group: 'ch.qos.logback'
+        exclude group: 'org.slf4j'
 	}
 	
-    compile group: "org.glassfish.jersey.ext", name: "jersey-declarative-linking", version: "2.23.2"
+  compile group: "org.glassfish.jersey.ext", name: "jersey-declarative-linking", version: "2.23.2"
 	compile group: "javax.el", name: "javax.el-api", version: "2.2.4"
 	compile group: "org.glassfish.web", name: "javax.el", version: "2.2.4"
 	compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
-	compile group: 'org.slf4j', name: 'slf4j-ext', version: '1.7.22'
 	compile 'com.fasterxml.jackson.module:jackson-module-guice:2.8.2'
     compile group: 'org.json', name: 'json', version: '20090211'
-    
+
+	// compile 'com.landawn:abacus-util:0.9.67'
+
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
     testCompile group: 'junit', name: 'junit', version: '4.+'
@@ -112,6 +126,15 @@ publishing {
       url "file:///usr/share/nginx/html/maven2"
     }
   }
+}
+
+task printProps << {
+    println System.properties['DB_CMS_JDBC_URL']
+}
+
+tasks.withType(Test) {
+    enableAssertions = true
+    systemProperties project.properties.subMap(["DB_CMS_JDBC_URL", "DB_CMS_PASSWORD", "DB_CMS_SCHEMA", "DB_CMS_USER", "DB_NS_JDBC_URL", "DB_NS_PASSWORD", "DB_NS_SCHEMA", "DB_NS_USER"])
 }
 
 jacocoTestReport {

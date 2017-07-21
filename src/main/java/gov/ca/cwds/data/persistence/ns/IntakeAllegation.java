@@ -4,8 +4,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonAllegation;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import gov.ca.cwds.data.es.ElasticSearchPersonAllegation;
+import gov.ca.cwds.data.es.ElasticSearchPersonNestedPerson;
 import gov.ca.cwds.data.persistence.PersistentObject;
+import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
  * Represents a screening allegation.
@@ -48,11 +54,31 @@ public class IntakeAllegation implements PersistentObject {
     ret.setAllegationDescription(allegationDescription);
     ret.setDispositionDescription(dispositionDescription);
     ret.setId(id);
+    ret.setLegacyId(id);
+    ret.setLegacyDescriptor(
+        ElasticTransformer.createLegacyDescriptor(id, null, LegacyTable.ALLEGATION));
+
+    ElasticSearchPersonNestedPerson perpet = new ElasticSearchPersonNestedPerson();
+    perpet.setId(this.perpetrator.getId());
+    perpet.setFirstName(this.perpetrator.getFirstName());
+    perpet.setLastName(this.perpetrator.getLastName());
+    perpet.setLegacyDescriptor(
+        ElasticTransformer.createLegacyDescriptor(this.perpetrator.getLegacyId(),
+            this.perpetrator.getLegacyLastUpdated(), LegacyTable.CLIENT));
+    ret.setPerpetrator(perpet);
 
     ret.setPerpetratorFirstName(this.perpetrator.getFirstName());
     ret.setPerpetratorId(this.perpetrator.getId());
     ret.setPerpetratorLastName(this.perpetrator.getLastName());
     ret.setPerpetratorLegacyClientId(this.perpetrator.getLegacyId());
+
+    ElasticSearchPersonNestedPerson vict = new ElasticSearchPersonNestedPerson();
+    vict.setId(this.victim.getId());
+    vict.setFirstName(this.victim.getFirstName());
+    vict.setLastName(this.victim.getLastName());
+    vict.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(this.victim.getLegacyId(),
+        this.victim.getLegacyLastUpdated(), LegacyTable.CLIENT));
+    ret.setVictim(vict);
 
     ret.setVictimFirstName(this.victim.getFirstName());
     ret.setVictimId(this.victim.getId());
@@ -113,6 +139,26 @@ public class IntakeAllegation implements PersistentObject {
 
   public void setPerpetrator(IntakeParticipant perpetrator) {
     this.perpetrator = perpetrator;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public final int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public final boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

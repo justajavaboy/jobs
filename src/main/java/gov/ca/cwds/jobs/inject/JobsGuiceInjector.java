@@ -4,21 +4,22 @@ import java.io.File;
 import java.net.InetAddress;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.hibernate.Interceptor;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
+import gov.ca.cwds.dao.NeutronReferentialIntegrityInterceptor;
 import gov.ca.cwds.dao.cms.BatchBucket;
 import gov.ca.cwds.dao.cms.ReplicatedAttorneyDao;
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
@@ -35,15 +36,16 @@ import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
 import gov.ca.cwds.dao.cms.ReplicatedSubstituteCareProviderDao;
 import gov.ca.cwds.dao.ns.EsIntakeScreeningDao;
 import gov.ca.cwds.data.CmsSystemCodeSerializer;
+import gov.ca.cwds.data.cms.SystemCodeDao;
+import gov.ca.cwds.data.cms.SystemMetaDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.data.persistence.cms.ApiSystemCodeCache;
-import gov.ca.cwds.data.persistence.cms.ApiSystemCodeDao;
-import gov.ca.cwds.data.persistence.cms.CmsSystemCodeCacheService;
+import gov.ca.cwds.data.persistence.cms.EsChildPersonCase;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
-import gov.ca.cwds.data.persistence.cms.EsPersonCase;
+import gov.ca.cwds.data.persistence.cms.EsParentPersonCase;
 import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.EsRelationship;
-import gov.ca.cwds.data.persistence.cms.SystemCodeDaoFileImpl;
+import gov.ca.cwds.data.persistence.cms.SystemCode;
+import gov.ca.cwds.data.persistence.cms.SystemMeta;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
@@ -60,8 +62,11 @@ import gov.ca.cwds.data.persistence.ns.EsIntakeScreening;
 import gov.ca.cwds.data.persistence.ns.IntakeScreening;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.inject.NsSessionFactory;
+import gov.ca.cwds.jobs.util.elastic.XPackUtils;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
 import gov.ca.cwds.rest.api.ApiException;
+import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
+import gov.ca.cwds.rest.services.cms.CachingSystemCodeService;
 
 /**
  * Guice dependency injection (DI), module which constructs and manages common class instances for
@@ -70,7 +75,8 @@ import gov.ca.cwds.rest.api.ApiException;
  * @author CWDS API Team
  */
 public class JobsGuiceInjector extends AbstractModule {
-  private static final Logger LOGGER = LogManager.getLogger(JobsGuiceInjector.class);
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobsGuiceInjector.class);
 
   private File esConfig;
   private String lastJobRunTimeFilename;
@@ -85,11 +91,11 @@ public class JobsGuiceInjector extends AbstractModule {
   /**
    * Usual constructor.
    * 
-   * @param esConfigFileLoc location of Elasticsearch configuration file
+   * @param esConfigFile location of Elasticsearch configuration file
    * @param lastJobRunTimeFilename location of last run file
    */
-  public JobsGuiceInjector(final File esConfigFileLoc, String lastJobRunTimeFilename) {
-    this.esConfig = esConfigFileLoc;
+  public JobsGuiceInjector(final File esConfigFile, String lastJobRunTimeFilename) {
+    this.esConfig = esConfigFile;
     this.lastJobRunTimeFilename =
         !StringUtils.isBlank(lastJobRunTimeFilename) ? lastJobRunTimeFilename : "";
   }
@@ -108,11 +114,13 @@ public class JobsGuiceInjector extends AbstractModule {
   @Override
   protected void configure() {
     // DB2 session factory:
+    final Interceptor interceptor = new NeutronReferentialIntegrityInterceptor();
     bind(SessionFactory.class).annotatedWith(CmsSessionFactory.class)
         .toInstance(new Configuration().configure("jobs-cms-hibernate.cfg.xml")
-            .addAnnotatedClass(BatchBucket.class).addAnnotatedClass(EsClientAddress.class)
-            .addAnnotatedClass(EsRelationship.class).addAnnotatedClass(EsPersonReferral.class)
-            .addAnnotatedClass(EsPersonCase.class).addAnnotatedClass(ReplicatedAttorney.class)
+            .setInterceptor(interceptor).addAnnotatedClass(BatchBucket.class)
+            .addAnnotatedClass(EsClientAddress.class).addAnnotatedClass(EsRelationship.class)
+            .addAnnotatedClass(EsPersonReferral.class).addAnnotatedClass(EsChildPersonCase.class)
+            .addAnnotatedClass(EsParentPersonCase.class).addAnnotatedClass(ReplicatedAttorney.class)
             .addAnnotatedClass(ReplicatedCollateralIndividual.class)
             .addAnnotatedClass(ReplicatedEducationProviderContact.class)
             .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
@@ -123,7 +131,8 @@ public class JobsGuiceInjector extends AbstractModule {
             .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
             .addAnnotatedClass(ReplicatedClient.class)
             .addAnnotatedClass(ReplicatedClientAddress.class)
-            .addAnnotatedClass(ReplicatedAddress.class).buildSessionFactory());
+            .addAnnotatedClass(ReplicatedAddress.class).addAnnotatedClass(SystemCode.class)
+            .addAnnotatedClass(SystemMeta.class).buildSessionFactory());
 
     // PostgreSQL session factory:
     bind(SessionFactory.class).annotatedWith(NsSessionFactory.class)
@@ -155,16 +164,26 @@ public class JobsGuiceInjector extends AbstractModule {
     // Required for annotation injection.
     bindConstant().annotatedWith(LastRunFile.class).to(this.lastJobRunTimeFilename);
 
-    // Register CMS system code translator.
-    bind(ApiSystemCodeDao.class).to(SystemCodeDaoFileImpl.class);
-    bind(ApiSystemCodeCache.class).to(CmsSystemCodeCacheService.class).asEagerSingleton();
-    bind(CmsSystemCodeSerializer.class).asEagerSingleton();
+    bind(SystemCodeDao.class);
+    bind(SystemMetaDao.class);
 
     // Only one instance of ES DAO.
     bind(ElasticsearchDao.class).asEagerSingleton();
+  }
 
-    // Static injection?
-    // requestStaticInjection(ElasticSearchPerson.class);
+  @Provides
+  public SystemCodeCache provideSystemCodeCache(SystemCodeDao systemCodeDao,
+      SystemMetaDao systemMetaDao) {
+    final long secondsToRefreshCache = 15 * 24 * 60 * (long) 60; // 15 days
+    SystemCodeCache systemCodeCache =
+        new CachingSystemCodeService(systemCodeDao, systemMetaDao, secondsToRefreshCache, false);
+    systemCodeCache.register();
+    return systemCodeCache;
+  }
+
+  @Provides
+  public CmsSystemCodeSerializer provideCmsSystemCodeSerializer(SystemCodeCache systemCodeCache) {
+    return new CmsSystemCodeSerializer(systemCodeCache);
   }
 
   /**
@@ -179,44 +198,22 @@ public class JobsGuiceInjector extends AbstractModule {
       LOGGER.warn("Create NEW ES client");
       try {
         final ElasticsearchConfiguration config = elasticSearchConfig();
-        client = new PreBuiltTransportClient(
-            Settings.builder().put("cluster.name", config.getElasticsearchCluster()).build());
+        Settings.Builder settings =
+            Settings.builder().put("cluster.name", config.getElasticsearchCluster());
+        client = XPackUtils.secureClient(config.getUser(), config.getPassword(), settings);
         client.addTransportAddress(
             new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
                 Integer.parseInt(config.getElasticsearchPort())));
       } catch (Exception e) {
         LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
+        if (client != null) {
+          client.close();
+        }
         throw new ApiException("Error initializing Elasticsearch client: " + e.getMessage(), e);
       }
     }
     return client;
   }
-
-  /**
-   * Instantiate the singleton ElasticSearch 2.x client on demand.
-   * 
-   * @return initialized singleton ElasticSearch client
-   */
-  // @Singleton
-  // @Provides
-  // public Client elasticsearchClient() {
-  // Client client = null;
-  // if (esConfig != null) {
-  // LOGGER.info("Create NEW ES client");
-  // try {
-  // final ElasticsearchConfiguration config = elasticSearchConfig();
-  // Settings settings = Settings.settingsBuilder()
-  // .put("cluster.name", config.getElasticsearchCluster()).build();
-  // client = TransportClient.builder().settings(settings).build().addTransportAddress(
-  // new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
-  // Integer.parseInt(config.getElasticsearchPort())));
-  // } catch (Exception e) {
-  // LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
-  // throw new ApiException("Error initializing Elasticsearch client: " + e.getMessage(), e);
-  // }
-  // }
-  // return client;
-  // }
 
   /**
    * Read Elasticsearch configuration on demand.

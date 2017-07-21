@@ -14,20 +14,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import gov.ca.cwds.dao.ApiLegacyAware;
 import gov.ca.cwds.dao.ApiScreeningAware;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonAddress;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonAny;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonNestedPerson;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonPhone;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonReporter;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonScreening;
+import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonSocialWorker;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonStaff;
+import gov.ca.cwds.data.es.ElasticSearchPersonAddress;
+import gov.ca.cwds.data.es.ElasticSearchPersonAny;
+import gov.ca.cwds.data.es.ElasticSearchPersonNestedPerson;
+import gov.ca.cwds.data.es.ElasticSearchPersonPhone;
+import gov.ca.cwds.data.es.ElasticSearchPersonReporter;
+import gov.ca.cwds.data.es.ElasticSearchPersonScreening;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiAddressAware;
 import gov.ca.cwds.data.std.ApiMultipleAddressesAware;
 import gov.ca.cwds.data.std.ApiMultiplePhonesAware;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.data.std.ApiPhoneAware;
+import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
  * Represents an Intake Participant or Person.
@@ -42,37 +45,13 @@ public class IntakeParticipant implements PersistentObject, ApiPersonAware,
    */
   private static final long serialVersionUID = 1L;
 
-  /**
-   * Types for {@link ElasticSearchPersonNestedPerson} child classes.
-   * 
-   * @author CWDS API Team
-   */
-  public enum EsPersonType {
-
-    /**
-     * For {@link ElasticSearchPersonReporter}.
-     */
-    REPORTER,
-
-    /**
-     * For {@link ElasticSearchPersonSocialWorker}.
-     */
-    SOCIAL_WORKER,
-
-    /**
-     * For {@link ElasticSearchPersonStaff}.
-     */
-    STAFF,
-
-    /**
-     * For {@link ElasticSearchPersonAny}.
-     */
-    ALL;
-  }
-
   private String id;
 
   private String legacyId;
+
+  private Date legacyLastUpdated;
+
+  private String legacyTable;
 
   private String firstName;
 
@@ -184,6 +163,12 @@ public class IntakeParticipant implements PersistentObject, ApiPersonAware,
   }
 
   @Override
+  public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
+    return ElasticTransformer.createLegacyDescriptor(legacyId, legacyLastUpdated,
+        LegacyTable.lookupByName(legacyTable));
+  }
+
+  @Override
   public ApiPhoneAware[] getPhones() {
     return phones.values().toArray(new ApiPhoneAware[0]);
   }
@@ -241,6 +226,7 @@ public class IntakeParticipant implements PersistentObject, ApiPersonAware,
     ret.setLastName(lastName);
     ret.setLegacyClientId(legacyId);
     ret.setId(id);
+    ret.setLegacyDescriptor(getLegacyDescriptor());
 
     return ret;
   }
@@ -279,4 +265,19 @@ public class IntakeParticipant implements PersistentObject, ApiPersonAware,
     this.phones = phones;
   }
 
+  public Date getLegacyLastUpdated() {
+    return legacyLastUpdated;
+  }
+
+  public void setLegacyLastUpdated(Date legacyLastUpdated) {
+    this.legacyLastUpdated = legacyLastUpdated;
+  }
+
+  public String getLegacyTable() {
+    return legacyTable;
+  }
+
+  public void setLegacyTable(String legacyTable) {
+    this.legacyTable = legacyTable;
+  }
 }

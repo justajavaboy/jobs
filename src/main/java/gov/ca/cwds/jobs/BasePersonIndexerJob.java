@@ -2,7 +2,6 @@ package gov.ca.cwds.jobs;
 
 import static gov.ca.cwds.data.persistence.cms.CmsPersistentObject.CMS_ID_LEN;
 
-import gov.ca.cwds.jobs.exception.JobsException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -15,21 +14,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.hibernate.HibernateException;
@@ -38,6 +42,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.query.NativeQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +55,6 @@ import com.google.inject.Injector;
 
 import gov.ca.cwds.dao.ApiLegacyAware;
 import gov.ca.cwds.dao.ApiMultiplePersonAware;
-import gov.ca.cwds.dao.ApiScreeningAware;
 import gov.ca.cwds.dao.cms.BatchBucket;
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.data.ApiTypedIdentifier;
@@ -57,40 +62,28 @@ import gov.ca.cwds.data.BaseDaoImpl;
 import gov.ca.cwds.data.DaoException;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ESOptionalCollection;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonAddress;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonPhone;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonScreening;
-import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.data.model.cms.JobResultSetAware;
 import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.data.persistence.cms.ApiSystemCodeCache;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicatedEntity;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
-import gov.ca.cwds.data.std.ApiAddressAware;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.data.std.ApiLanguageAware;
-import gov.ca.cwds.data.std.ApiMultipleAddressesAware;
-import gov.ca.cwds.data.std.ApiMultipleLanguagesAware;
-import gov.ca.cwds.data.std.ApiMultiplePhonesAware;
 import gov.ca.cwds.data.std.ApiPersonAware;
-import gov.ca.cwds.data.std.ApiPhoneAware;
-import gov.ca.cwds.inject.SystemCodeCache;
+import gov.ca.cwds.jobs.config.JobOptions;
+import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.inject.JobsGuiceInjector;
 import gov.ca.cwds.jobs.inject.LastRunFile;
-import gov.ca.cwds.jobs.transform.EntityNormalizer;
-import gov.ca.cwds.jobs.transform.JobTransformUtils;
 import gov.ca.cwds.jobs.util.JobLogUtils;
-import gov.ca.cwds.rest.api.domain.DomainChef;
-
-// import static org.elasticsearch.common.xcontent.XContentFactory.*;
+import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
+import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
+import gov.ca.cwds.jobs.util.transform.JobTransformUtils;
 
 /**
  * Base person batch job to load clients from CMS into ElasticSearch.
  * 
  * <p>
  * This class implements {@link AutoCloseable} and automatically closes common resources, such as
- * {@link CalsElasticsearchIndexerDao} and Hibernate {@link SessionFactory}.
+ * {@link ElasticsearchDao} and Hibernate {@link SessionFactory}.
  * </p>
  * 
  * <p>
@@ -113,7 +106,7 @@ import gov.ca.cwds.rest.api.domain.DomainChef;
 public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends ApiGroupNormalizer<?>>
     extends LastSuccessfulRunJob implements AutoCloseable, JobResultSetAware<M> {
 
-  private static final Logger LOGGER = LogManager.getLogger(BasePersonIndexerJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BasePersonIndexerJob.class);
 
   private static final ESOptionalCollection[] KEEP_COLLECTIONS =
       new ESOptionalCollection[] {ESOptionalCollection.NONE};
@@ -143,15 +136,14 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
           + "FROM {h-schema}THE_TABLE c ORDER BY c.THE_ID_COL) y ORDER BY y.rn "
           + ") z GROUP BY z.bucket FOR READ ONLY ";
 
-  private static ApiSystemCodeCache systemCodes;
-
   /**
    * Guice Injector used for all Job instances during the life of this batch JVM.
    */
   protected static Injector injector;
 
   /**
-   * Needed for unit tests where resources may not close properly.
+   * For unit tests where resources either may not close properly or where expensive resources
+   * should be mocked.
    */
   private static boolean testMode = false;
 
@@ -186,6 +178,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   protected AtomicInteger recsPrepared = new AtomicInteger(0);
 
   /**
+   * Running count of records prepared for bulk deletion.
+   */
+  protected AtomicInteger recsDeleted = new AtomicInteger(0);
+
+  /**
    * Running count of records before bulk indexing.
    */
   protected AtomicInteger recsBulkBefore = new AtomicInteger(0);
@@ -217,18 +214,25 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
 
   /**
    * Completion flag for <strong>Extract</strong> method {@link #threadExtractJdbc()}.
+   * <p>
+   * Volatile guarantees that changes to this flag become visible other threads (i.e., don't cache a
+   * copy of the flag in thread memory).
+   * </p>
    */
-  protected boolean doneExtract = false;
+  protected volatile boolean doneExtract = false;
 
   /**
    * Completion flag for <strong>Transform</strong> method {@link #threadTransform()}.
    */
-  protected boolean doneTransform = false;
+  protected volatile boolean doneTransform = false;
 
   /**
    * Completion flag for <strong>Load</strong> method {@link #threadLoad()}.
    */
-  protected boolean doneLoad = false;
+  protected volatile boolean doneLoad = false;
+
+  private final Lock lock;
+  private final Condition condition;
 
   // ======================
   // CONSTRUCTOR:
@@ -252,6 +256,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     this.esDao = esDao;
     this.mapper = mapper;
     this.sessionFactory = sessionFactory;
+
+    lock = new ReentrantLock();
+    condition = lock.newCondition();
+
+    java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
   }
 
   /**
@@ -260,17 +269,36 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * 
    * @return name of view or materialized query table or null if none
    */
-  public String getViewName() {
+  public String getInitialLoadViewName() {
+    return null;
+  }
+
+  /**
+   * Get initial load sql query
+   * 
+   * @param dbSchemaName The DB svhema name
+   * @return Inital load query
+   */
+  public String getInitialLoadQuery(String dbSchemaName) {
     return null;
   }
 
   /**
    * Optional method to customize JDBC ORDER BY clause on initial load.
    * 
-   * @return custom ORDER BY clause for JDBC
+   * @return custom ORDER BY clause for JDBC query
    */
   public String getJdbcOrderBy() {
-    return " ORDER BY x.clt_identifier ";
+    return null;
+  }
+
+  /**
+   * Determine if limited access records must be deleted from ES.
+   * 
+   * @return True if limited access records must be deleted from ES, false otherwise.
+   */
+  public boolean mustDeleteLimitedAccessRecords() {
+    return false;
   }
 
   /**
@@ -295,24 +323,13 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   }
 
   /**
-   * Log every N records.
-   * 
-   * @param cntr record count
-   * @param action action message (extract, transform, load, etc)
-   * @param args variable message arguments
-   * @see JobLogUtils
-   */
-  protected void logEvery(int cntr, String action, String... args) {
-    JobLogUtils.logEvery(LOGGER, cntr, action, args);
-  }
-
-  /**
    * Instantiate one Elasticsearch BulkProcessor per working thread.
    * 
    * @return Elasticsearch BulkProcessor
    */
   protected BulkProcessor buildBulkProcessor() {
     return BulkProcessor.builder(esDao.getClient(), new BulkProcessor.Listener() {
+
       @Override
       public void beforeBulk(long executionId, BulkRequest request) {
         recsBulkBefore.getAndAdd(request.numberOfActions());
@@ -330,11 +347,12 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
         recsBulkError.getAndIncrement();
         LOGGER.error("ERROR EXECUTING BULK", failure);
       }
+
     }).setBulkActions(ES_BULK_SIZE).setConcurrentRequests(0).setName("jobs_bp").build();
   }
 
   // ======================
-  // INJECTION:
+  // STATIC, INJECTION:
   // ======================
 
   /**
@@ -348,12 +366,17 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   protected static synchronized Injector buildInjector(final JobOptions opts) throws JobsException {
     if (injector == null) {
       try {
-        injector = Guice
-            .createInjector(new JobsGuiceInjector(new File(opts.esConfigLoc), opts.lastRunLoc));
+        injector = Guice.createInjector(
+            new JobsGuiceInjector(new File(opts.getEsConfigLoc()), opts.getLastRunLoc()));
+
+        /**
+         * Initialize system code cache
+         */
+        injector.getInstance(gov.ca.cwds.rest.api.domain.cms.SystemCodeCache.class);
+
       } catch (CreationException e) {
-        final String msg = MessageFormat.format("Unable to create dependencies {}", e.getMessage());
-        LOGGER.fatal(msg, e);
-        throw new JobsException(msg, e);
+        throw JobLogUtils.buildException(LOGGER, e, "FAILED TO BUILD INJECTOR!: {}",
+            e.getMessage());
       }
     }
 
@@ -377,9 +400,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       ret.setOpts(opts);
       return ret;
     } catch (CreationException e) {
-      final String msg = MessageFormat.format("UNABLE TO CREATE DEPENDENCIES! {}", e.getMessage());
-      LOGGER.error(msg, e);
-      throw new JobsException(msg, e);
+      throw JobLogUtils.buildException(LOGGER, e, "FAILED TO CREATE JOB!: {}", e.getMessage());
     }
   }
 
@@ -403,10 +424,9 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       job.run();
     } catch (Throwable e) { // NOSONAR
       // Intentionally catch a Throwable, not an Exception.
-      // Close resources forcibly, if necessary, by system exit.
+      // Close orphaned resources forcibly, if necessary, by system exit.
       exitCode = 1;
-      LOGGER.error("JOB FAILED: {}", e.getMessage(), e);
-      throw new JobsException("JOB FAILED! " + e.getMessage(), e);
+      throw JobLogUtils.buildException(LOGGER, e, "JOB FAILED!: {}", e.getMessage());
     } finally {
       // WARNING: kills the JVM in testing but may be needed to shutdown resources.
       if (!isTestMode()) {
@@ -465,88 +485,12 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected ElasticSearchPerson buildElasticSearchPersonDoc(ApiPersonAware p)
       throws JsonProcessingException {
-    ApiPersonAware pa = p;
-
-    List<String> languages = null;
-    List<ElasticSearchPerson.ElasticSearchPersonPhone> phones = null;
-    List<ElasticSearchPersonAddress> addresses = null;
-    List<ElasticSearchPersonScreening> screenings = null;
-
-    if (p instanceof ApiMultipleLanguagesAware) {
-      ApiMultipleLanguagesAware mlx = (ApiMultipleLanguagesAware) p;
-      languages = new ArrayList<>();
-      for (ApiLanguageAware lx : mlx.getLanguages()) {
-        final ElasticSearchPerson.ElasticSearchPersonLanguage lang =
-            ElasticSearchPerson.ElasticSearchPersonLanguage.findBySysId(lx.getLanguageSysId());
-        if (lang != null) {
-          languages.add(lang.getDescription());
-        }
-      }
-    } else if (p instanceof ApiLanguageAware) {
-      languages = new ArrayList<>();
-      ApiLanguageAware lx = (ApiLanguageAware) p;
-      final ElasticSearchPerson.ElasticSearchPersonLanguage lang =
-          ElasticSearchPerson.ElasticSearchPersonLanguage.findBySysId(lx.getLanguageSysId());
-      if (lang != null) {
-        languages.add(lang.getDescription());
-      }
-    }
-
-    if (p instanceof ApiMultiplePhonesAware) {
-      phones = new ArrayList<>();
-      ApiMultiplePhonesAware mphx = (ApiMultiplePhonesAware) p;
-      for (ApiPhoneAware phx : mphx.getPhones()) {
-        phones.add(new ElasticSearchPersonPhone(phx));
-      }
-    } else if (p instanceof ApiPhoneAware) {
-      phones = new ArrayList<>();
-      ApiPhoneAware phx = (ApiPhoneAware) p;
-      phones.add(new ElasticSearchPersonPhone(phx));
-    }
-
-    if (p instanceof ApiMultipleAddressesAware) {
-      addresses = new ArrayList<>();
-      ApiMultipleAddressesAware madrx = (ApiMultipleAddressesAware) p;
-      for (ApiAddressAware adrx : madrx.getAddresses()) {
-        addresses.add(new ElasticSearchPersonAddress(adrx));
-      }
-    } else if (p instanceof ApiAddressAware) {
-      addresses = new ArrayList<>();
-      addresses.add(new ElasticSearchPersonAddress((ApiAddressAware) p));
-    }
-
-    if (p instanceof ApiScreeningAware) {
-      screenings = new ArrayList<>();
-      for (ElasticSearchPersonScreening scr : ((ApiScreeningAware) p).getEsScreenings()) {
-        screenings.add(scr);
-      }
-    }
-
-    // Write persistence object to Elasticsearch Person document.
-    ElasticSearchPerson ret;
-
-    if (p.getPrimaryKey() == null) {
-      LOGGER.warn("NO PRIMARY KEY!");
-    }
-
-    ret = new ElasticSearchPerson(p.getPrimaryKey().toString(), // id
-        pa.getFirstName(), // first name
-        pa.getLastName(), // last name
-        pa.getMiddleName(), // middle name
-        pa.getNameSuffix(), // name suffix
-        pa.getGender(), // gender
-        DomainChef.cookDate(pa.getBirthDate()), // birth date
-        pa.getSsn(), // SSN
-        pa.getClass().getName(), // type
-        this.mapper.writeValueAsString(p), // source
-        null, // omit highlights
-        addresses, phones, languages, screenings);
-
-    return ret;
+    return ElasticTransformer.buildElasticSearchPersonDoc(mapper, p);
   }
 
   /**
-   * Identifier column for this table. Defaults to "IDENTIFIER".
+   * Identifier column for this table. Defaults to "IDENTIFIER", the most common key name in legacy
+   * DB2.
    * 
    * @return Identifier column
    */
@@ -637,10 +581,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * @see #prepareUpsertRequest(ElasticSearchPerson, PersistentObject)
    */
   protected void prepareDocument(BulkProcessor bp, T t) throws IOException {
-    Arrays.stream(buildElasticSearchPersons(t)).map(esp -> {
-      recsPrepared.getAndIncrement();
-      return prepareUpsertRequestNoChecked(esp, t);
-    }).forEach(bp::add);
+    Arrays.stream(buildElasticSearchPersons(t)).map(esp -> prepareUpsertRequestNoChecked(esp, t))
+        .forEach(bp::add);
   }
 
   /**
@@ -679,7 +621,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected void prepareInsertCollections(ElasticSearchPerson esp, T t, String elementName,
       List<? extends ApiTypedIdentifier<String>> list, ESOptionalCollection... keep)
-      throws JsonProcessingException {
+          throws JsonProcessingException {
 
     // Null out optional collections for updates.
     esp.clearOptionalCollections(keep);
@@ -702,7 +644,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected Pair<String, String> prepareUpsertJson(ElasticSearchPerson esp, T t, String elementName,
       List<? extends ApiTypedIdentifier<String>> list, ESOptionalCollection... keep)
-      throws JsonProcessingException {
+          throws JsonProcessingException {
 
     // Child classes: Set optional collections before serializing the insert JSON.
     prepareInsertCollections(esp, t, elementName, list, keep);
@@ -728,8 +670,9 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   }
 
   /**
-   * Prepare an upsert request without a checked exception. Throws runtime {@link JobsException} on
-   * error. Easier to use in lambda and stream calls.
+   * Prepare an "upsert" request without a checked exception. Throws runtime {@link JobsException}
+   * on error. This method's signature is easier to use in functional lambda and stream calls than
+   * older styles.
    * 
    * @param esp person document object
    * @param t normalized entity
@@ -737,9 +680,10 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected UpdateRequest prepareUpsertRequestNoChecked(ElasticSearchPerson esp, T t) {
     try {
+      recsPrepared.getAndIncrement();
       return prepareUpsertRequest(esp, t);
     } catch (Exception e) {
-      JobLogUtils.throwFatalError(LOGGER, e, "ERROR BUILDING UPSERT: PK: {}", t.getPrimaryKey());
+      JobLogUtils.raiseError(LOGGER, e, "ERROR BUILDING UPSERT!: PK: {}", t.getPrimaryKey());
     }
 
     return null;
@@ -793,10 +737,10 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     final Pair<String, String> json = prepareUpsertJson(esp, t, getOptionalElementName(),
         getOptionalCollection(esp, t), keepCollections());
 
-    final String alias = esDao.getConfig().getElasticsearchAlias();
+    final String alias = getOpts().getIndexName();
     final String docType = esDao.getConfig().getElasticsearchDocType();
 
-    // Update if doc exists, insert if it does not.
+    // "Upsert": update if doc exists, insert if it does not.
     return new UpdateRequest(alias, docType, id).doc(json.getLeft())
         .upsert(new IndexRequest(alias, docType, id).source(json.getRight()));
   }
@@ -860,9 +804,9 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
         try {
           this.jobDao.find("abc123"); // dummy call, keep connection pool alive.
         } catch (HibernateException he) { // NOSONAR
-          LOGGER.debug("USING DIRECT JDBC. IGNORE HIBERNATE ERROR: {}", he.getMessage());
-        } catch (Exception e) {
-          LOGGER.warn("Hibernate keep-alive error: {}", e.getMessage(), e);
+          LOGGER.trace("DIRECT JDBC. IGNORE HIBERNATE ERROR: {}", he.getMessage());
+        } catch (Exception e) { // NOSONAR
+          LOGGER.warn("Hibernate keep-alive error: {}", e.getMessage());
         }
       }
 
@@ -877,35 +821,39 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       fatalError = true;
       Thread.currentThread().interrupt();
     } catch (Exception e) {
-      LOGGER.error("GENERAL EXCEPTION: {}", e.getMessage(), e);
       fatalError = true;
-      throw new JobsException(e);
+      JobLogUtils.raiseError(LOGGER, e, "GENERAL EXCEPTION: {}", e);
     } finally {
       doneExtract = true;
     }
   }
 
   /**
-   * The "extract" part of ETL. Single producer, staged consumers.
+   * The "extract" part of ETL. Single producer, chained consumers.
    */
   protected void threadExtractJdbc() {
     Thread.currentThread().setName("extract");
-    LOGGER.warn("BEGIN: Stage #1: extract");
+    LOGGER.info("BEGIN: Stage #1: extract");
 
     try {
       Connection con = jobDao.getSessionFactory().getSessionFactoryOptions().getServiceRegistry()
           .getService(ConnectionProvider.class).getConnection();
-      con.setSchema(System.getProperty("DB_CMS_SCHEMA"));
+      con.setSchema(getDBSchemaName());
       con.setAutoCommit(false);
       con.setReadOnly(true); // WARNING: fails with Postgres.
 
       // Linux MQT lacks ORDER BY clause. Must sort manually.
       // Detect platform or always force ORDER BY clause.
 
-      StringBuilder buf = new StringBuilder();
-      buf.append("SELECT x.* FROM ").append(System.getProperty("DB_CMS_SCHEMA")).append(".")
-          .append(getViewName()).append(" x ").append(getJdbcOrderBy()).append(" FOR READ ONLY");
-      final String query = buf.toString();
+      // StringBuilder buf = new StringBuilder();
+      // buf.append("SELECT x.* FROM ").append(getDBSchemaName()).append(".")
+      // .append(getInitialLoadViewName()).append(" x ").append(getJdbcOrderBy())
+      // .append(" FOR READ ONLY");
+      // final String query = buf.toString();
+
+      final String query = getInitialLoadQuery(getDBSchemaName());
+
+      M m;
 
       try (Statement stmt = con.createStatement()) {
         stmt.setFetchSize(5000); // faster
@@ -914,12 +862,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
         final ResultSet rs = stmt.executeQuery(query); // NOSONAR
 
         int cntr = 0;
-        while (rs.next()) {
+        while (!fatalError && rs.next()) {
           // Hand the baton to the next runner ...
-          logEvery(++cntr, "Retrieved", "recs");
-          M m = extract(rs);
-          if (m != null) {
-            queueTransform.putLast(extract(rs));
+          JobLogUtils.logEvery(++cntr, "Retrieved", "recs");
+          if ((m = extract(rs)) != null) {
+            queueTransform.putLast(m);
           }
         }
 
@@ -930,13 +877,12 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
 
     } catch (Exception e) {
       fatalError = true;
-      LOGGER.error("BATCH ERROR! {}", e.getMessage(), e);
-      throw new JobsException(e.getMessage(), e);
+      JobLogUtils.raiseError(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
     } finally {
       doneExtract = true;
     }
 
-    LOGGER.warn("DONE: Stage #1: Extract");
+    LOGGER.info("DONE: Stage #1: Extract");
   }
 
   /**
@@ -945,54 +891,51 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected void threadTransform() {
     Thread.currentThread().setName("transform");
-    LOGGER.warn("BEGIN: Stage #2: Transform");
+    LOGGER.info("BEGIN: Stage #2: Transform");
 
     int cntr = 0;
     Object lastId = new Object();
     M m;
-    List<M> groupRecs = new ArrayList<>();
+    T t;
+    List<M> grpRecs = new ArrayList<>();
 
     while (!(fatalError || (doneExtract && queueTransform.isEmpty()))) {
       try {
         while ((m = queueTransform.pollFirst(POLL_MILLIS, TimeUnit.MILLISECONDS)) != null) {
-          logEvery(++cntr, "Transformed", "recs");
+          JobLogUtils.logEvery(++cntr, "Transformed", "recs");
 
           // NOTE: Assumes that records are sorted by group key.
           if (!lastId.equals(m.getNormalizationGroupKey()) && cntr > 1) {
-            final T t = normalizeSingle(groupRecs);
-            if (t != null) {
+            // End of group. Normalize these group recs.
+            if ((t = normalizeSingle(grpRecs)) != null) {
               queueLoad.putLast(t);
-              groupRecs.clear(); // Single thread, re-use memory.
+              grpRecs.clear(); // Single thread, re-use memory.
             }
           }
 
-          groupRecs.add(m);
+          grpRecs.add(m);
           lastId = m.getNormalizationGroupKey();
         }
 
         // Last bundle.
-        if (!groupRecs.isEmpty()) {
-          final T t = normalizeSingle(groupRecs);
-          if (t != null) {
-            queueLoad.putLast(t);
-            groupRecs.clear(); // Single thread, re-use memory.
-          }
+        if (!grpRecs.isEmpty() && (t = normalizeSingle(grpRecs)) != null) {
+          queueLoad.putLast(t);
+          grpRecs.clear(); // Single thread, re-use memory.
         }
 
       } catch (InterruptedException e) { // NOSONAR
-        LOGGER.warn("Transformer interrupted!");
+        LOGGER.error("Transformer interrupted!");
         fatalError = true;
         Thread.currentThread().interrupt();
       } catch (Exception e) {
-        LOGGER.fatal("Transformer: fatal error {}", e.getMessage(), e);
         fatalError = true;
-        throw new JobsException("Transformer: fatal error", e);
+        JobLogUtils.raiseError(LOGGER, e, "Transformer: fatal error {}", e.getMessage());
       } finally {
         doneTransform = true;
       }
     }
 
-    LOGGER.warn("DONE: Stage #2: Transform");
+    LOGGER.info("DONE: Stage #2: Transform");
   }
 
   /**
@@ -1004,18 +947,18 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     int cntr = 0;
     T t;
 
-    LOGGER.warn("BEGIN: Stage #3: Loader");
+    LOGGER.warn("BEGIN: Stage #3: Load");
     try {
       while (!(fatalError || (doneExtract && doneTransform && queueLoad.isEmpty()))) {
         while ((t = queueLoad.pollFirst(POLL_MILLIS, TimeUnit.MILLISECONDS)) != null) {
-          logEvery(++cntr, "Published", "recs to ES");
+          JobLogUtils.logEvery(++cntr, "Published", "recs to ES");
           prepareDocument(bp, t);
         }
       }
 
       // Just to be sure ...
       while ((t = queueLoad.pollFirst(POLL_MILLIS, TimeUnit.MILLISECONDS)) != null) {
-        logEvery(++cntr, "Published", "recs to ES");
+        JobLogUtils.logEvery(++cntr, "Published", "recs to ES");
         prepareDocument(bp, t);
       }
 
@@ -1037,12 +980,10 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       Thread.currentThread().interrupt();
     } catch (JsonProcessingException e) {
       fatalError = true;
-      LOGGER.error("Publisher: JsonProcessingException! {}", e.getMessage(), e);
-      throw new JobsException("JSON error", e);
+      JobLogUtils.raiseError(LOGGER, e, "Publisher: JsonProcessingException {}", e.getMessage());
     } catch (Exception e) {
       fatalError = true;
-      LOGGER.fatal("Publisher: fatal error {}", e.getMessage(), e);
-      throw new JobsException("Publisher: fatal error", e);
+      JobLogUtils.raiseError(LOGGER, e, "Publisher: fatal error {}", e.getMessage());
     } finally {
       doneLoad = true;
     }
@@ -1055,11 +996,32 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   // =================
 
   /**
+   * Prepare a document.
+   * 
+   * @param bp bulk processor
+   * @param p document object
+   */
+  protected void prepLastRunDoc(BulkProcessor bp, T p) {
+    try {
+      // Write persistence object to Elasticsearch Person document.
+      prepareDocument(bp, p);
+    } catch (JsonProcessingException e) {
+      fatalError = true;
+      JobLogUtils.raiseError(LOGGER, e, "ERROR WRITING JSON: {}", e.getMessage());
+    } catch (IOException e) {
+      fatalError = true;
+      JobLogUtils.raiseError(LOGGER, e, "IO EXCEPTION: {}", e.getMessage());
+    } finally {
+      doneLoad = true;
+    }
+  }
+
+  /**
    * <strong>ENTRY POINT FOR LAST RUN.</strong>
    *
    * <p>
    * Fetch all records for the next batch run, either by bucket or last successful run date. Pulls
-   * either from an MQT via {@link #extractLastRunRecsFromView(Date)}, if
+   * either from an MQT via {@link #extractLastRunRecsFromView(Date, Set)}, if
    * {@link #isViewNormalizer()} is overridden, else from the base table directly via
    * {@link #extractLastRunRecsFromTable(Date)}.
    * </p>
@@ -1072,33 +1034,36 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     try {
       // One bulk processor for "last run" operations. BulkProcessor itself is thread-safe.
       final BulkProcessor bp = buildBulkProcessor();
-      final List<T> results = this.isViewNormalizer() ? extractLastRunRecsFromView(lastRunDt)
-          : extractLastRunRecsFromTable(lastRunDt);
+      Set<String> deletionResults = new HashSet<>();
+
+      final List<T> results =
+          this.isViewNormalizer() ? extractLastRunRecsFromView(lastRunDt, deletionResults)
+              : extractLastRunRecsFromTable(lastRunDt);
 
       if (results != null && !results.isEmpty()) {
-        LOGGER.info(MessageFormat.format("Found {0} people to index", results.size()));
+        LOGGER.warn(MessageFormat.format("Found {0} people to index", results.size()));
 
-        // Spawn a reasonable number of threads to process all results.
-        // One thread seems sufficient.
         results.stream().forEach(p -> {
-          try {
-            // Write persistence object to Elasticsearch Person document.
-            prepareDocument(bp, p);
-          } catch (JsonProcessingException e) {
-            fatalError = true;
-            LOGGER.error("ERROR WRITING JSON: {}", e.getMessage(), e);
-            throw new JobsException("ERROR WRITING JSON", e);
-          } catch (IOException e) {
-            fatalError = true;
-            LOGGER.error("IO EXCEPTION: {}", e.getMessage(), e);
-            throw new JobsException("IO EXCEPTION", e);
-          } finally {
-            doneLoad = true;
-          }
+          prepLastRunDoc(bp, p);
         });
+      }
+
+      /**
+       * Delete records that are identified for deletion...
+       */
+      if (!deletionResults.isEmpty()) {
+        LOGGER.warn(MessageFormat.format("Found {0} people to delete", deletionResults.size())
+            + ", IDs: " + deletionResults);
+        final String alias = getOpts().getIndexName();
+        final String docType = esDao.getConfig().getElasticsearchDocType();
+
+        for (String deletionId : deletionResults) {
+          DeleteRequest deleteRequest = new DeleteRequest(alias, docType, deletionId);
+          bp.add(deleteRequest);
+        }
 
         // Track counts.
-        recsPrepared.getAndAdd(results.size());
+        recsDeleted.getAndAdd(deletionResults.size());
       }
 
       // Give it time to finish the last batch.
@@ -1108,8 +1073,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
 
     } catch (Exception e) {
       fatalError = true;
-      LOGGER.fatal("General Exception: {}", e.getMessage(), e);
-      throw new JobsException("General Exception: " + e.getMessage(), e);
+      throw JobLogUtils.buildException(LOGGER, e, "General Exception: {}", e.getMessage());
     } finally {
       doneLoad = true;
     }
@@ -1136,20 +1100,44 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   @Override
   public Date _run(Date lastSuccessfulRunTime) {
     try {
-      // GUICE DOES NOT INJECT THE SYSCODE TRANSLATOR INTO STATIC MEMBERS/METHODS.
-      final ApiSystemCodeCache sysCodeCache = injector.getInstance(ApiSystemCodeCache.class);
-      setSystemCodes(sysCodeCache);
-      ElasticSearchPerson.setSystemCodes(sysCodeCache);
+      /**
+       * If index name is provided then use it, otherwise use alias from ES config.
+       */
+      String indexNameOverride = getOpts().getIndexName();
+      String effectiveIndexName = StringUtils.isBlank(indexNameOverride)
+          ? esDao.getConfig().getElasticsearchAlias() : indexNameOverride;
+      getOpts().setIndexName(effectiveIndexName);
+
+      /**
+       * If last run time is provide in options then use it, otherwise use provided
+       * lastSuccessfulRunTime.
+       */
+      Date lastSuccessfulRunTimeOverride = getOpts().getLastRunTime();
+      Date effectiveLastSuccessfulRunTime = lastSuccessfulRunTimeOverride != null
+          ? lastSuccessfulRunTimeOverride : lastSuccessfulRunTime;
+
+      String documentType = esDao.getConfig().getElasticsearchDocType();
+      String peopleSettingsFile = "/elasticsearch/setting/people-index-settings.json";
+      String personMappingFile = "/elasticsearch/mapping/map_person_5x_snake.json";
+
+      LOGGER.info("Effective index name: " + effectiveIndexName);
+      LOGGER.info(
+          "Effective last successsfull run time: " + effectiveLastSuccessfulRunTime.toString());
 
       // If the index is missing, create it.
-      LOGGER.debug("Create index if missing");
-      esDao.createIndexIfNeeded(esDao.getConfig().getElasticsearchAlias());
+      LOGGER.debug("Create index if missing, effectiveIndexName: " + effectiveIndexName);
+      esDao.createIndexIfNeeded(effectiveIndexName, documentType, peopleSettingsFile,
+          personMappingFile);
+
+      // esDao.createIndexIfNeeded(esDao.getConfig().getElasticsearchAlias());
+
       LOGGER.debug("availableProcessors={}", Runtime.getRuntime().availableProcessors());
 
       // Smart/auto mode:
       final Calendar cal = Calendar.getInstance();
       cal.add(Calendar.YEAR, -50);
-      final boolean autoMode = this.opts.lastRunMode && lastSuccessfulRunTime.before(cal.getTime());
+      final boolean autoMode =
+          this.opts.isLastRunMode() && effectiveLastSuccessfulRunTime.before(cal.getTime());
 
       if (autoMode) {
         LOGGER.warn("AUTO MODE!");
@@ -1165,25 +1153,25 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
           extractHibernate();
         }
 
-      } else if (this.opts == null || this.opts.lastRunMode) {
+      } else if (this.opts == null || this.opts.isLastRunMode()) {
         LOGGER.warn("LAST RUN MODE!");
-        doLastRun(lastSuccessfulRunTime);
+        doLastRun(effectiveLastSuccessfulRunTime);
       } else {
         LOGGER.warn("DIRECT BUCKET MODE!");
         extractHibernate();
       }
 
       // Result stats:
-      LOGGER.info("Prepared {} records to index", recsPrepared);
-      LOGGER.info("STATS: \nrecsBulkBefore:  {}\nrecsBulkAfter:  {}\nrecsBulkError: {}",
-          recsBulkBefore, recsBulkAfter, recsBulkError);
-      LOGGER.warn("Updating last successful run time to {}", jobDateFormat.format(startTime));
+      LOGGER.info(
+          "STATS: \nRecs To Index: {}\nRecs To Delete: {}\nrecsBulkBefore: {}\nrecsBulkAfter: {}\nrecsBulkError: {}",
+          recsPrepared, recsDeleted, recsBulkBefore, recsBulkAfter, recsBulkError);
+
+      LOGGER.info("Updating last successful run time to {}", jobDateFormat.format(startTime));
       return new Date(this.startTime);
 
     } catch (Exception e) {
       fatalError = true;
-      LOGGER.error("General Exception: {}", e.getMessage(), e);
-      throw new JobsException("General Exception: " + e.getMessage(), e);
+      throw JobLogUtils.buildException(LOGGER, e, "GENERAL EXCEPTION: {}", e.getMessage());
     } finally {
 
       // Set ETL completion flags to done.
@@ -1217,13 +1205,15 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   protected List<T> extractLastRunRecsFromTable(Date lastRunTime) {
     LOGGER.info("last successful run: {}", lastRunTime);
     final Class<?> entityClass = jobDao.getEntityClass();
-    final String namedQueryName = entityClass.getName() + ".findAllUpdatedAfter";
+
+    String namedQueryName = entityClass.getName() + ".findAllUpdatedAfter";
+
     Session session = jobDao.getSessionFactory().getCurrentSession();
 
-    Transaction txn = null;
+    Transaction txn = session.beginTransaction();
     try {
-      txn = session.beginTransaction();
       NativeQuery<T> q = session.getNamedNativeQuery(namedQueryName);
+
       q.setTimestamp("after", new Timestamp(lastRunTime.getTime()));
 
       ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
@@ -1238,9 +1228,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     } catch (HibernateException h) {
       fatalError = true;
       LOGGER.error("EXTRACT ERROR! {}", h.getMessage(), h);
-      if (txn != null) {
-        txn.rollback();
-      }
+      txn.rollback();
       throw new DaoException(h);
     } finally {
       doneExtract = true;
@@ -1253,27 +1241,42 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * @param lastRunTime last successful run time
    * @return List of normalized entities
    */
-  protected List<T> extractLastRunRecsFromView(Date lastRunTime) {
+  protected List<T> extractLastRunRecsFromView(Date lastRunTime, Set<String> deletionResults) {
     LOGGER.info("PULL VIEW: last successful run: {}", lastRunTime);
 
     final Class<?> entityClass = getDenormalizedClass(); // view entity class
-    final String namedQueryName = entityClass.getName() + ".findAllUpdatedAfter";
+
+    String namedQueryName = null;
+    if (getOpts().isLoadSealedAndSensitive()) {
+      /**
+       * Load everything
+       */
+      namedQueryName = entityClass.getName() + ".findAllUpdatedAfter";
+    } else {
+      /**
+       * Load only unlimited access data
+       */
+      namedQueryName = entityClass.getName() + ".findAllUpdatedAfterWithUnlimitedAccess";
+    }
+
     Session session = jobDao.getSessionFactory().getCurrentSession();
 
     Object lastId = new Object();
-    Transaction txn = null;
+    Transaction txn = session.beginTransaction();
 
     try {
-      txn = session.beginTransaction();
+      /**
+       * Load records to index
+       */
       NativeQuery<M> q = session.getNamedNativeQuery(namedQueryName);
       q.setTimestamp("after", new Timestamp(lastRunTime.getTime()));
 
       ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
-      final List<M> recs = q.list();
+      List<M> recs = q.list();
       LOGGER.warn("FOUND {} RECORDS", recs.size());
 
       // Convert denormalized view rows to normalized persistence objects.
-      List<M> groupRecs = new ArrayList<>();
+      final List<M> groupRecs = new ArrayList<>();
       for (M m : recs) {
         if (!lastId.equals(m.getNormalizationGroupKey()) && !groupRecs.isEmpty()) {
           results.add(normalizeSingle(groupRecs));
@@ -1288,59 +1291,43 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
         results.add(normalizeSingle(groupRecs));
       }
 
+
+      /**
+       * Load records to delete
+       */
+      if (mustDeleteLimitedAccessRecords()) {
+        String namedQueryNameForDeletion =
+            entityClass.getName() + ".findAllUpdatedAfterWithLimitedAccess";
+        NativeQuery<M> queryForDeletion = session.getNamedNativeQuery(namedQueryNameForDeletion);
+        queryForDeletion.setTimestamp("after", new Timestamp(lastRunTime.getTime()));
+
+        final List<M> deletionRecs = queryForDeletion.list();
+
+        if (deletionRecs != null && !deletionRecs.isEmpty()) {
+          for (M rec : deletionRecs) {
+            /**
+             * Assuming group key represents ID of client to delete. This is true for client,
+             * referral history, case history jobs.
+             */
+            Object groupKey = rec.getNormalizationGroupKey();
+            if (groupKey != null) {
+              deletionResults.add(groupKey.toString());
+            }
+          }
+        }
+        LOGGER.warn("FOUND {} RECORDS FOR DELETION", deletionResults.size());
+      }
+
       session.clear();
       txn.commit();
       return results.build();
     } catch (HibernateException h) {
-      LOGGER.error("EXTRACT ERROR! {}", h.getMessage(), h);
       fatalError = true;
-      if (txn != null) {
-        txn.rollback();
-      }
-      throw new JobsException(h);
+      txn.rollback();
+      throw JobLogUtils.buildException(LOGGER, h, "EXTRACT ERROR!: {}", h.getMessage());
     } finally {
       doneExtract = true;
     }
-  }
-
-  /**
-   * Build the bucket list at runtime.
-   * 
-   * @param table the driver table
-   * @return batch buckets
-   */
-  @SuppressWarnings("unchecked")
-  protected List<BatchBucket> buildBucketList(String table) {
-    List<BatchBucket> ret = new ArrayList<>();
-
-    Transaction txn = null;
-    try {
-      LOGGER.info("FETCH DYNAMIC BUCKET LIST FOR TABLE {}", table);
-      final Session session = jobDao.getSessionFactory().getCurrentSession();
-      txn = session.beginTransaction();
-      final long totalBuckets = opts.getTotalBuckets() < getJobTotalBuckets() ? getJobTotalBuckets()
-          : opts.getTotalBuckets();
-      final javax.persistence.Query q = jobDao.getSessionFactory().createEntityManager()
-          .createNativeQuery(QUERY_BUCKET_LIST.replaceAll("THE_TABLE", table)
-              .replaceAll("THE_ID_COL", getIdColumn()).replaceAll("THE_TOTAL_BUCKETS",
-                  String.valueOf(totalBuckets)),
-              BatchBucket.class);
-
-      ret = q.getResultList();
-      session.clear();
-      txn.commit();
-    } catch (HibernateException e) {
-      LOGGER.error("BATCH ERROR! ", e);
-      fatalError = true;
-      if (txn != null) {
-        txn.rollback();
-      }
-      throw new DaoException(e);
-    } finally {
-      doneLoad = true;
-    }
-
-    return ret;
   }
 
   /**
@@ -1348,31 +1335,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * 
    * @return the table or view used to allocate bucket ranges
    */
-  protected String getBucketDriverTable() {
+  protected String getDriverTable() {
     String ret = null;
     final Table tbl = this.jobDao.getEntityClass().getDeclaredAnnotation(Table.class);
     if (tbl != null) {
       ret = tbl.name();
-    }
-
-    return ret;
-  }
-
-  /**
-   * Return a list of partition keys to optimize batch SELECT statements. See ReplicatedClient
-   * native named query, "findPartitionedBuckets".
-   * 
-   * @return list of partition key pairs
-   * @see ReplicatedClient
-   */
-  protected List<Pair<String, String>> getPartitionRanges() {
-    LOGGER.warn("DETERMINE BUCKET RANGES ...");
-    List<Pair<String, String>> ret = new ArrayList<>();
-    List<BatchBucket> buckets = buildBucketList(getBucketDriverTable());
-
-    for (BatchBucket b : buckets) {
-      LOGGER.warn("BUCKET RANGE: {} to {}", b.getMinId(), b.getMaxId());
-      ret.add(Pair.of(b.getMinId(), b.getMaxId()));
     }
 
     return ret;
@@ -1414,7 +1381,6 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       this.doneTransform = true;
 
       close();
-      // LogManager.shutdown(); // Flush appenders.
       Thread.sleep(SLEEP_MILLIS); // NOSONAR
 
       // Shutdown all remaining resources, even those not attached to this job.
@@ -1425,8 +1391,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       Thread.currentThread().interrupt();
     } catch (IOException ioe) {
       fatalError = true;
-      LOGGER.fatal("ERROR FINISHING JOB: {}", ioe.getMessage(), ioe);
-      throw new JobsException(ioe);
+      throw JobLogUtils.buildException(LOGGER, ioe, "ERROR FINISHING JOB: {}", ioe.getMessage());
     }
   }
 
@@ -1435,12 +1400,77 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   // ===========================
 
   /**
+   * Build the bucket list at runtime.
+   * 
+   * @param table the driver table
+   * @return batch buckets
+   * @deprecated use {@link #threadExtractJdbc()} or {@link #extractHibernate()} instead
+   */
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  protected List<BatchBucket> buildBucketList(String table) {
+    List<BatchBucket> ret = new ArrayList<>();
+
+    Transaction txn = null;
+    try {
+      LOGGER.info("FETCH DYNAMIC BUCKET LIST FOR TABLE {}", table);
+      final Session session = jobDao.getSessionFactory().getCurrentSession();
+      txn = session.beginTransaction();
+      final long totalBuckets = opts.getTotalBuckets() < getJobTotalBuckets() ? getJobTotalBuckets()
+          : opts.getTotalBuckets();
+      final javax.persistence.Query q = jobDao.getSessionFactory().createEntityManager()
+          .createNativeQuery(QUERY_BUCKET_LIST.replaceAll("THE_TABLE", table)
+              .replaceAll("THE_ID_COL", getIdColumn())
+              .replaceAll("THE_TOTAL_BUCKETS", String.valueOf(totalBuckets)), BatchBucket.class);
+
+      ret = q.getResultList();
+      session.clear();
+      txn.commit();
+    } catch (HibernateException e) {
+      LOGGER.error("BATCH ERROR! ", e);
+      fatalError = true;
+      if (txn != null) {
+        txn.rollback();
+      }
+      throw new DaoException(e);
+    } finally {
+      doneLoad = true;
+    }
+
+    return ret;
+  }
+
+  /**
+   * Return a list of partition keys to optimize batch SELECT statements. See ReplicatedClient
+   * native named query, "findPartitionedBuckets".
+   * 
+   * @return list of partition key pairs
+   * @see ReplicatedClient
+   * @deprecated use {@link #threadExtractJdbc()} or {@link #extractHibernate()} instead
+   */
+  @Deprecated
+  protected List<Pair<String, String>> getPartitionRanges() {
+    LOGGER.info("DETERMINE BUCKET RANGES ...");
+    List<Pair<String, String>> ret = new ArrayList<>();
+    List<BatchBucket> buckets = buildBucketList(getDriverTable());
+
+    for (BatchBucket b : buckets) {
+      LOGGER.warn("BUCKET RANGE: {} to {}", b.getMinId(), b.getMaxId());
+      ret.add(Pair.of(b.getMinId(), b.getMaxId()));
+    }
+
+    return ret;
+  }
+
+  /**
    * Divide work into buckets: pull a unique range of identifiers so that no bucket results overlap.
    * 
    * @param minId start of identifier range
    * @param maxId end of identifier range
+   * @deprecated use {@link #threadExtractJdbc()} or {@link #extractHibernate()} instead
    * @return collection of entity results
    */
+  @Deprecated
   protected List<T> pullBucketRange(String minId, String maxId) {
     LOGGER.info("PULL BUCKET RANGE {} to {}", minId, maxId);
     final Class<?> entityClass =
@@ -1448,9 +1478,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     final String namedQueryName = entityClass.getName() + ".findBucketRange";
     Session session = jobDao.getSessionFactory().getCurrentSession();
 
-    Transaction txn = null;
+    Transaction txn = session.beginTransaction();
     try {
-      txn = session.beginTransaction();
       NativeQuery<T> q = session.getNamedNativeQuery(namedQueryName);
       q.setString("min_id", minId).setString("max_id", maxId);
 
@@ -1464,9 +1493,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     } catch (HibernateException e) {
       fatalError = true;
       LOGGER.error("BATCH ERROR! {}", e.getMessage(), e);
-      if (txn != null) {
-        txn.rollback();
-      }
+      txn.rollback();
       throw new DaoException(e);
     }
   }
@@ -1495,11 +1522,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
           try {
             prepareDocument(bp, p);
           } catch (JsonProcessingException e) {
-            // TODO: log the offending record.
-            throw new JobsException("JSON error", e);
+            throw JobLogUtils.buildException(LOGGER, e, "JSON ERROR: id: {}, {}", p.getPrimaryKey(),
+                e.getMessage());
           } catch (IOException e) {
-            // TODO: log the offending record.
-            throw new JobsException("IO error", e);
+            throw JobLogUtils.buildException(LOGGER, e, "IO ERROR: id: {}, {}", p.getPrimaryKey(),
+                e.getMessage());
           }
         });
 
@@ -1546,18 +1573,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * Get the legacy source table for this job, if any.
    * 
    * @return legacy source table
+   * @deprecated Logic moved to ApiLegacyAware implementation classes
    */
+  @Deprecated
   protected String getLegacySourceTable() {
     return null;
-  }
-
-  /**
-   * Getter for CMS system code cache.
-   * 
-   * @return reference to CMS system code cache
-   */
-  public static ApiSystemCodeCache getSystemCodes() {
-    return systemCodes;
   }
 
   /**
@@ -1566,33 +1586,38 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * @param klass batch job class
    * @param args command line arguments
    */
+  @SuppressWarnings("rawtypes")
   public static void runMain(final Class<? extends BasePersonIndexerJob> klass, String... args) {
     LOGGER.info("Run job {}", klass.getName());
     try {
       runJob(klass, args);
     } catch (Exception e) {
-      LOGGER.fatal("STOPPING BATCH: " + e.getMessage(), e);
+      LOGGER.error("STOPPING BATCH: " + e.getMessage(), e);
       throw e;
     }
   }
 
   /**
-   * Store a reference to the singleton CMS system code cache for quick convenient access.
+   * For unit tests where resources either may not close properly or where expensive resources
+   * should be mocked.
    * 
-   * @param sysCodeCache CMS system code cache
+   * @return whether in test mode
    */
-  @Inject
-  public static void setSystemCodes(@SystemCodeCache ApiSystemCodeCache sysCodeCache) {
-    systemCodes = sysCodeCache;
-  }
-
   public static boolean isTestMode() {
     return testMode;
   }
 
+  /**
+   * For unit tests where resources either may not close properly or where expensive resources
+   * should be mocked.
+   * 
+   * @param testMode whether in test mode
+   */
   public static void setTestMode(boolean testMode) {
     BasePersonIndexerJob.testMode = testMode;
   }
 
+  protected static String getDBSchemaName() {
+    return System.getProperty("DB_CMS_SCHEMA");
+  }
 }
-

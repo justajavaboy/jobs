@@ -20,11 +20,11 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
   private List chunk = new LinkedList<>();
 
   /**
-   * @param reader    reader
+   * @param reader reader
    * @param processor processor
-   * @param writer    writer
-   * @param <I>       output reader type
-   * @param <O>       output writer type
+   * @param writer writer
+   * @param <I> output reader type
+   * @param <O> output writer type
    */
   public <I, O> AsyncReadWriteJob(JobReader<I> reader, JobProcessor<I, O> processor,
       JobWriter<O> writer) {
@@ -38,7 +38,8 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
    *
    * @param reader reader
    * @param writer writer
-   * @param <I>    output reader type
+   * 
+   * @param <I> output reader type
    */
   public <I> AsyncReadWriteJob(JobReader<I> reader, JobWriter<I> writer) {
     this.reader = reader;

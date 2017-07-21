@@ -3,9 +3,11 @@ package gov.ca.cwds.jobs;
 import gov.ca.cwds.jobs.exception.JobsException;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import javax.persistence.Table;
+
 import org.hibernate.SessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -15,15 +17,17 @@ import gov.ca.cwds.dao.ns.IntakeParticipantDao;
 import gov.ca.cwds.data.ApiTypedIdentifier;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ESOptionalCollection;
+import gov.ca.cwds.data.es.ElasticSearchPersonScreening;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.data.model.cms.JobResultSetAware;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.ns.EsIntakeScreening;
 import gov.ca.cwds.data.persistence.ns.IntakeParticipant;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.inject.NsSessionFactory;
+import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.inject.LastRunFile;
-import gov.ca.cwds.jobs.transform.EntityNormalizer;
+import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
+import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
 
 /**
  * Job to load Intake Screening from PostgreSQL into ElasticSearch.
@@ -33,7 +37,7 @@ import gov.ca.cwds.jobs.transform.EntityNormalizer;
 public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, EsIntakeScreening>
     implements JobResultSetAware<EsIntakeScreening> {
 
-  private static final Logger LOGGER = LogManager.getLogger(IntakeScreeningJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(IntakeScreeningJob.class);
 
   private static final ESOptionalCollection[] KEEP_COLLECTIONS =
       new ESOptionalCollection[] {ESOptionalCollection.SCREENING};
@@ -88,8 +92,8 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
   }
 
   @Override
-  public String getViewName() {
-    return "VW_SCREENING_HISTORY";
+  public String getInitialLoadViewName() {
+    return getDenormalizedClass().getDeclaredAnnotation(Table.class).name();
   }
 
   /**
@@ -112,7 +116,7 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
   @Override
   protected void setInsertCollections(ElasticSearchPerson esp, IntakeParticipant t,
       List<? extends ApiTypedIdentifier<String>> list) {
-    esp.setScreenings((List<ElasticSearchPerson.ElasticSearchPersonScreening>) list);
+    esp.setScreenings((List<ElasticSearchPersonScreening>) list);
   }
 
   /**

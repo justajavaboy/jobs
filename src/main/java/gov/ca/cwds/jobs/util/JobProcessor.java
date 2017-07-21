@@ -6,6 +6,7 @@ package gov.ca.cwds.jobs.util;
  * @param <O> output type
  * @author CWDS TPT-2
  */
+@FunctionalInterface
 public interface JobProcessor<I, O> {
 
   /**

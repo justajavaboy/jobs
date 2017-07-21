@@ -1,7 +1,5 @@
 package gov.ca.cwds.jobs;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,17 +12,15 @@ import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
 /**
- * Job to load reporters from CMS into ElasticSearch
+ * Job to load reporters from CMS into ElasticSearch.
  * 
  * @author CWDS API Team
  */
 public class ReporterIndexerJob
     extends BasePersonIndexerJob<ReplicatedReporter, ReplicatedReporter> {
 
-  private static final Logger LOGGER = LogManager.getLogger(ReporterIndexerJob.class);
-
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct job with all required dependencies.
    * 
    * @param dao Client DAO
    * @param esDao ElasticSearch DAO
@@ -33,9 +29,9 @@ public class ReporterIndexerJob
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public ReporterIndexerJob(final ReplicatedReporterDao dao,
-      final ElasticsearchDao esDao, @LastRunFile final String lastJobRunTimeFilename,
-      final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
+  public ReporterIndexerJob(final ReplicatedReporterDao dao, final ElasticsearchDao esDao,
+      @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
+      @CmsSessionFactory SessionFactory sessionFactory) {
     super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
   }
 
@@ -45,6 +41,7 @@ public class ReporterIndexerJob
   }
 
   @Override
+  @Deprecated
   protected String getLegacySourceTable() {
     return "REPTR_T";
   }
@@ -77,13 +74,7 @@ public class ReporterIndexerJob
    * @param args command line arguments
    */
   public static void main(String... args) {
-    LOGGER.info("Run Reporter indexer job");
-    try {
-      runJob(ReporterIndexerJob.class, args);
-    } catch (Exception e) {
-      LOGGER.fatal("STOPPING BATCH: " + e.getMessage(), e);
-      throw e;
-    }
+    runMain(ReporterIndexerJob.class, args);
   }
 
 }

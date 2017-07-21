@@ -2,20 +2,20 @@ package gov.ca.cwds.jobs.util.elastic;
 
 import gov.ca.cwds.cals.Identifiable;
 import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
+import gov.ca.cwds.jobs.exception.JobsException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.util.JobWriter;
 
 /**
@@ -25,10 +25,10 @@ import gov.ca.cwds.jobs.util.JobWriter;
  */
 public class ElasticJobWriter<T extends Identifiable<String>> implements JobWriter<T> {
 
-  private static final Logger LOGGER = LogManager.getLogger(ElasticJobWriter.class);
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ElasticJobWriter.class);
   protected CalsElasticsearchIndexerDao elasticsearchDao;
-  protected BulkProcessor bulkProcessor;
-  protected ObjectMapper objectMapper;
+  private BulkProcessor bulkProcessor;
+  private ObjectMapper objectMapper;
 
   /**
    * Constructor.
@@ -81,5 +81,6 @@ public class ElasticJobWriter<T extends Identifiable<String>> implements JobWrit
     } catch (IOException |InterruptedException e) {
       throw new JobsException(e);
     }
+  }
   }
 }

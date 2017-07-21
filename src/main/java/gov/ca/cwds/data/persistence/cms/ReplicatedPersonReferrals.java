@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonAllegation;
-import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonReferral;
+import gov.ca.cwds.data.es.ElasticSearchPersonAllegation;
+import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
 import gov.ca.cwds.data.persistence.PersistentObject;
+import gov.ca.cwds.data.std.ApiObjectIdentity;
 import gov.ca.cwds.data.std.ApiPersonAware;
 
 /**
@@ -17,19 +18,26 @@ import gov.ca.cwds.data.std.ApiPersonAware;
  * 
  * @author CWDS API Team
  */
-public class ReplicatedPersonReferrals implements PersistentObject, ApiPersonAware {
+public class ReplicatedPersonReferrals extends ApiObjectIdentity
+    implements PersistentObject, ApiPersonAware {
 
   private static final long serialVersionUID = -8746969311364544478L;
 
   private String clientId;
-  private List<ElasticSearchPersonReferral> referrals =
-      new ArrayList<ElasticSearchPersonReferral>();
+  private List<ElasticSearchPersonReferral> referrals = new ArrayList<>();
 
   /**
    * Key: Referral ID <br>
    * Value: ElasticSearchPersonAllegation objects for the keyed referral id.
    */
   private Map<String, List<ElasticSearchPersonAllegation>> referralAllegations = new HashMap<>();
+
+  /**
+   * Default constructor.
+   */
+  public ReplicatedPersonReferrals() {
+    // Default, no-op
+  }
 
   /**
    * Construct the object
@@ -109,6 +117,5 @@ public class ReplicatedPersonReferrals implements PersistentObject, ApiPersonAwa
   public String getSsn() {
     return null;
   }
-
 
 }
