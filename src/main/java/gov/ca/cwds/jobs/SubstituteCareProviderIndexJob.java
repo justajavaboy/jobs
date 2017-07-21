@@ -55,39 +55,22 @@ public class SubstituteCareProviderIndexJob
   protected List<Pair<String, String>> getPartitionRanges() {
     List<Pair<String, String>> ret = new ArrayList<>();
 
-    ret.add(Pair.of("aaaaaaaaaa", "A6I7LQP43S"));
-    ret.add(Pair.of("A6JfziT194", "B1ZHOmR4kl"));
-    ret.add(Pair.of("B1ZK0kM9bB", "CWRob2w5aA"));
-    ret.add(Pair.of("CWRsbBZ07S", "DT1Uln810S"));
-    ret.add(Pair.of("DT18kLg2dI", "EPdci4P54S"));
-    ret.add(Pair.of("EPded9HDmA", "FKdJBTUBlB"));
-    ret.add(Pair.of("FKdYk0PJnD", "GHghg6YB5h"));
-    ret.add(Pair.of("GHghK7v5wy", "HC7ouvJ33A"));
-    ret.add(Pair.of("HC7BmS8Cye", "IzkP85T62T"));
-    ret.add(Pair.of("Izk0rNyz58", "JvLGIqJ3Ku"));
-    ret.add(Pair.of("JvLHjYC3Ku", "KttkF4WKjw"));
-    ret.add(Pair.of("Kttoy651sG", "LpWX8cr197"));
-    ret.add(Pair.of("LpW5mzqHEL", "Mmf6piL4oV"));
-    ret.add(Pair.of("Mmf7x2nGAJ", "NiVfgSA2LC"));
-    ret.add(Pair.of("NiVfoFH3V3", "OeQvGxBAeK"));
-    ret.add(Pair.of("OeQvNkTBAf", "Pbljvkn30A"));
-    ret.add(Pair.of("Pblkjtzq38", "P71du5J07S"));
-    ret.add(Pair.of("P71rrFhD5x", "Q5QnUX11sG"));
-    ret.add(Pair.of("Q5QDTr58fU", "R1GecUoGjU"));
-    ret.add(Pair.of("R1Gglkp3tT", "SWELBjN41S"));
-    ret.add(Pair.of("SWE3NHfFNj", "TTEvpf29LH"));
-    ret.add(Pair.of("TTEIYWmBcL", "0CRee3d1sG"));
-    ret.add(Pair.of("0CRtfDf5W3", "1yLGjsA10S"));
-    ret.add(Pair.of("1yLK5it5ij", "2vKHMKP197"));
-    ret.add(Pair.of("2vKPbCN2qZ", "3szDtH56a7"));
-    ret.add(Pair.of("3szE3Ob03F", "4rg2m6z37S"));
-    ret.add(Pair.of("4rhjjT65vr", "5ojkIutBNz"));
-    ret.add(Pair.of("5ojPVj9Dyx", "6lmpC97FuD"));
-    ret.add(Pair.of("6lmpVGEKl8", "7iq1ikO0X1"));
-    ret.add(Pair.of("7iq4TAX43S", "8fyoWSIDAP"));
-    ret.add(Pair.of("8fyCjtkOOI", "9ceqONF197"));
-    ret.add(Pair.of("9cevdVN1MG", "999WyW137S"));
-    ret.add(Pair.of("999XWkeLt8", "9999999999"));
+    ret.add(Pair.of("aaaaaaaaaa", "B1ZHOmR4kl"));
+    ret.add(Pair.of("B1ZK0kM9bB", "DT1Uln810S"));
+    ret.add(Pair.of("DT18kLg2dI", "FKdJBTUBlB"));
+    ret.add(Pair.of("FKdYk0PJnD", "HC7ouvJ33A"));
+    ret.add(Pair.of("HC7BmS8Cye", "JvLGIqJ3Ku"));
+    ret.add(Pair.of("JvLHjYC3Ku", "LpWX8cr197"));
+    ret.add(Pair.of("LpW5mzqHEL", "NiVfgSA2LC"));
+    ret.add(Pair.of("NiVfoFH3V3", "Pbljvkn30A"));
+    ret.add(Pair.of("Pblkjtzq38", "Q5QnUX11sG"));
+    ret.add(Pair.of("Q5QDTr58fU", "SWELBjN41S"));
+    ret.add(Pair.of("SWE3NHfFNj", "0CRee3d1sG"));
+    ret.add(Pair.of("0CRtfDf5W3", "2vKHMKP197"));
+    ret.add(Pair.of("2vKPbCN2qZ", "4rg2m6z37S"));
+    ret.add(Pair.of("4rhjjT65vr", "6lmpC97FuD"));
+    ret.add(Pair.of("6lmpVGEKl8", "8fyoWSIDAP"));
+    ret.add(Pair.of("8fyCjtkOOI", "9999999999"));
 
     return ret;
   }
