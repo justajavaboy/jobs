@@ -11,9 +11,10 @@ import org.hibernate.SessionFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
+import gov.ca.cwds.dao.cms.ReplicatedServiceProviderR1Dao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProvider;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProviderR1;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
@@ -22,7 +23,7 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  * 
  * @author CWDS API Team
  */
-public class ServiceProviderIndexerJob extends BasePersonIndexerJob<ReplicatedServiceProvider> {
+public class ServiceProviderIndexerJob extends BasePersonIndexerJob<ReplicatedServiceProviderR1> {
 
   private static final Logger LOGGER = LogManager.getLogger(ServiceProviderIndexerJob.class);
 
@@ -36,10 +37,15 @@ public class ServiceProviderIndexerJob extends BasePersonIndexerJob<ReplicatedSe
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public ServiceProviderIndexerJob(final ReplicatedServiceProviderDao mainDao,
+  public ServiceProviderIndexerJob(final ReplicatedServiceProviderR1Dao mainDao,
       final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
       final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
     super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  }
+
+  @Override
+  protected boolean isDelete(ReplicatedServiceProviderR1 t) {
+    return t.getReplicationOperation() == CmsReplicationOperation.D;
   }
 
   @Override

@@ -27,7 +27,7 @@ import gov.ca.cwds.data.persistence.cms.BaseOtherClientName;
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientNameR1.findPartitionedBuckets",
         query = "select z.THIRD_ID, z.FIRST_NM, z.LAST_NM, z.MIDDLE_NM, z.NMPRFX_DSC, z.NAME_TPC, "
-            + "z.SUFX_TLDSC, z.LST_UPD_ID, z.LST_UPD_TS, z.FKCLIENT_T , z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
+            + "z.SUFX_TLDSC, z.LST_UPD_ID, z.LST_UPD_TS, z.FKCLIENT_T, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
             + "from {h-schema}OCL_NM_T z "
             + "WHERE z.FKCLIENT_T >= :min_id AND z.FKCLIENT_T < :max_id "
             + "AND (1=1 OR 57 = :bucket_num OR 92 = :total_buckets) FOR READ ONLY WITH UR",

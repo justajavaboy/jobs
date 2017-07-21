@@ -28,7 +28,8 @@ import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedReporterR1Dao;
-import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
+import gov.ca.cwds.dao.cms.ReplicatedServiceProviderR1Dao;
+import gov.ca.cwds.dao.cms.ReplicatedSubstituteCareProviderR1Dao;
 import gov.ca.cwds.data.CmsSystemCodeSerializer;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.Allegation;
@@ -51,8 +52,10 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientNameR1;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporter;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProvider;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProviderR1;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProviderR1;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.inject.NsSessionFactory;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
@@ -102,24 +105,24 @@ public class JobsGuiceInjector extends AbstractModule {
    */
   @Override
   protected void configure() {
-    bind(SessionFactory.class).annotatedWith(CmsSessionFactory.class)
-        .toInstance(new Configuration().configure("jobs-cms-hibernate.cfg.xml")
-            .addPackage("gov.ca.cwds.data.persistence.cms").addAnnotatedClass(Allegation.class)
-            .addAnnotatedClass(ReplicatedAttorney.class)
-            .addAnnotatedClass(CmsDocReferralClient.class).addAnnotatedClass(CmsDocument.class)
-            .addAnnotatedClass(CmsDocumentBlobSegment.class)
-            .addAnnotatedClass(ReplicatedCollateralIndividual.class)
-            .addAnnotatedClass(CollateralIndividual.class).addAnnotatedClass(CrossReport.class)
-            .addAnnotatedClass(ReplicatedEducationProviderContact.class)
-            .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
-            .addAnnotatedClass(ReplicatedOtherChildInPlacemtHome.class)
-            .addAnnotatedClass(ReplicatedOtherClientNameR1.class).addAnnotatedClass(Referral.class)
-            // .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
-            .addAnnotatedClass(ReplicatedServiceProvider.class).addAnnotatedClass(StaffPerson.class)
-            // .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
-            .addAnnotatedClass(ReplicatedClientR1.class)
-            .addAnnotatedClass(ReplicatedCollateralIndividualR1.class)
-            .addAnnotatedClass(ReplicatedReporterR1.class).buildSessionFactory());
+    bind(SessionFactory.class).annotatedWith(CmsSessionFactory.class).toInstance(new Configuration()
+        .configure("jobs-cms-hibernate.cfg.xml").addPackage("gov.ca.cwds.data.persistence.cms")
+        .addAnnotatedClass(Allegation.class).addAnnotatedClass(ReplicatedAttorney.class)
+        .addAnnotatedClass(CmsDocReferralClient.class).addAnnotatedClass(CmsDocument.class)
+        .addAnnotatedClass(CmsDocumentBlobSegment.class)
+        .addAnnotatedClass(ReplicatedCollateralIndividual.class)
+        .addAnnotatedClass(CollateralIndividual.class).addAnnotatedClass(CrossReport.class)
+        .addAnnotatedClass(ReplicatedEducationProviderContact.class)
+        .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
+        .addAnnotatedClass(ReplicatedOtherChildInPlacemtHome.class)
+        .addAnnotatedClass(ReplicatedOtherClientNameR1.class).addAnnotatedClass(Referral.class)
+        // .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
+        .addAnnotatedClass(ReplicatedServiceProviderR1.class).addAnnotatedClass(StaffPerson.class)
+        .addAnnotatedClass(ReplicatedSubstituteCareProviderR1.class)
+        .addAnnotatedClass(ReplicatedClientR1.class)
+        .addAnnotatedClass(ReplicatedCollateralIndividualR1.class)
+        .addAnnotatedClass(ReplicatedReporterR1.class).addAnnotatedClass(ReplicatedReporter.class)
+        .buildSessionFactory());
 
     // Register required DAO classes.
     bind(DocumentMetadataDao.class).to(DocumentMetadataDaoImpl.class);
@@ -128,11 +131,11 @@ public class JobsGuiceInjector extends AbstractModule {
     bind(ReplicatedReporterR1Dao.class);
     bind(ReplicatedCollateralIndividualR1Dao.class);
     bind(ReplicatedOtherClientNameR1Dao.class);
+    bind(ReplicatedServiceProviderR1Dao.class);
+    bind(ReplicatedSubstituteCareProviderR1Dao.class);
     bind(ReplicatedAttorneyDao.class);
     bind(ReplicatedOtherAdultInPlacemtHomeDao.class);
     bind(ReplicatedOtherChildInPlacemtHomeDao.class);
-    bind(ReplicatedServiceProviderDao.class);
-    // bind(ReplicatedSubstituteCareProviderDao.class);
     bind(ReplicatedEducationProviderContactDao.class);
 
     // Instantiate as a singleton, else Guice creates a new instance each time.

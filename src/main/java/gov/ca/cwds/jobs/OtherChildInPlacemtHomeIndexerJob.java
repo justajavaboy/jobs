@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
@@ -40,6 +41,11 @@ public class OtherChildInPlacemtHomeIndexerJob
     super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
   }
 
+  @Override
+  protected boolean isDelete(ReplicatedOtherChildInPlacemtHome t) {
+    return t.getReplicationOperation() == CmsReplicationOperation.D;
+  }
+
   /**
    * Batch job entry point.
    * 
@@ -56,5 +62,3 @@ public class OtherChildInPlacemtHomeIndexerJob
   }
 
 }
-
-
