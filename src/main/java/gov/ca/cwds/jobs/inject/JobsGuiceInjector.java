@@ -22,7 +22,7 @@ import gov.ca.cwds.dao.DocumentMetadataDao;
 import gov.ca.cwds.dao.cms.DocumentMetadataDaoImpl;
 import gov.ca.cwds.dao.cms.ReplicatedAttorneyDao;
 import gov.ca.cwds.dao.cms.ReplicatedClientR1Dao;
-import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualDao;
+import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
@@ -46,6 +46,7 @@ import gov.ca.cwds.data.persistence.cms.SystemCodeDaoFileImpl;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividualR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
@@ -117,6 +118,7 @@ public class JobsGuiceInjector extends AbstractModule {
             .addAnnotatedClass(ReplicatedServiceProvider.class).addAnnotatedClass(StaffPerson.class)
             // .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
             .addAnnotatedClass(ReplicatedClientR1.class)
+            .addAnnotatedClass(ReplicatedCollateralIndividualR1.class)
             .addAnnotatedClass(ReplicatedReporterR1.class).buildSessionFactory());
 
     // Register required DAO classes.
@@ -125,7 +127,7 @@ public class JobsGuiceInjector extends AbstractModule {
     bind(ReplicatedClientR1Dao.class);
     bind(ReplicatedReporterR1Dao.class);
     bind(ReplicatedAttorneyDao.class);
-    bind(ReplicatedCollateralIndividualDao.class);
+    bind(ReplicatedCollateralIndividualR1Dao.class);
     bind(ReplicatedOtherAdultInPlacemtHomeDao.class);
     bind(ReplicatedOtherChildInPlacemtHomeDao.class);
     bind(ReplicatedOtherClientNameDao.class);

@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualDao;
+import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualR1Dao;
 import gov.ca.cwds.data.cms.CollateralIndividualDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 
@@ -61,7 +61,7 @@ public class CollateralIndividualIndexerJobTest {
 
   @Test
   public void testInstantiation() throws Exception {
-    ReplicatedCollateralIndividualDao collateralIndividualDao = null;
+    ReplicatedCollateralIndividualR1Dao collateralIndividualDao = null;
     ElasticsearchDao elasticsearchDao = null;
     String lastJobRunTimeFilename = null;
     ObjectMapper mapper = null;
