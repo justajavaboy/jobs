@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.LongStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -286,9 +285,10 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
         results.parallelStream().forEach(p -> {
           try {
             ApiPersonAware pers = (ApiPersonAware) p;
-            final Person esp = new Person(p.getPrimaryKey().toString(), pers.getFirstName(),
-                pers.getLastName(), pers.getGender(), DomainChef.cookDate(pers.getBirthDate()),
-                pers.getSsn(), pers.getClass().getName(), mapper.writeValueAsString(p));
+            final Person esp =
+                new Person(p.getPrimaryKey().toString(), pers.getFirstName(), pers.getLastName(),
+                    pers.getGender(), DomainChef.cookDate(pers.getBirthDate()), pers.getSsn(),
+                    pers.getClass().getName().replaceAll("R1", ""), mapper.writeValueAsString(p));
 
             // Bulk indexing! MUCH faster than indexing one doc at a time.
             bp.add(isSensitive(p) || isDelete(p) ? bulkDelete(esp.getId())
@@ -328,12 +328,16 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    * @param bucket the bucket number to process
    * @return number of records processed in this bucket
    */
-  protected int processBucket(long bucket) {
+  protected int processBucket(long bucket, String minId, String maxId) {
     final long totalBuckets = this.opts.getTotalBuckets();
     LOGGER.warn("pull bucket #{} of #{}", bucket, totalBuckets);
-    final String minId =
-        StringUtils.isBlank(this.getOpts().getMinId()) ? " " : this.getOpts().getMinId();
-    final String maxId = this.getOpts().getMaxId();
+
+    // final String minId =
+    // StringUtils.isBlank(this.getOpts().getMinId()) ? " " : this.getOpts().getMinId();
+    // final String maxId = this.getOpts().getMaxId();
+
+    LOGGER.warn("PROCESS PARTITION RANGE \"{}\" to \"{}\"", minId, maxId);
+
     final List<T> results = StringUtils.isBlank(maxId) ? jobDao.bucketList(bucket, totalBuckets)
         : jobDao.partitionedBucketList(bucket, totalBuckets, minId, maxId);
 
@@ -343,14 +347,14 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
       // One bulk processor per bucket/thread.
       final BulkProcessor bp = buildBulkProcessor();
 
-      // One thread per bucket up to max cores.
-      // This bucket runs on one thread only. No parallel stream.
+      // Each bucket runs on one thread only. No parallel stream.
       results.stream().forEach(p -> {
         try {
           ApiPersonAware pers = (ApiPersonAware) p;
-          final Person esp = new Person(p.getPrimaryKey().toString(), pers.getFirstName(),
-              pers.getLastName(), pers.getGender(), DomainChef.cookDate(pers.getBirthDate()),
-              pers.getSsn(), pers.getClass().getName(), mapper.writeValueAsString(p));
+          final Person esp =
+              new Person(p.getPrimaryKey().toString(), pers.getFirstName(), pers.getLastName(),
+                  pers.getGender(), DomainChef.cookDate(pers.getBirthDate()), pers.getSsn(),
+                  pers.getClass().getName().replaceAll("R1", ""), mapper.writeValueAsString(p));
 
           // Bulk indexing! MUCH faster than indexing one doc at a time.
           bp.add(isSensitive(p) || isDelete(p) ? bulkDelete(esp.getId())
@@ -374,12 +378,13 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
   }
 
   /**
-   * Process all buckets using default parallelism without partitions.
+   * Process all buckets using default parallelism WITHOUT partitions.
    */
-  protected void processBuckets() {
+  protected void processBucketNoPartitions() {
     LOGGER.warn("Process buckets");
-    LongStream.rangeClosed(this.opts.getStartBucket(), this.opts.getEndBucket()).sorted()
-        .forEach(this::processBucket);
+    // LongStream.rangeClosed(this.opts.getStartBucket(), this.opts.getEndBucket()).parallel()
+    // .forEach();
+    processBucket(1, "aaaaaaaaaa", "9999999999");
   }
 
   /**
@@ -387,13 +392,18 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    */
   protected void processBucketPartitions() {
     LOGGER.warn("PROCESS EACH PARTITION");
-    for (Pair<String, String> pair : this.getPartitionRanges()) {
-      getOpts().setMinId(pair.getLeft());
-      getOpts().setMaxId(pair.getRight());
-      LOGGER.warn("PROCESS PARTITION RANGE \"{}\" to \"{}\"", getOpts().getMinId(),
-          getOpts().getMaxId());
-      processBuckets();
-    }
+
+    getPartitionRanges().stream().parallel()
+        .forEach(p -> processBucket(1, p.getLeft(), p.getRight()));
+
+    // for (Pair<String, String> pair : this.getPartitionRanges()) {
+    // getOpts().setMinId(pair.getLeft());
+    // getOpts().setMaxId(pair.getRight());
+    // LOGGER.warn("PROCESS PARTITION RANGE \"{}\" to \"{}\"", getOpts().getMinId(),
+    // getOpts().getMaxId());
+    // processBuckets();
+    // }
+
   }
 
   /**
@@ -437,7 +447,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
         } else {
           getOpts().setMaxId(null);
           getOpts().setMinId(null);
-          processBuckets();
+          processBucketNoPartitions();
         }
 
         ret = startTime;
@@ -446,7 +456,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
         ret = processLastRun(lastSuccessfulRunTime);
       } else {
         LOGGER.warn("DIRECT BUCKET MODE!");
-        processBuckets();
+        processBucketNoPartitions();
         ret = startTime;
       }
 
