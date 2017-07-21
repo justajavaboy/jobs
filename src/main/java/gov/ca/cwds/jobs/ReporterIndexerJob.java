@@ -11,7 +11,7 @@ import org.hibernate.SessionFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-import gov.ca.cwds.dao.cms.ReplicatedReporterDao;
+import gov.ca.cwds.dao.cms.ReplicatedReporterR1Dao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1;
 import gov.ca.cwds.inject.CmsSessionFactory;
@@ -36,7 +36,7 @@ public class ReporterIndexerJob extends BasePersonIndexerJob<ReplicatedReporterR
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public ReporterIndexerJob(final ReplicatedReporterDao reporterDao,
+  public ReporterIndexerJob(final ReplicatedReporterR1Dao reporterDao,
       final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
       final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
     super(reporterDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
@@ -45,7 +45,7 @@ public class ReporterIndexerJob extends BasePersonIndexerJob<ReplicatedReporterR
   @Override
   protected List<Pair<String, String>> getPartitionRanges() {
     List<Pair<String, String>> ret = new ArrayList<>();
-    ret.add(Pair.of(" ", "CpE9999999"));
+    ret.add(Pair.of("aaaaaaaaaa", "CpE9999999"));
     ret.add(Pair.of("CpE9999999", "EE99999998"));
     ret.add(Pair.of("EE99999998", "GUE9999997"));
     ret.add(Pair.of("GUE9999997", "I999999996"));

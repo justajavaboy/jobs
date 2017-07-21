@@ -54,7 +54,7 @@ import gov.ca.cwds.data.persistence.cms.BaseReporter;
             + "trim(z.RPTR_ST_NO) RPTR_ST_NO, trim(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, "
             + "z.LST_UPD_ID, z.LST_UPD_TS, z.FKREFERL_T, z.FKLAW_ENFT, z.ZIP_SFX_NO, z.CNTY_SPFCD, "
             + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}REPTR_T z "
-            + "WHERE z.IDENTIFIER >= :min_id AND z.IDENTIFIER < :max_id "
+            + "WHERE z.FKREFERL_T >= :min_id AND z.FKREFERL_T < :max_id "
             + "AND (1=1 OR 57 = :bucket_num OR 92 = :total_buckets) FOR READ ONLY WITH UR",
         resultClass = ReplicatedReporterR1.class)})
 @Entity

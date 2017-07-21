@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.dao.cms.ReplicatedReporterDao;
+import gov.ca.cwds.dao.cms.ReplicatedReporterR1Dao;
 import gov.ca.cwds.data.cms.ReporterDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 
@@ -59,7 +59,7 @@ public class ReporterIndexerJobTest {
 
   @Test
   public void testInstantiation() throws Exception {
-    ReplicatedReporterDao reporterDao = null;
+    ReplicatedReporterR1Dao reporterDao = null;
     ElasticsearchDao elasticsearchDao = null;
     String lastJobRunTimeFilename = null;
     ObjectMapper mapper = null;

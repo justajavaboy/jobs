@@ -27,9 +27,8 @@ import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameDao;
-import gov.ca.cwds.dao.cms.ReplicatedReporterDao;
+import gov.ca.cwds.dao.cms.ReplicatedReporterR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
-import gov.ca.cwds.dao.cms.ReplicatedSubstituteCareProviderDao;
 import gov.ca.cwds.data.CmsSystemCodeSerializer;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.Allegation;
@@ -42,7 +41,6 @@ import gov.ca.cwds.data.persistence.cms.CrossReport;
 import gov.ca.cwds.data.persistence.cms.ISystemCodeCache;
 import gov.ca.cwds.data.persistence.cms.ISystemCodeDao;
 import gov.ca.cwds.data.persistence.cms.Referral;
-import gov.ca.cwds.data.persistence.cms.ReferralClient;
 import gov.ca.cwds.data.persistence.cms.StaffPerson;
 import gov.ca.cwds.data.persistence.cms.SystemCodeDaoFileImpl;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney;
@@ -54,7 +52,6 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProvider;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.inject.NsSessionFactory;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
@@ -116,23 +113,24 @@ public class JobsGuiceInjector extends AbstractModule {
             .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
             .addAnnotatedClass(ReplicatedOtherChildInPlacemtHome.class)
             .addAnnotatedClass(ReplicatedOtherClientName.class).addAnnotatedClass(Referral.class)
-            .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporterR1.class)
+            // .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
             .addAnnotatedClass(ReplicatedServiceProvider.class).addAnnotatedClass(StaffPerson.class)
-            .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
-            .addAnnotatedClass(ReplicatedClientR1.class).buildSessionFactory());
+            // .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
+            .addAnnotatedClass(ReplicatedClientR1.class)
+            .addAnnotatedClass(ReplicatedReporterR1.class).buildSessionFactory());
 
     // Register required DAO classes.
     bind(DocumentMetadataDao.class).to(DocumentMetadataDaoImpl.class);
 
     bind(ReplicatedClientR1Dao.class);
-    bind(ReplicatedReporterDao.class);
+    bind(ReplicatedReporterR1Dao.class);
     bind(ReplicatedAttorneyDao.class);
     bind(ReplicatedCollateralIndividualDao.class);
     bind(ReplicatedOtherAdultInPlacemtHomeDao.class);
     bind(ReplicatedOtherChildInPlacemtHomeDao.class);
     bind(ReplicatedOtherClientNameDao.class);
     bind(ReplicatedServiceProviderDao.class);
-    bind(ReplicatedSubstituteCareProviderDao.class);
+    // bind(ReplicatedSubstituteCareProviderDao.class);
     bind(ReplicatedEducationProviderContactDao.class);
 
     // Instantiate as a singleton, else Guice creates a new instance each time.
