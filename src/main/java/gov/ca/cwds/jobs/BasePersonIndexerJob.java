@@ -386,9 +386,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
   protected void processBucketPartitions() {
     LOGGER.warn("PROCESS EACH PARTITION");
 
-    getPartitionRanges().stream().parallel()
-        .forEach(p -> processBucket(1, p.getLeft(), p.getRight()));
-
+    getPartitionRanges().parallelStream().forEach(p -> processBucket(1, p.getLeft(), p.getRight()));
   }
 
   /**
@@ -411,10 +409,14 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
     try {
       final Date startTime = new Date();
 
+      final int maxThreads = Math.min(Runtime.getRuntime().availableProcessors(), 4);
+      System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism",
+          String.valueOf(maxThreads));
+      LOGGER.info("Processors={}", maxThreads);
+
       // If the people index is missing, create it.
       LOGGER.debug("Create people index if missing");
       esDao.createIndexIfNeeded(ElasticsearchDao.DEFAULT_PERSON_IDX_NM);
-      LOGGER.debug("availableProcessors={}", Runtime.getRuntime().availableProcessors());
 
       // Smart/auto mode:
       final Calendar cal = Calendar.getInstance();
