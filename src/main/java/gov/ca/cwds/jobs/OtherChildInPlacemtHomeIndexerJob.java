@@ -7,10 +7,10 @@ import org.hibernate.SessionFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
+import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeR1Dao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHomeR1;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
@@ -20,7 +20,7 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  * @author CWDS API Team
  */
 public class OtherChildInPlacemtHomeIndexerJob
-    extends BasePersonIndexerJob<ReplicatedOtherChildInPlacemtHome> {
+    extends BasePersonIndexerJob<ReplicatedOtherChildInPlacemtHomeR1> {
 
   private static final Logger LOGGER =
       LogManager.getLogger(OtherChildInPlacemtHomeIndexerJob.class);
@@ -35,14 +35,14 @@ public class OtherChildInPlacemtHomeIndexerJob
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public OtherChildInPlacemtHomeIndexerJob(final ReplicatedOtherChildInPlacemtHomeDao mainDao,
+  public OtherChildInPlacemtHomeIndexerJob(final ReplicatedOtherChildInPlacemtHomeR1Dao mainDao,
       final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
       final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
     super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
   }
 
   @Override
-  protected boolean isDelete(ReplicatedOtherChildInPlacemtHome t) {
+  protected boolean isDelete(ReplicatedOtherChildInPlacemtHomeR1 t) {
     return t.getReplicationOperation() == CmsReplicationOperation.D;
   }
 
