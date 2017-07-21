@@ -52,7 +52,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporter;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProvider;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider;
 import gov.ca.cwds.inject.CmsSessionFactory;
@@ -116,7 +116,7 @@ public class JobsGuiceInjector extends AbstractModule {
             .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
             .addAnnotatedClass(ReplicatedOtherChildInPlacemtHome.class)
             .addAnnotatedClass(ReplicatedOtherClientName.class).addAnnotatedClass(Referral.class)
-            .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
+            .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporterR1.class)
             .addAnnotatedClass(ReplicatedServiceProvider.class).addAnnotatedClass(StaffPerson.class)
             .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
             .addAnnotatedClass(ReplicatedClientR1.class).buildSessionFactory());

@@ -13,7 +13,7 @@ import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedReporterDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporter;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
@@ -22,7 +22,7 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  * 
  * @author CWDS API Team
  */
-public class ReporterIndexerJob extends BasePersonIndexerJob<ReplicatedReporter> {
+public class ReporterIndexerJob extends BasePersonIndexerJob<ReplicatedReporterR1> {
 
   private static final Logger LOGGER = LogManager.getLogger(ReporterIndexerJob.class);
 

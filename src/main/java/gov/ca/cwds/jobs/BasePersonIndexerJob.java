@@ -342,7 +342,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
         : jobDao.partitionedBucketList(bucket, totalBuckets, minId, maxId);
 
     if (results != null && !results.isEmpty()) {
-      LOGGER.warn("bucket #{} found {} people to index", bucket, results.size());
+      LOGGER.warn("PARTITION RANGE \"{}\" to \"{}\": bucket #{} found {} people to index", minId,
+          maxId, bucket, results.size());
 
       // One bulk processor per bucket/thread.
       final BulkProcessor bp = buildBulkProcessor();
