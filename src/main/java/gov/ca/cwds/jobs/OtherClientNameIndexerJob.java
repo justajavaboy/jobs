@@ -11,9 +11,9 @@ import org.hibernate.SessionFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
-import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameDao;
+import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameR1Dao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientNameR1;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
@@ -22,7 +22,7 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  * 
  * @author CWDS API Team
  */
-public class OtherClientNameIndexerJob extends BasePersonIndexerJob<ReplicatedOtherClientName> {
+public class OtherClientNameIndexerJob extends BasePersonIndexerJob<ReplicatedOtherClientNameR1> {
 
   private static final Logger LOGGER = LogManager.getLogger(OtherClientNameIndexerJob.class);
 
@@ -36,7 +36,7 @@ public class OtherClientNameIndexerJob extends BasePersonIndexerJob<ReplicatedOt
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public OtherClientNameIndexerJob(final ReplicatedOtherClientNameDao mainDao,
+  public OtherClientNameIndexerJob(final ReplicatedOtherClientNameR1Dao mainDao,
       final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
       final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
     super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
@@ -45,7 +45,7 @@ public class OtherClientNameIndexerJob extends BasePersonIndexerJob<ReplicatedOt
   @Override
   protected List<Pair<String, String>> getPartitionRanges() {
     List<Pair<String, String>> ret = new ArrayList<>();
-    ret.add(Pair.of(" ", "CpE9999999"));
+    ret.add(Pair.of("aaaaaaaaaa", "CpE9999999"));
     ret.add(Pair.of("CpE9999999", "EE99999998"));
     ret.add(Pair.of("EE99999998", "GUE9999997"));
     ret.add(Pair.of("GUE9999997", "I999999996"));

@@ -26,7 +26,7 @@ import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
-import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameDao;
+import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedReporterR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
 import gov.ca.cwds.data.CmsSystemCodeSerializer;
@@ -50,7 +50,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividualR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientNameR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProvider;
 import gov.ca.cwds.inject.CmsSessionFactory;
@@ -113,7 +113,7 @@ public class JobsGuiceInjector extends AbstractModule {
             .addAnnotatedClass(ReplicatedEducationProviderContact.class)
             .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
             .addAnnotatedClass(ReplicatedOtherChildInPlacemtHome.class)
-            .addAnnotatedClass(ReplicatedOtherClientName.class).addAnnotatedClass(Referral.class)
+            .addAnnotatedClass(ReplicatedOtherClientNameR1.class).addAnnotatedClass(Referral.class)
             // .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
             .addAnnotatedClass(ReplicatedServiceProvider.class).addAnnotatedClass(StaffPerson.class)
             // .addAnnotatedClass(ReplicatedSubstituteCareProvider.class)
@@ -126,11 +126,11 @@ public class JobsGuiceInjector extends AbstractModule {
 
     bind(ReplicatedClientR1Dao.class);
     bind(ReplicatedReporterR1Dao.class);
-    bind(ReplicatedAttorneyDao.class);
     bind(ReplicatedCollateralIndividualR1Dao.class);
+    bind(ReplicatedOtherClientNameR1Dao.class);
+    bind(ReplicatedAttorneyDao.class);
     bind(ReplicatedOtherAdultInPlacemtHomeDao.class);
     bind(ReplicatedOtherChildInPlacemtHomeDao.class);
-    bind(ReplicatedOtherClientNameDao.class);
     bind(ReplicatedServiceProviderDao.class);
     // bind(ReplicatedSubstituteCareProviderDao.class);
     bind(ReplicatedEducationProviderContactDao.class);

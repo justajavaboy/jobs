@@ -45,7 +45,8 @@ public class ServiceProviderIndexerJob extends BasePersonIndexerJob<ReplicatedSe
   @Override
   protected List<Pair<String, String>> getPartitionRanges() {
     List<Pair<String, String>> ret = new ArrayList<>();
-    ret.add(Pair.of(" ", "AI2pE99999"));
+
+    ret.add(Pair.of("aaaaaaaaaa", "AI2pE99999"));
     ret.add(Pair.of("AI2pE99999", "BhUE999998"));
     ret.add(Pair.of("BhUE999998", "BQMUE99997"));
     ret.add(Pair.of("BQMUE99997", "CpE9999996"));
@@ -100,7 +101,8 @@ public class ServiceProviderIndexerJob extends BasePersonIndexerJob<ReplicatedSe
     ret.add(Pair.of("7UE999999c", "8txpE9999a"));
     ret.add(Pair.of("8txpE9999a", "82pE99999a"));
     ret.add(Pair.of("82pE99999a", "9BhUE99989"));
-    ret.add(Pair.of("9BhUE99989", "9999999988"));
+    ret.add(Pair.of("9BhUE99989", "9999999999"));
+
     return ret;
   }
 
