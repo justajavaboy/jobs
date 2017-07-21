@@ -22,55 +22,57 @@ import gov.ca.cwds.data.std.ApiPersonAware;
 @NamedNativeQueries({
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientR1.findAllUpdatedAfter",
-        query = "select z.IDENTIFIER, z.ADPTN_STCD, z.ALN_REG_NO, z.BIRTH_DT, trim(z.BR_FAC_NM) as BR_FAC_NM, z.B_STATE_C, z.B_CNTRY_C, z.CHLD_CLT_B, trim(z.COM_FST_NM) as COM_FST_NM, trim(z.COM_LST_NM) as COM_LST_NM, trim(z.COM_MID_NM) as COM_MID_NM, z.CONF_EFIND, z.CONF_ACTDT, z.CREATN_DT, z.DEATH_DT, trim(z.DTH_RN_TXT) as DTH_RN_TXT, trim(z.DRV_LIC_NO) as DRV_LIC_NO, z.D_STATE_C, z.GENDER_CD, z.I_CNTRY_C, z.IMGT_STC, z.INCAPC_CD, z.LITRATE_CD, z.MAR_HIST_B, z.MRTL_STC, z.MILT_STACD, z.NMPRFX_DSC, z.NAME_TPC, z.OUTWRT_IND, z.P_ETHNCTYC, z.P_LANG_TPC, z.RLGN_TPC, z.S_LANG_TC, z.SENSTV_IND, z.SNTV_HLIND, z.SS_NO, z.SSN_CHG_CD, trim(z.SUFX_TLDSC) as SUFX_TLDSC, z.UNEMPLY_CD, z.LST_UPD_ID, z.LST_UPD_TS, trim(z.COMMNT_DSC) as COMMNT_DSC, z.EST_DOB_CD, z.BP_VER_IND, z.HISP_CD, z.CURRCA_IND, z.CURREG_IND, z.COTH_DESC, z.PREVCA_IND, z.PREREG_IND, trim(z.POTH_DESC) as POTH_DESC, z.HCARE_IND, z.LIMIT_IND, trim(z.BIRTH_CITY) as BIRTH_CITY, trim(z.HEALTH_TXT) as HEALTH_TXT, z.MTERM_DT, z.FTERM_DT, z.ZIPPY_IND, trim(z.DEATH_PLC) as DEATH_PLC, z.TR_MBVRT_B, z.TRBA_CLT_B, z.SOC158_IND, z.DTH_DT_IND, trim(z.EMAIL_ADDR) as EMAIL_ADDR, z.ADJDEL_IND, z.ETH_UD_CD, z.HISP_UD_CD, z.SOCPLC_CD, z.CL_INDX_NO, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-            + "from {h-schema}CLIENT_T z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY",
+        query = "select c.IDENTIFIER, c.ADPTN_STCD, c.ALN_REG_NO, c.BIRTH_DT, trim(c.BR_FAC_NM) BR_FAC_NM, c.B_STATE_C, c.B_CNTRY_C, c.CHLD_CLT_B, trim(c.COM_FST_NM) COM_FST_NM, trim(c.COM_LST_NM) COM_LST_NM, trim(c.COM_MID_NM) COM_MID_NM, c.CONF_EFIND, c.CONF_ACTDT, c.CREATN_DT, c.DEATH_DT, trim(c.DTH_RN_TXT) DTH_RN_TXT, trim(c.DRV_LIC_NO) DRV_LIC_NO, c.D_STATE_C, c.GENDER_CD, c.I_CNTRY_C, c.IMGT_STC, c.INCAPC_CD, c.LITRATE_CD, c.MAR_HIST_B, c.MRTL_STC, c.MILT_STACD, c.NMPRFX_DSC, c.NAME_TPC, c.OUTWRT_IND, c.P_ETHNCTYC, c.P_LANG_TPC, c.RLGN_TPC, c.S_LANG_TC, c.SENSTV_IND, c.SNTV_HLIND, c.SS_NO, c.SSN_CHG_CD, trim(c.SUFX_TLDSC) SUFX_TLDSC, c.UNEMPLY_CD, c.LST_UPD_ID, c.LST_UPD_TS, trim(c.COMMNT_DSC) COMMNT_DSC, c.EST_DOB_CD, c.BP_VER_IND, c.HISP_CD, c.CURRCA_IND, c.CURREG_IND, c.COTH_DESC, c.PREVCA_IND, c.PREREG_IND, trim(c.POTH_DESC) POTH_DESC, c.HCARE_IND, c.LIMIT_IND, trim(c.BIRTH_CITY) BIRTH_CITY, trim(c.HEALTH_TXT) HEALTH_TXT, c.MTERM_DT, c.FTERM_DT, c.ZIPPY_IND, trim(c.DEATH_PLC) DEATH_PLC, c.TR_MBVRT_B, c.TRBA_CLT_B, c.SOC158_IND, c.DTH_DT_IND, trim(c.EMAIL_ADDR) EMAIL_ADDR, c.ADJDEL_IND, c.ETH_UD_CD, c.HISP_UD_CD, c.SOCPLC_CD, c.CL_INDX_NO, c.IBMSNAP_OPERATION, c.IBMSNAP_LOGMARKER "
+            + "from {h-schema}CLIENT_T c WHERE c.IBMSNAP_LOGMARKER >= :after FOR READ ONLY",
         resultClass = ReplicatedClientR1.class),
     // @NamedNativeQuery(
     // name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientR1.findPartitionedBuckets",
-    // query = "select z.IDENTIFIER, z.ADPTN_STCD, z.ALN_REG_NO, z.BIRTH_DT, trim(z.BR_FAC_NM) as
+    // query = "select c.IDENTIFIER, c.ADPTN_STCD, c.ALN_REG_NO, c.BIRTH_DT, trim(c.BR_FAC_NM) as
     // BR_FAC_NM, "
-    // + "z.B_STATE_C, z.B_CNTRY_C, z.CHLD_CLT_B, trim(z.COM_FST_NM) as COM_FST_NM,
-    // trim(z.COM_LST_NM) as COM_LST_NM, trim(z.COM_MID_NM) as COM_MID_NM, z.CONF_EFIND, "
-    // + "z.CONF_ACTDT, z.CREATN_DT, z.DEATH_DT, trim(z.DTH_RN_TXT) as DTH_RN_TXT,
-    // trim(z.DRV_LIC_NO) as DRV_LIC_NO, "
-    // + "z.D_STATE_C, z.GENDER_CD, z.I_CNTRY_C, z.IMGT_STC, z.INCAPC_CD, z.LITRATE_CD,
-    // z.MAR_HIST_B, "
-    // + "z.MRTL_STC, z.MILT_STACD, z.NMPRFX_DSC, z.NAME_TPC, z.OUTWRT_IND, z.P_ETHNCTYC,
-    // z.P_LANG_TPC, z.RLGN_TPC, z.S_LANG_TC, "
-    // + "z.SENSTV_IND, z.SNTV_HLIND, z.SS_NO, z.SSN_CHG_CD, trim(z.SUFX_TLDSC) as SUFX_TLDSC,
-    // z.UNEMPLY_CD, z.LST_UPD_ID, "
-    // + "z.LST_UPD_TS, trim(z.COMMNT_DSC) as COMMNT_DSC, z.EST_DOB_CD, z.BP_VER_IND, z.HISP_CD,
-    // z.CURRCA_IND, z.CURREG_IND, z.COTH_DESC, z.PREVCA_IND, "
-    // + "z.PREREG_IND, trim(z.POTH_DESC) as POTH_DESC, z.HCARE_IND, z.LIMIT_IND, trim(z.BIRTH_CITY)
-    // as BIRTH_CITY, "
-    // + "trim(z.HEALTH_TXT) as HEALTH_TXT, z.MTERM_DT, z.FTERM_DT, z.ZIPPY_IND, trim(z.DEATH_PLC)
-    // as DEATH_PLC, "
-    // + "z.TR_MBVRT_B, z.TRBA_CLT_B, z.SOC158_IND, z.DTH_DT_IND, trim(z.EMAIL_ADDR) as EMAIL_ADDR,
+    // + "c.B_STATE_C, c.B_CNTRY_C, c.CHLD_CLT_B, trim(c.COM_FST_NM) COM_FST_NM,
+    // trim(c.COM_LST_NM) COM_LST_NM, trim(c.COM_MID_NM) COM_MID_NM, c.CONF_EFIND, "
+    // + "c.CONF_ACTDT, c.CREATN_DT, c.DEATH_DT, trim(c.DTH_RN_TXT) DTH_RN_TXT,
+    // trim(c.DRV_LIC_NO) DRV_LIC_NO, "
+    // + "c.D_STATE_C, c.GENDER_CD, c.I_CNTRY_C, c.IMGT_STC, c.INCAPC_CD, c.LITRATE_CD,
+    // c.MAR_HIST_B, "
+    // + "c.MRTL_STC, c.MILT_STACD, c.NMPRFX_DSC, c.NAME_TPC, c.OUTWRT_IND, c.P_ETHNCTYC,
+    // c.P_LANG_TPC, c.RLGN_TPC, c.S_LANG_TC, "
+    // + "c.SENSTV_IND, c.SNTV_HLIND, c.SS_NO, c.SSN_CHG_CD, trim(c.SUFX_TLDSC) SUFX_TLDSC,
+    // c.UNEMPLY_CD, c.LST_UPD_ID, "
+    // + "c.LST_UPD_TS, trim(c.COMMNT_DSC) COMMNT_DSC, c.EST_DOB_CD, c.BP_VER_IND, c.HISP_CD,
+    // c.CURRCA_IND, c.CURREG_IND, c.COTH_DESC, c.PREVCA_IND, "
+    // + "c.PREREG_IND, trim(c.POTH_DESC) POTH_DESC, c.HCARE_IND, c.LIMIT_IND, trim(c.BIRTH_CITY)
+    // BIRTH_CITY, "
+    // + "trim(c.HEALTH_TXT) HEALTH_TXT, c.MTERM_DT, c.FTERM_DT, c.ZIPPY_IND, trim(c.DEATH_PLC)
+    // DEATH_PLC, "
+    // + "c.TR_MBVRT_B, c.TRBA_CLT_B, c.SOC158_IND, c.DTH_DT_IND, trim(c.EMAIL_ADDR) EMAIL_ADDR,
     // "
-    // + "z.ADJDEL_IND, z.ETH_UD_CD, z.HISP_UD_CD, z.SOCPLC_CD, z.CL_INDX_NO , z.IBMSNAP_OPERATION,
-    // z.IBMSNAP_LOGMARKER "
-    // + "from ( select mod(y.rn, CAST(:total_buckets AS INTEGER)) + 1 as bucket, y.* "
-    // + "from ( select row_number() over (order by 1) as rn, x.* "
+    // + "c.ADJDEL_IND, c.ETH_UD_CD, c.HISP_UD_CD, c.SOCPLC_CD, c.CL_INDX_NO , c.IBMSNAP_OPERATION,
+    // c.IBMSNAP_LOGMARKER "
+    // + "from ( select mod(y.rn, CAST(:total_buckets AS INTEGER)) + 1 bucket, y.* "
+    // + "from ( select row_number() over (order by 1) rn, x.* "
     // + "from {h-schema}CLIENT_T x "
-    // + "where x.IDENTIFIER >= :min_id and x.IDENTIFIER < :max_id ) y ) z "
-    // + "where z.bucket = :bucket_num FOR READ ONLY",
+    // + "where x.IDENTIFIER >= :min_id and x.IDENTIFIER < :max_id ) y ) c "
+    // + "where c.bucket = :bucket_num FOR READ ONLY",
     // resultClass = ReplicatedClientR1.class)})
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientR1.findPartitionedBuckets",
-        query = "select z.IDENTIFIER, z.ADPTN_STCD, z.ALN_REG_NO, z.BIRTH_DT, trim(z.BR_FAC_NM) as BR_FAC_NM, "
-            + "z.B_STATE_C, z.B_CNTRY_C, z.CHLD_CLT_B, trim(z.COM_FST_NM) as COM_FST_NM, trim(z.COM_LST_NM) as COM_LST_NM, trim(z.COM_MID_NM) as COM_MID_NM, z.CONF_EFIND, "
-            + "z.CONF_ACTDT, z.CREATN_DT, z.DEATH_DT, trim(z.DTH_RN_TXT) as DTH_RN_TXT, trim(z.DRV_LIC_NO) as DRV_LIC_NO, "
-            + "z.D_STATE_C, z.GENDER_CD, z.I_CNTRY_C, z.IMGT_STC, z.INCAPC_CD, z.LITRATE_CD, z.MAR_HIST_B, "
-            + "z.MRTL_STC, z.MILT_STACD, z.NMPRFX_DSC, z.NAME_TPC, z.OUTWRT_IND, z.P_ETHNCTYC, z.P_LANG_TPC, z.RLGN_TPC, z.S_LANG_TC, "
-            + "z.SENSTV_IND, z.SNTV_HLIND, z.SS_NO, z.SSN_CHG_CD, trim(z.SUFX_TLDSC) as SUFX_TLDSC, z.UNEMPLY_CD, z.LST_UPD_ID, "
-            + "z.LST_UPD_TS, trim(z.COMMNT_DSC) as COMMNT_DSC, z.EST_DOB_CD, z.BP_VER_IND, z.HISP_CD, z.CURRCA_IND, z.CURREG_IND, z.COTH_DESC, z.PREVCA_IND, "
-            + "z.PREREG_IND, trim(z.POTH_DESC) as POTH_DESC, z.HCARE_IND, z.LIMIT_IND, trim(z.BIRTH_CITY) as BIRTH_CITY, "
-            + "trim(z.HEALTH_TXT) as HEALTH_TXT, z.MTERM_DT, z.FTERM_DT, z.ZIPPY_IND, trim(z.DEATH_PLC) as DEATH_PLC, "
-            + "z.TR_MBVRT_B, z.TRBA_CLT_B, z.SOC158_IND, z.DTH_DT_IND, trim(z.EMAIL_ADDR) as EMAIL_ADDR, "
-            + "z.ADJDEL_IND, z.ETH_UD_CD, z.HISP_UD_CD, z.SOCPLC_CD, z.CL_INDX_NO , z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-            + "from {h-schema}CLIENT_T z "
-            + "where x.IDENTIFIER >= :min_id and x.IDENTIFIER < :max_id"
-            + "and (1=1 OR 57 = :bucket_num OR 92 = :total_buckets) WITH UR",
+        query = "select c.IDENTIFIER, c.ADPTN_STCD, c.ALN_REG_NO, c.BIRTH_DT, trim(c.BR_FAC_NM) BR_FAC_NM, "
+            + "c.B_STATE_C, c.B_CNTRY_C, c.CHLD_CLT_B, trim(c.COM_FST_NM) COM_FST_NM, trim(c.COM_LST_NM) COM_LST_NM, "
+            + "trim(c.COM_MID_NM) COM_MID_NM, c.CONF_EFIND, c.CONF_ACTDT, c.CREATN_DT, c.DEATH_DT, "
+            + "trim(c.DTH_RN_TXT) DTH_RN_TXT, trim(c.DRV_LIC_NO) DRV_LIC_NO, c.D_STATE_C, c.GENDER_CD, "
+            + "c.I_CNTRY_C, c.IMGT_STC, c.INCAPC_CD, c.LITRATE_CD, c.MAR_HIST_B, c.MRTL_STC, c.MILT_STACD, "
+            + "c.NMPRFX_DSC, c.NAME_TPC, c.OUTWRT_IND, c.P_ETHNCTYC, c.P_LANG_TPC, c.RLGN_TPC, c.S_LANG_TC, "
+            + "c.SENSTV_IND, c.SNTV_HLIND, c.SS_NO, c.SSN_CHG_CD, trim(c.SUFX_TLDSC) SUFX_TLDSC, c.UNEMPLY_CD, "
+            + "c.LST_UPD_ID, c.LST_UPD_TS, trim(c.COMMNT_DSC) COMMNT_DSC, c.EST_DOB_CD, c.BP_VER_IND, c.HISP_CD, "
+            + "c.CURRCA_IND, c.CURREG_IND, c.COTH_DESC, c.PREVCA_IND, c.PREREG_IND, trim(c.POTH_DESC) POTH_DESC, "
+            + "c.HCARE_IND, c.LIMIT_IND, trim(c.BIRTH_CITY) BIRTH_CITY, trim(c.HEALTH_TXT) HEALTH_TXT, c.MTERM_DT, "
+            + "c.FTERM_DT, c.ZIPPY_IND, trim(c.DEATH_PLC) DEATH_PLC, c.TR_MBVRT_B, c.TRBA_CLT_B, c.SOC158_IND, "
+            + "c.DTH_DT_IND, trim(c.EMAIL_ADDR) EMAIL_ADDR, c.ADJDEL_IND, c.ETH_UD_CD, c.HISP_UD_CD, c.SOCPLC_CD, "
+            + "c.CL_INDX_NO , c.IBMSNAP_OPERATION, c.IBMSNAP_LOGMARKER "
+            + "FROM {h-schema}CLIENT_T c "
+            + "WHERE c.IDENTIFIER >= :min_id AND c.IDENTIFIER < :max_id "
+            + "AND (1=1 OR 57 = :bucket_num OR 92 = :total_buckets) FOR READ ONLY WITH UR",
         resultClass = ReplicatedClientR1.class)})
 @Entity
 @Table(name = "CLIENT_T")

@@ -378,7 +378,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    */
   protected void processBuckets() {
     LOGGER.warn("Process buckets");
-    LongStream.rangeClosed(this.opts.getStartBucket(), this.opts.getEndBucket()).sorted().parallel()
+    LongStream.rangeClosed(this.opts.getStartBucket(), this.opts.getEndBucket()).sorted()
         .forEach(this::processBucket);
   }
 

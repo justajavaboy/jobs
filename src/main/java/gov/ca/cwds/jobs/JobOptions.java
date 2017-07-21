@@ -106,9 +106,12 @@ public final class JobOptions implements Serializable {
     this.esConfigLoc = esConfigLoc;
     this.lastRunLoc = lastRunLoc;
     this.lastRunMode = lastRunMode;
-    this.startBucket = startBucket;
-    this.endBucket = endBucket;
-    this.totalBuckets = totalBuckets;
+    // this.startBucket = startBucket;
+    this.startBucket = 1; // ALWAYS 1!
+    // this.endBucket = endBucket;
+    this.endBucket = 1; // ALWAYS 1!
+    // this.totalBuckets = totalBuckets;
+    this.totalBuckets = 1; // ALWAYS 1!
     this.threadCount = threadCount;
     this.minId = minId;
     this.maxId = maxId;
