@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,8 +26,8 @@ public class ElasticJobWriter<T extends Identifiable<String>> implements JobWrit
 
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ElasticJobWriter.class);
   protected CalsElasticsearchIndexerDao elasticsearchDao;
-  private BulkProcessor bulkProcessor;
-  private ObjectMapper objectMapper;
+  protected BulkProcessor bulkProcessor;
+  protected ObjectMapper objectMapper;
 
   /**
    * Constructor.
@@ -81,6 +80,5 @@ public class ElasticJobWriter<T extends Identifiable<String>> implements JobWrit
     } catch (IOException |InterruptedException e) {
       throw new JobsException(e);
     }
-  }
   }
 }

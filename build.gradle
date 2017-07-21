@@ -56,13 +56,9 @@ dependencies {
 	compile group: 'org.slf4j', name: 'slf4j-ext', version: '1.7.25'
 	// compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
 
-    // CALS API for CALS Jobs
-    compile group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion
-
 	compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
 	compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
 	compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
-    compile group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion
 
 	// NO LONGER DEPENDS ON API!! HALLELUJAH!!
 	// compile group: "gov.ca.cwds.api", name: "api", version: "0.22.928"
@@ -73,7 +69,12 @@ dependencies {
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'
 	}
-	
+
+    // CALS API for CALS Jobs
+    compile (group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion) {
+        exclude group: 'gov.ca.cwds.api' // already here
+    }
+
   compile group: "org.glassfish.jersey.ext", name: "jersey-declarative-linking", version: "2.23.2"
 	compile group: "javax.el", name: "javax.el-api", version: "2.2.4"
 	compile group: "org.glassfish.web", name: "javax.el", version: "2.2.4"

@@ -11,18 +11,17 @@ import com.google.inject.Singleton;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.jobs.util.elastic.XPackUtils;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
+import gov.ca.cwds.rest.api.ApiException;
 import java.io.File;
 import java.net.InetAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 
 /**
  * @author CWDS TPT-2
@@ -56,34 +55,23 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
   @Inject
   public Client elasticsearchClient(ElasticsearchConfiguration config) {
     TransportClient client = null;
-    if (config != null) {
-      LOGGER.info("Creating new ES5 client to {}:{} in cluster '{}'",
-          config.getElasticsearchHost(),
-          config.getElasticsearchPort(),
-          config.getElasticsearchCluster()
-      );
-      try {
-        client = createTransportClient(config);
-        client.addTransportAddress(
-            new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
-                Integer.parseInt(config.getElasticsearchPort())));
-      } catch (Exception e) {
-        LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
-        throw new JobsException("Error initializing Elasticsearch client: " + e.getMessage(), e);
+    LOGGER.warn("Create NEW ES client");
+    try {
+      Settings.Builder settings =
+          Settings.builder().put("cluster.name", config.getElasticsearchCluster());
+      client = XPackUtils.secureClient(config.getUser(), config.getPassword(), settings);
+      client.addTransportAddress(
+          new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
+              Integer.parseInt(config.getElasticsearchPort())));
+    } catch (Exception e) {
+      LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
+      throw new ApiException("Error initializing Elasticsearch client: " + e.getMessage(), e);
+    } finally {
+      if (client != null) {
+        client.close();
       }
     }
     return client;
-  }
-
-  private TransportClient createTransportClient(ElasticsearchConfiguration config) {
-    Settings.Builder settings = Settings.builder()
-        .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster());
-    if (config.getUser() != null && config.getPassword() != null) {
-      settings.put("xpack.security.user", config.getUser() + ":" + config.getPassword());
-      return new PreBuiltXPackTransportClient(settings.build());
-    } else {
-      return new PreBuiltTransportClient(settings.build());
-    }
   }
 
   @Provides

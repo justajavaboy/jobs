@@ -54,7 +54,7 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
   }
 
   @Override
-  public ChangedFacilityDTO read() throws Exception {
+  public ChangedFacilityDTO read() {
     return facilityDTOIterator.hasNext() ? facilityDTOIterator.next() : null;
   }
 

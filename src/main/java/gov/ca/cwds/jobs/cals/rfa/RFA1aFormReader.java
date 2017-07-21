@@ -30,7 +30,7 @@ public class RFA1aFormReader implements JobReader<ChangedRFA1aFormDTO> {
   }
 
   @Override
-  public void init() throws Exception {
+  public void init() {
     LocalDateTime dateAfter = incrementalLoadDateStrategy.calculateLocalDateTime();
     calsnsSessionFactory.getCurrentSession().beginTransaction();
     changedRFA1aFormDTOIterator = rfa1aFormsCollectionService.streamChangedRFA1aForms(dateAfter)
@@ -38,12 +38,12 @@ public class RFA1aFormReader implements JobReader<ChangedRFA1aFormDTO> {
   }
 
   @Override
-  public ChangedRFA1aFormDTO read() throws Exception {
+  public ChangedRFA1aFormDTO read() {
     return changedRFA1aFormDTOIterator.hasNext() ? changedRFA1aFormDTOIterator.next() : null;
   }
 
   @Override
-  public void destroy() throws Exception {
+  public void destroy() {
     closeSessionFactory(calsnsSessionFactory);
   }
 
