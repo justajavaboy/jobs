@@ -3,9 +3,10 @@ package gov.ca.cwds.jobs.util;
 import java.util.List;
 
 /**
- * @author CWDS Elasticsearch Team
+ * @author CWDS TPT-2
+ * @param <T> type to write
  */
 public interface JobWriter<T> extends JobComponent {
 
-  void write(List<T> items) throws Exception;
+  void write(List<T> items);
 }

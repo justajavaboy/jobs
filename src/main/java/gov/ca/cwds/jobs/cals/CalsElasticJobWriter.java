@@ -1,11 +1,11 @@
-package gov.ca.cwds.jobs.util.elastic;
+package gov.ca.cwds.jobs.cals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.ca.cwds.cals.RecordChangeOperation;
 import gov.ca.cwds.cals.service.dto.changed.ChangedDTO;
-import gov.ca.cwds.data.es.Elasticsearch5xDao;
-import gov.ca.cwds.jobs.JobsException;
+import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,13 +23,13 @@ public class CalsElasticJobWriter<T extends ChangedDTO<?>> extends ElasticJobWri
    * @param elasticsearchDao ES DAO
    * @param objectMapper Jackson object mapper
    */
-  public CalsElasticJobWriter(Elasticsearch5xDao elasticsearchDao,
+  public CalsElasticJobWriter(CalsElasticsearchIndexerDao elasticsearchDao,
       ObjectMapper objectMapper) {
     super(elasticsearchDao, objectMapper);
   }
 
   @Override
-  public void write(List<T> items) throws Exception {
+  public void write(List<T> items) {
     items.stream().forEach(item -> {
       try {
         RecordChangeOperation recordChangeOperation = item.getRecordChangeOperation();

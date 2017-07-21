@@ -1,6 +1,8 @@
 package gov.ca.cwds.jobs.util.elastic;
 
 import gov.ca.cwds.cals.Identifiable;
+import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -13,8 +15,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.data.es.Elasticsearch5xDao;
-import gov.ca.cwds.jobs.JobsException;
+import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.util.JobWriter;
 
 /**
@@ -25,7 +26,7 @@ import gov.ca.cwds.jobs.util.JobWriter;
 public class ElasticJobWriter<T extends Identifiable<String>> implements JobWriter<T> {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticJobWriter.class);
-  protected Elasticsearch5xDao elasticsearchDao;
+  protected CalsElasticsearchIndexerDao elasticsearchDao;
   protected BulkProcessor bulkProcessor;
   protected ObjectMapper objectMapper;
 
@@ -35,7 +36,7 @@ public class ElasticJobWriter<T extends Identifiable<String>> implements JobWrit
    * @param elasticsearchDao ES DAO
    * @param objectMapper Jackson object mapper
    */
-  public ElasticJobWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
+  public ElasticJobWriter(CalsElasticsearchIndexerDao elasticsearchDao, ObjectMapper objectMapper) {
     this.elasticsearchDao = elasticsearchDao;
     this.objectMapper = objectMapper;
     bulkProcessor =
@@ -58,7 +59,7 @@ public class ElasticJobWriter<T extends Identifiable<String>> implements JobWrit
   }
 
   @Override
-  public void write(List<T> items) throws Exception {
+  public void write(List<T> items) {
     items.stream().map(item -> {
       try {
         return elasticsearchDao.bulkAdd(objectMapper, item.getId(), item);
@@ -70,8 +71,15 @@ public class ElasticJobWriter<T extends Identifiable<String>> implements JobWrit
   }
 
   @Override
-  public void destroy() throws Exception {
-    bulkProcessor.awaitClose(3000, TimeUnit.MILLISECONDS);
-    elasticsearchDao.close();
+  public void destroy() {
+    try {
+      try {
+        bulkProcessor.awaitClose(3000, TimeUnit.MILLISECONDS);
+      } finally {
+        elasticsearchDao.close();
+      }
+    } catch (IOException |InterruptedException e) {
+      throw new JobsException(e);
+    }
   }
 }

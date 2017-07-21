@@ -1,5 +1,6 @@
 package gov.ca.cwds.jobs;
 
+import gov.ca.cwds.jobs.exception.JobsException;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;

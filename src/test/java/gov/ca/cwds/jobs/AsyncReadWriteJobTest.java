@@ -12,7 +12,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 
 /**
- * @author CWDS Elasticsearch Team
+ * @author CWDS TPT-2
  */
 public class AsyncReadWriteJobTest {
 

@@ -8,11 +8,11 @@ import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
-import gov.ca.cwds.data.es.Elasticsearch5xDao;
+import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
 import gov.ca.cwds.jobs.Job;
-import gov.ca.cwds.jobs.cals.BaseCALSIndexerJob;
+import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
-import gov.ca.cwds.jobs.util.elastic.CalsElasticJobWriter;
+import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +32,7 @@ config/facility.yaml}
  *
  * @author CWDS TPT-2
  */
-public final class FacilityIndexerJob extends BaseCALSIndexerJob {
+public final class FacilityIndexerJob extends BaseCalsIndexerJob {
 
   private static final Logger LOGGER = LogManager.getLogger(FacilityIndexerJob.class);
 
@@ -74,7 +74,7 @@ public final class FacilityIndexerJob extends BaseCALSIndexerJob {
      * @param objectMapper Jackson object mapper
      */
     @Inject
-    FacilityElasticJobWriter(Elasticsearch5xDao elasticsearchDao, ObjectMapper objectMapper) {
+    FacilityElasticJobWriter(CalsElasticsearchIndexerDao elasticsearchDao, ObjectMapper objectMapper) {
       super(elasticsearchDao, objectMapper);
     }
   }

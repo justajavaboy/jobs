@@ -6,11 +6,11 @@ import com.google.inject.Provides;
 import gov.ca.cwds.cals.inject.CalsnsDataAccessModule;
 import gov.ca.cwds.cals.service.dto.changed.ChangedRFA1aFormDTO;
 import gov.ca.cwds.cals.service.rfa.RFA1aFormsCollectionService;
-import gov.ca.cwds.data.es.Elasticsearch5xDao;
+import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
 import gov.ca.cwds.jobs.Job;
-import gov.ca.cwds.jobs.cals.BaseCALSIndexerJob;
+import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
-import gov.ca.cwds.jobs.util.elastic.CalsElasticJobWriter;
+import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +26,7 @@ config/CALS_RFA1aForm.yaml}
  *
  * @author CWDS TPT-2
  */
-public final class RFA1aFormIndexerJob extends BaseCALSIndexerJob {
+public final class RFA1aFormIndexerJob extends BaseCalsIndexerJob {
 
   private static final Logger LOGGER = LogManager.getLogger(RFA1aFormIndexerJob.class);
 
@@ -66,7 +66,7 @@ public final class RFA1aFormIndexerJob extends BaseCALSIndexerJob {
      * @param objectMapper Jackson object mapper
      */
     @Inject
-    public RFA1aFormElasticJobWriter(Elasticsearch5xDao elasticsearchDao,
+    public RFA1aFormElasticJobWriter(CalsElasticsearchIndexerDao elasticsearchDao,
         ObjectMapper objectMapper) {
       super(elasticsearchDao, objectMapper);
     }

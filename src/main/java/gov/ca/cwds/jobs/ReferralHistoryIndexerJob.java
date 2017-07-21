@@ -1,5 +1,6 @@
 package gov.ca.cwds.jobs;
 
+import gov.ca.cwds.jobs.exception.JobsException;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;

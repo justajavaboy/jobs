@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 /**
- * @author TPT-2 team
+ * @author CWDS TPT-2
  */
 public class FacilityReader implements JobReader<ChangedFacilityDTO> {
 
@@ -59,7 +59,7 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
   }
 
   @Override
-  public void destroy() throws Exception {
+  public void destroy() {
     try {
       closeSessionFactory(fasSessionFactory);
     } finally {

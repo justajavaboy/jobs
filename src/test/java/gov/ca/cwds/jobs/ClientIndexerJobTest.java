@@ -3,6 +3,7 @@ package gov.ca.cwds.jobs;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import gov.ca.cwds.jobs.exception.JobsException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

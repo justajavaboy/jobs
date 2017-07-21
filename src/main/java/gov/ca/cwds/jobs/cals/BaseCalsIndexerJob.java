@@ -9,10 +9,9 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import gov.ca.cwds.cals.inject.MappingModule;
-import gov.ca.cwds.data.es.Elasticsearch5xDao;
-import gov.ca.cwds.data.es.ElasticsearchConfiguration5x;
 import gov.ca.cwds.jobs.Job;
-import gov.ca.cwds.jobs.JobsException;
+import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.rest.ElasticsearchConfiguration;
 import java.io.File;
 import java.net.InetAddress;
 import org.apache.logging.log4j.LogManager;
@@ -28,13 +27,13 @@ import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 /**
  * @author CWDS TPT-2
  */
-public abstract class BaseCALSIndexerJob extends AbstractModule {
+public abstract class BaseCalsIndexerJob extends AbstractModule {
 
-  private static final Logger LOGGER = LogManager.getLogger(BaseCALSIndexerJob.class);
+  private static final Logger LOGGER = LogManager.getLogger(BaseCalsIndexerJob.class);
 
   private File config;
 
-  protected BaseCALSIndexerJob(String configFileName) {
+  protected BaseCalsIndexerJob(String configFileName) {
     this.config = new File(configFileName);
   }
 
@@ -55,7 +54,7 @@ public abstract class BaseCALSIndexerJob extends AbstractModule {
 
   @Provides
   @Inject
-  public Client elasticsearchClient(ElasticsearchConfiguration5x config) {
+  public Client elasticsearchClient(ElasticsearchConfiguration config) {
     TransportClient client = null;
     if (config != null) {
       LOGGER.info("Creating new ES5 client to {}:{} in cluster '{}'",
@@ -76,7 +75,7 @@ public abstract class BaseCALSIndexerJob extends AbstractModule {
     return client;
   }
 
-  private TransportClient createTransportClient(ElasticsearchConfiguration5x config) {
+  private TransportClient createTransportClient(ElasticsearchConfiguration config) {
     Settings.Builder settings = Settings.builder()
         .put(ClusterName.CLUSTER_NAME_SETTING.getKey(), config.getElasticsearchCluster());
     if (config.getUser() != null && config.getPassword() != null) {
@@ -90,19 +89,19 @@ public abstract class BaseCALSIndexerJob extends AbstractModule {
   @Provides
   @Singleton
   @Inject
-  public Elasticsearch5xDao elasticsearchDao(Client client,
-      ElasticsearchConfiguration5x configuration) {
-    return new Elasticsearch5xDao(client, configuration);
+  public CalsElasticsearchIndexerDao elasticsearchDao(Client client,
+      ElasticsearchConfiguration configuration) {
+    return new CalsElasticsearchIndexerDao(client, configuration);
   }
 
   @Provides
-  public ElasticsearchConfiguration5x config() {
-    ElasticsearchConfiguration5x configuration = null;
+  public ElasticsearchConfiguration config() {
+    ElasticsearchConfiguration configuration = null;
     if (config != null) {
       try {
         configuration =
             new ObjectMapper(new YAMLFactory())
-                .readValue(config, ElasticsearchConfiguration5x.class);
+                .readValue(config, ElasticsearchConfiguration.class);
       } catch (Exception e) {
         LOGGER.error("Error reading job configuration: {}", e.getMessage(), e);
         throw new JobsException("Error reading job configuration: " + e.getMessage(), e);

@@ -1,12 +1,18 @@
 package gov.ca.cwds.jobs.util;
 
 /**
- * @author CWDS Elasticsearch Team
+ * @author CWDS TPT-2
  */
 public interface JobComponent {
 
-  default void init() throws Exception {}
+  /**
+   * Optionally initialize resources. Default is no-op.
+   */
+  default void init() {}
 
-  default void destroy() throws Exception {}
+  /**
+   * Close and de-allocate exclusive resources. Default is no-op.
+   */
+  default void destroy() {}
 
 }

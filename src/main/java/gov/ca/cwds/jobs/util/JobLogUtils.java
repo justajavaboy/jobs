@@ -5,7 +5,7 @@ import java.text.MessageFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import gov.ca.cwds.jobs.JobsException;
+import gov.ca.cwds.jobs.exception.JobsException;
 
 /**
  * Logging utilities for Neutron job classes.

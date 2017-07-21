@@ -2,6 +2,7 @@ package gov.ca.cwds.jobs;
 
 import static gov.ca.cwds.data.persistence.cms.CmsPersistentObject.CMS_ID_LEN;
 
+import gov.ca.cwds.jobs.exception.JobsException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -59,7 +60,7 @@ import gov.ca.cwds.data.es.ElasticSearchPerson.ESOptionalCollection;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonAddress;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonPhone;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ElasticSearchPersonScreening;
-import gov.ca.cwds.data.es.Elasticsearch5xDao;
+import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.model.cms.JobResultSetAware;
 import gov.ca.cwds.data.persistence.PersistentObject;
@@ -89,7 +90,7 @@ import gov.ca.cwds.rest.api.domain.DomainChef;
  * 
  * <p>
  * This class implements {@link AutoCloseable} and automatically closes common resources, such as
- * {@link Elasticsearch5xDao} and Hibernate {@link SessionFactory}.
+ * {@link CalsElasticsearchIndexerDao} and Hibernate {@link SessionFactory}.
  * </p>
  * 
  * <p>
