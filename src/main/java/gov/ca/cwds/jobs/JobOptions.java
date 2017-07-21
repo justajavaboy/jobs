@@ -79,7 +79,7 @@ public final class JobOptions implements Serializable {
    * Required for "initial load" mode.
    * </p>
    */
-  private long totalBuckets;
+  private long totalBuckets = 1;
 
   /**
    * Total threads to allocate to this batch run. Defaults to all available cores.
@@ -306,13 +306,20 @@ public final class JobOptions implements Serializable {
           case CMD_LINE_BUCKET_TOTAL:
             LOGGER.info("INITIAL LOAD!");
             lastRunMode = false;
-            totalBuckets = Long.parseLong(opt.getValue());
+
+            // DRS: NOPE! One bucket only!
+            // totalBuckets = Long.parseLong(opt.getValue());
+            totalBuckets = 1;
             break;
 
           case CMD_LINE_BUCKET_RANGE:
             lastRunMode = false;
-            startBucket = Long.parseLong(opt.getValues()[0]);
-            endBucket = Long.parseLong(opt.getValues()[1]);
+
+            // DRS: NOPE! One bucket only!
+            // startBucket = Long.parseLong(opt.getValues()[0]);
+            // endBucket = Long.parseLong(opt.getValues()[1]);
+            startBucket = 1L;
+            endBucket = 1L;
             break;
 
           case CMD_LINE_THREADS:
