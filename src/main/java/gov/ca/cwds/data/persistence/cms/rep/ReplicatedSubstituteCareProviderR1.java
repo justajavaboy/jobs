@@ -31,7 +31,7 @@ import gov.ca.cwds.data.persistence.cms.BaseSubstituteCareProvider;
             + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, z.SS_NO, z.STATE_C, z.STREET_NM, "
             + "z.STREET_NO, z.SUFX_TLDSC, z.ZIP_NO, z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, "
             + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-            + "FROM {h-schema}SB_PVDRT z WHERE z.IBMSNAP_LOGMARKER >= :after for read only ",
+            + "FROM {h-schema}SB_PVDRT z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
         resultClass = ReplicatedReporter.class),
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProviderR1.findPartitionedBuckets",

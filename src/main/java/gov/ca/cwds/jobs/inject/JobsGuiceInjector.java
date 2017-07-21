@@ -24,7 +24,7 @@ import gov.ca.cwds.dao.cms.ReplicatedAttorneyDao;
 import gov.ca.cwds.dao.cms.ReplicatedClientR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
-import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
+import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameR1Dao;
 import gov.ca.cwds.dao.cms.ReplicatedReporterR1Dao;
@@ -49,7 +49,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividualR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
-import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHomeR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientNameR1;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporter;
@@ -113,7 +113,7 @@ public class JobsGuiceInjector extends AbstractModule {
         .addAnnotatedClass(ReplicatedCollateralIndividual.class)
         .addAnnotatedClass(CollateralIndividual.class).addAnnotatedClass(CrossReport.class)
         .addAnnotatedClass(ReplicatedEducationProviderContact.class)
-        .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHome.class)
+        .addAnnotatedClass(ReplicatedOtherAdultInPlacemtHomeR1.class)
         .addAnnotatedClass(ReplicatedOtherChildInPlacemtHome.class)
         .addAnnotatedClass(ReplicatedOtherClientNameR1.class).addAnnotatedClass(Referral.class)
         // .addAnnotatedClass(ReferralClient.class).addAnnotatedClass(ReplicatedReporter.class)
@@ -133,10 +133,10 @@ public class JobsGuiceInjector extends AbstractModule {
     bind(ReplicatedOtherClientNameR1Dao.class);
     bind(ReplicatedServiceProviderR1Dao.class);
     bind(ReplicatedSubstituteCareProviderR1Dao.class);
-    bind(ReplicatedAttorneyDao.class);
-    bind(ReplicatedOtherAdultInPlacemtHomeDao.class);
+    bind(ReplicatedOtherAdultInPlacemtHomeR1Dao.class);
     bind(ReplicatedOtherChildInPlacemtHomeDao.class);
     bind(ReplicatedEducationProviderContactDao.class);
+    bind(ReplicatedAttorneyDao.class);
 
     // Instantiate as a singleton, else Guice creates a new instance each time.
     bind(ObjectMapper.class).asEagerSingleton();

@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
+import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeR1Dao;
 import gov.ca.cwds.data.cms.OtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 
@@ -61,7 +61,7 @@ public class OtherAdultInPlacementHomeTest {
 
   @Test
   public void testInstantiation() throws Exception {
-    ReplicatedOtherAdultInPlacemtHomeDao otherAdultInPlacementHomeDao = null;
+    ReplicatedOtherAdultInPlacemtHomeR1Dao otherAdultInPlacementHomeDao = null;
     ElasticsearchDao elasticsearchDao = null;
     String lastJobRunTimeFilename = null;
     ObjectMapper mapper = null;

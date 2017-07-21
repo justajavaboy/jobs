@@ -25,7 +25,7 @@ import gov.ca.cwds.data.persistence.cms.BaseServiceProvider;
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProviderR1.findAllUpdatedAfter",
         query = "select z.IDENTIFIER, z.AGENCY_NM, z.CITY_NM, z.FAX_NO, z.FIRST_NM, z.LAST_NM, trim(z.NMPRFX_DSC) NMPRFX_DSC, z.PHONE_NO, z.TEL_EXT_NO, trim(z.PSTITL_DSC) PSTITL_DSC, z.SVCPVDRC, z.STATE_C, z.STREET_NM, z.STREET_NO, z.SUFX_TLDSC, z.ZIP_NM, z.LST_UPD_ID, z.LST_UPD_TS, z.ZIP_SFX_NO, z.ARCASS_IND, z.EMAIL_ADDR, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-            + "from {h-schema}SVC_PVRT z WHERE z.IBMSNAP_LOGMARKER >= :after for read only ",
+            + "from {h-schema}SVC_PVRT z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
         resultClass = ReplicatedServiceProviderR1.class),
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedServiceProviderR1.findPartitionedBuckets",
