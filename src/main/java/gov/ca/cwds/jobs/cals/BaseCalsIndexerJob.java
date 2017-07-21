@@ -65,11 +65,10 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
               Integer.parseInt(config.getElasticsearchPort())));
     } catch (Exception e) {
       LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
-      throw new ApiException("Error initializing Elasticsearch client: " + e.getMessage(), e);
-    } finally {
       if (client != null) {
         client.close();
       }
+      throw new ApiException("Error initializing Elasticsearch client: " + e.getMessage(), e);
     }
     return client;
   }
