@@ -150,7 +150,8 @@ public final class JobOptions implements Serializable {
    * @return starting bucket
    */
   public final long getStartBucket() {
-    return startBucket;
+    // return startBucket;
+    return 1L;
   }
 
   /**
@@ -159,7 +160,8 @@ public final class JobOptions implements Serializable {
    * @return last bucket
    */
   public final long getEndBucket() {
-    return endBucket;
+    // return endBucket;
+    return 1L;
   }
 
   /**
@@ -168,7 +170,8 @@ public final class JobOptions implements Serializable {
    * @return total buckets
    */
   public final long getTotalBuckets() {
-    return totalBuckets;
+    // return totalBuckets;
+    return 1L;
   }
 
   /**
