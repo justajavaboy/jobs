@@ -20,7 +20,15 @@ import gov.ca.cwds.data.persistence.cms.BaseReporter;
 @NamedNativeQueries({
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1.findAllUpdatedAfter",
-        query = "select trim(z.RPTR_BDGNO) RPTR_BDGNO, trim(z.RPTR_CTYNM) RPTR_CTYNM, z.COL_RELC, z.CMM_MTHC, z.CNFWVR_IND, z.FDBACK_DOC, z.RPTR_EMPNM, z.FEEDBCK_DT, z.FB_RQR_IND, z.RPTR_FSTNM, trim(z.RPTR_LSTNM) RPTR_LSTNM, z.MNRPTR_IND, z.MSG_EXT_NO, z.MSG_TEL_NO, trim(z.MID_INI_NM) MID_INI_NM, trim(z.NMPRFX_DSC) NMPRFX_DSC, z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, trim(z.RPTR_ST_NM) RPTR_ST_NM, trim(z.RPTR_ST_NO) RPTR_ST_NO, trim(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, z.LST_UPD_ID, z.LST_UPD_TS, z.FKREFERL_T, z.FKLAW_ENFT, z.ZIP_SFX_NO, z.CNTY_SPFCD , z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER from {h-schema}REPTR_T z WHERE z.IBMSNAP_LOGMARKER >= :after for read only ",
+        query = "SELECT trim(z.RPTR_BDGNO) RPTR_BDGNO, trim(z.RPTR_CTYNM) RPTR_CTYNM, z.COL_RELC, "
+            + "z.CMM_MTHC, z.CNFWVR_IND, z.FDBACK_DOC, z.RPTR_EMPNM, z.FEEDBCK_DT, z.FB_RQR_IND, "
+            + "z.RPTR_FSTNM, trim(z.RPTR_LSTNM) RPTR_LSTNM, z.MNRPTR_IND, z.MSG_EXT_NO, "
+            + "z.MSG_TEL_NO, trim(z.MID_INI_NM) MID_INI_NM, trim(z.NMPRFX_DSC) NMPRFX_DSC, "
+            + "z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, trim(z.RPTR_ST_NM) RPTR_ST_NM, "
+            + "trim(z.RPTR_ST_NO) RPTR_ST_NO, trim(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, "
+            + "z.LST_UPD_ID, z.LST_UPD_TS, z.FKREFERL_T, z.FKLAW_ENFT, z.ZIP_SFX_NO, z.CNTY_SPFCD, "
+            + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}REPTR_T z "
+            + "WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
         resultClass = ReplicatedReporterR1.class),
     // @NamedNativeQuery(
     // name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporterR1.findPartitionedBuckets",

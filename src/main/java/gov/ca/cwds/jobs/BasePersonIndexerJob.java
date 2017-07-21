@@ -330,20 +330,14 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    */
   protected int processBucket(long bucket, String minId, String maxId) {
     final long totalBuckets = this.opts.getTotalBuckets();
-    LOGGER.warn("pull bucket #{} of #{}", bucket, totalBuckets);
-
-    // final String minId =
-    // StringUtils.isBlank(this.getOpts().getMinId()) ? " " : this.getOpts().getMinId();
-    // final String maxId = this.getOpts().getMaxId();
-
     LOGGER.warn("PROCESS PARTITION RANGE \"{}\" to \"{}\"", minId, maxId);
 
     final List<T> results = StringUtils.isBlank(maxId) ? jobDao.bucketList(bucket, totalBuckets)
         : jobDao.partitionedBucketList(bucket, totalBuckets, minId, maxId);
 
     if (results != null && !results.isEmpty()) {
-      LOGGER.warn("PARTITION RANGE \"{}\" to \"{}\": bucket #{} found {} people to index", minId,
-          maxId, bucket, results.size());
+      LOGGER.warn("PARTITION RANGE \"{}\" to \"{}\": FOUND {} recs to index", minId, maxId,
+          results.size());
 
       // One bulk processor per bucket/thread.
       final BulkProcessor bp = buildBulkProcessor();
@@ -383,8 +377,6 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    */
   protected void processBucketNoPartitions() {
     LOGGER.warn("Process buckets");
-    // LongStream.rangeClosed(this.opts.getStartBucket(), this.opts.getEndBucket()).parallel()
-    // .forEach();
     processBucket(1, "aaaaaaaaaa", "9999999999");
   }
 
@@ -396,14 +388,6 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
 
     getPartitionRanges().stream().parallel()
         .forEach(p -> processBucket(1, p.getLeft(), p.getRight()));
-
-    // for (Pair<String, String> pair : this.getPartitionRanges()) {
-    // getOpts().setMinId(pair.getLeft());
-    // getOpts().setMaxId(pair.getRight());
-    // LOGGER.warn("PROCESS PARTITION RANGE \"{}\" to \"{}\"", getOpts().getMinId(),
-    // getOpts().getMaxId());
-    // processBuckets();
-    // }
 
   }
 
