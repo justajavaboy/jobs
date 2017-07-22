@@ -274,9 +274,14 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
     try {
       final Date startTime = new Date();
 
+      final Calendar cal = Calendar.getInstance();
+      cal.setTime(lastSuccessfulRunTime);
+      cal.add(Calendar.MINUTE, -20); // 20 minute window
+      final Date safeRunDate = cal.getTime();
+
       // One bulk processor "last run" operations. BulkProcessor is thread-safe.
       final BulkProcessor bp = buildBulkProcessor();
-      final List<T> results = jobDao.findAllUpdatedAfter(lastSuccessfulRunTime);
+      final List<T> results = jobDao.findAllUpdatedAfter(safeRunDate);
 
       if (results != null && !results.isEmpty()) {
         LOGGER.info(MessageFormat.format("Found {0} people to index", results.size()));
