@@ -25,17 +25,19 @@ import gov.ca.cwds.data.persistence.cms.BaseEducationProviderContact;
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContactR1.findAllUpdatedAfter",
         query = "select z.IDENTIFIER, z.PRICNTIND, z.PH_NUMBR, z.PH_EXTNO, z.FAX_NO, "
-            + "z.FIRST_NME, z.MIDDLE_NM, z.LAST_NME, z.NM_PREFIX, z.SUFFX_TITL, z.TITLDESC, "
-            + "z.EMAILADR, z.DOE_IND, z.LST_UPD_ID, z.LST_UPD_TS, z.FKED_PVDRT, "
+            + "trim(z.FIRST_NME) FIRST_NME, trim(z.MIDDLE_NM) MIDDLE_NM, trim(z.LAST_NME) LAST_NME, "
+            + "trim(z.NM_PREFIX) NM_PREFIX, trim(z.SUFFX_TITL) SUFFX_TITL, trim(z.TITLDESC) TITLDESC, "
+            + "trim(z.EMAILADR) EMAILADR, z.DOE_IND, z.LST_UPD_ID, z.LST_UPD_TS, z.FKED_PVDRT, "
             + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
             + "from {h-schema}EDPRVCNT z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
         resultClass = ReplicatedEducationProviderContactR1.class),
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContactR1.findPartitionedBuckets",
         query = "select z.IDENTIFIER, z.PRICNTIND, z.PH_NUMBR, z.PH_EXTNO, z.FAX_NO, "
-            + "z.FIRST_NME, z.MIDDLE_NM, z.LAST_NME, z.NM_PREFIX, z.SUFFX_TITL, "
-            + "z.TITLDESC, z.EMAILADR, z.DOE_IND, z.LST_UPD_ID, z.LST_UPD_TS, z.FKED_PVDRT, "
-            + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER " + "from {h-schema}EDPRVCNT z "
+            + "trim(z.FIRST_NME) FIRST_NME, trim(z.MIDDLE_NM) MIDDLE_NM, trim(z.LAST_NME) LAST_NME, "
+            + "trim(z.NM_PREFIX) NM_PREFIX, trim(z.SUFFX_TITL) SUFFX_TITL, trim(z.TITLDESC) TITLDESC, "
+            + "trim(z.EMAILADR) EMAILADR, z.DOE_IND, z.LST_UPD_ID, z.LST_UPD_TS, z.FKED_PVDRT, "
+            + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER from {h-schema}EDPRVCNT z "
             + "WHERE (1=1 OR (z.IDENTIFIER >= :min_id AND z.IDENTIFIER < :max_id)) "
             + "AND (1=1 OR 57 = :bucket_num OR 92 = :total_buckets) FOR READ ONLY WITH UR",
         resultClass = ReplicatedEducationProviderContactR1.class)})
