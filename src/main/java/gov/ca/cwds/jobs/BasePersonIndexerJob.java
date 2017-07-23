@@ -276,7 +276,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
 
       final Calendar cal = Calendar.getInstance();
       cal.setTime(lastSuccessfulRunTime);
-      cal.add(Calendar.MINUTE, -20); // 20 minute window
+      cal.add(Calendar.MINUTE, -25); // 25 minute window
       final Date safeRunDate = cal.getTime();
 
       // One bulk processor "last run" operations. BulkProcessor is thread-safe.
