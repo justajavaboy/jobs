@@ -71,7 +71,8 @@ publishing {
   repositories {
     maven {
       //TODO : set to http url
-      url "file:///usr/share/nginx/html/maven2"
+      // url "file:///usr/share/nginx/html/maven2"
+      url "file:///usr/local/share/nginx/html/maven2"
     }
   }
 }

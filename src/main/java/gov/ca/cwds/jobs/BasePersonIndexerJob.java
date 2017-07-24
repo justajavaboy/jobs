@@ -331,6 +331,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    * </p>
    * 
    * @param bucket the bucket number to process
+   * @param minId starting identifier
+   * @param maxId ending identifier
    * @return number of records processed in this bucket
    */
   protected int processBucket(long bucket, String minId, String maxId) {
