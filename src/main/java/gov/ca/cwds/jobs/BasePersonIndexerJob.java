@@ -415,8 +415,8 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
     Date ret;
     try {
       final Date startTime = new Date();
+      final int maxThreads = Math.min(Runtime.getRuntime().availableProcessors(), 2);
 
-      final int maxThreads = Math.min(Runtime.getRuntime().availableProcessors(), 4);
       System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism",
           String.valueOf(maxThreads));
       LOGGER.info("Processors={}", maxThreads);

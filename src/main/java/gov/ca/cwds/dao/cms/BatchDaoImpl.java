@@ -133,14 +133,16 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
   public List<T> partitionedBucketList(long bucketNum, long totalBuckets, String minId,
       String maxId) {
     final String namedQueryName = getEntityClass().getName() + ".findPartitionedBuckets";
-    // Session session = getSessionFactory().getCurrentSession();
-    final StatelessSession session = getSessionFactory().openStatelessSession();
+    Session session = getSessionFactory().getCurrentSession();
+    // final StatelessSession session = getSessionFactory().openStatelessSession();
 
     Transaction txn = session.beginTransaction();
     try {
       Query query = session.getNamedQuery(namedQueryName).setInteger("bucket_num", (int) bucketNum)
           .setInteger("total_buckets", (int) totalBuckets).setString("min_id", minId)
           .setString("max_id", maxId);
+
+      // .setCacheMode(CacheMode.IGNORE);
 
       ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
       results.addAll(query.list());
