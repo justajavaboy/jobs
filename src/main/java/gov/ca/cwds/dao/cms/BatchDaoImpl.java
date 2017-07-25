@@ -152,7 +152,7 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
           .setInteger("total_buckets", (int) totalBuckets).setString("min_id", minId)
           .setString("max_id", maxId).setReadOnly(true).setCacheMode(CacheMode.IGNORE);
 
-      final int fetchSize = 2000;
+      final int fetchSize = 5000;
       query.setFetchSize(fetchSize);
       ScrollableResults results = query.scroll(ScrollMode.FORWARD_ONLY);
       ImmutableList.Builder<T> ret = new ImmutableList.Builder<>();
@@ -162,9 +162,7 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
       // Iterate, process, flush.
       while (results.next()) {
         Object[] row = results.get();
-
-        final T t = (T) row[0];
-        ret.add(t);
+        ret.add((T) row[0]);
 
         if (((++cnt) % fetchSize) == 0) {
           LOGGER.info("recs read: {}", cnt);
