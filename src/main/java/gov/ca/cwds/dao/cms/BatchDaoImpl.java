@@ -152,14 +152,13 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
           .setInteger("total_buckets", (int) totalBuckets).setString("min_id", minId)
           .setString("max_id", maxId).setReadOnly(true).setCacheMode(CacheMode.IGNORE);
 
+      // Iterate, process, flush.
       final int fetchSize = 5000;
       query.setFetchSize(fetchSize);
       ScrollableResults results = query.scroll(ScrollMode.FORWARD_ONLY);
       ImmutableList.Builder<T> ret = new ImmutableList.Builder<>();
-
       int cnt = 0;
 
-      // Iterate, process, flush.
       while (results.next()) {
         Object[] row = results.get();
         ret.add((T) row[0]);
@@ -169,10 +168,9 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
           session.flush();
         }
       }
+
       session.flush();
       results.close();
-
-      // results.addAll(query.list());
       txn.commit();
       return ret.build();
     } catch (HibernateException h) {
