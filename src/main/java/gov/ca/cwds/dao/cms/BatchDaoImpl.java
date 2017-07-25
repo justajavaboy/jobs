@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.CacheMode;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
@@ -168,7 +169,8 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
     try {
       Query query = session.getNamedQuery(namedQueryName).setInteger("bucket_num", (int) bucketNum)
           .setInteger("total_buckets", (int) totalBuckets).setString("min_id", minId)
-          .setString("max_id", maxId).setReadOnly(true).setCacheMode(CacheMode.IGNORE);
+          .setString("max_id", maxId).setCacheable(false).setFlushMode(FlushMode.MANUAL)
+          .setReadOnly(true).setCacheMode(CacheMode.IGNORE);
 
       // Iterate, process, flush.
       final int fetchSize = 5000;
