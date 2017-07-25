@@ -52,7 +52,7 @@ public class ReporterIndexerJob extends BasePersonIndexerJob<ReplicatedReporterR
   protected List<Pair<String, String>> getPartitionRanges() {
     List<Pair<String, String>> ret = new ArrayList<>();
 
-    ret.add(Pair.of("AaaacJM6AD", "ACZAVXC2PZ"));
+    ret.add(Pair.of("aaaaaaaaaa", "ACZAVXC2PZ"));
     ret.add(Pair.of("ACZA5MZAR1", "A6y48OH3Ut"));
     ret.add(Pair.of("A6y49C3046", "BzaK4AmDfS"));
     ret.add(Pair.of("BzaLz7EAXU", "B26CwOn9qX"));
@@ -115,7 +115,7 @@ public class ReporterIndexerJob extends BasePersonIndexerJob<ReplicatedReporterR
     ret.add(Pair.of("8guDdze6Z2", "8JpJrxB37S"));
     ret.add(Pair.of("8JpTu2j3K2", "9cRG3VmH6i"));
     ret.add(Pair.of("9cRHCIm6xC", "9GwwRzY7D3"));
-    ret.add(Pair.of("9Gwxhdx41S", "998O7MU9so"));
+    ret.add(Pair.of("9Gwxhdx41S", "9999999999"));
 
     return ret;
   }
