@@ -12,7 +12,6 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
 
 import com.google.common.collect.ImmutableList;
@@ -77,18 +76,37 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
   @Override
   public List<T> findAllUpdatedAfter(Date datetime) {
     final String namedQueryName = constructNamedQueryName("findAllUpdatedAfter");
-    // Session session = getSessionFactory().getCurrentSession();
-    final StatelessSession session = getSessionFactory().openStatelessSession();
+    Session session = getSessionFactory().getCurrentSession();
 
     Transaction txn = session.beginTransaction();
     try {
       // Compatible with both DB2 z/OS and Linux.
-      Query query = session.getNamedQuery(namedQueryName).setTimestamp("after",
-          new java.sql.Timestamp(datetime.getTime()));
-      ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
-      results.addAll(query.list());
+      Query query =
+          session.getNamedQuery(namedQueryName).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
+              .setTimestamp("after", new java.sql.Timestamp(datetime.getTime()));
+
+      // Iterate, process, flush.
+      final int fetchSize = 5000;
+      query.setFetchSize(fetchSize);
+      ScrollableResults results = query.scroll(ScrollMode.FORWARD_ONLY);
+      ImmutableList.Builder<T> ret = new ImmutableList.Builder<>();
+      int cnt = 0;
+
+      while (results.next()) {
+        Object[] row = results.get();
+        ret.add((T) row[0]);
+
+        if (((++cnt) % fetchSize) == 0) {
+          LOGGER.info("recs read: {}", cnt);
+          session.flush();
+        }
+      }
+
+      session.flush();
+      results.close();
       txn.commit();
-      return results.build();
+      return ret.build();
+
     } catch (HibernateException h) {
       txn.rollback();
       throw new DaoException(h);
