@@ -4,7 +4,6 @@ import org.hibernate.SessionFactory;
 
 import com.google.inject.Inject;
 
-import gov.ca.cwds.data.BaseDaoImpl;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientNameR1;
 import gov.ca.cwds.data.std.BatchBucketDao;
 import gov.ca.cwds.inject.CmsSessionFactory;
@@ -16,7 +15,7 @@ import gov.ca.cwds.inject.CmsSessionFactory;
  * @see CmsSessionFactory
  * @see SessionFactory
  */
-public class ReplicatedOtherClientNameR1Dao extends BaseDaoImpl<ReplicatedOtherClientNameR1>
+public class ReplicatedOtherClientNameR1Dao extends BatchDaoImpl<ReplicatedOtherClientNameR1>
     implements BatchBucketDao<ReplicatedOtherClientNameR1> {
 
   /**

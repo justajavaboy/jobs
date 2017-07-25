@@ -82,9 +82,9 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
     Transaction txn = session.beginTransaction();
     try {
       // Compatible with both DB2 z/OS and Linux.
-      Query query =
-          session.getNamedQuery(namedQueryName).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
-              .setTimestamp("after", new java.sql.Timestamp(datetime.getTime()));
+      Query query = session.getNamedQuery(namedQueryName).setCacheable(false)
+          .setFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
+          .setTimestamp("after", new java.sql.Timestamp(datetime.getTime()));
 
       // Iterate, process, flush.
       final int fetchSize = 5000;
@@ -162,9 +162,6 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
     final String namedQueryName = getEntityClass().getName() + ".findPartitionedBuckets";
 
     Session session = getSessionFactory().getCurrentSession();
-    // try (final StatelessSession session = new JobStatelessSessionImpl(
-    // (StatelessSessionImpl) getSessionFactory().openStatelessSession())) {
-
     Transaction txn = session.beginTransaction();
     try {
       Query query = session.getNamedQuery(namedQueryName).setInteger("bucket_num", (int) bucketNum)
@@ -247,16 +244,35 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
   public List<T> bucketList(long bucketNum, long totalBuckets) {
     final String namedQueryName = constructNamedQueryName("findAllByBucket");
     Session session = getSessionFactory().getCurrentSession();
-    // final StatelessSession session = getSessionFactory().openStatelessSession();
-
     Transaction txn = session.beginTransaction();
     try {
-      Query query = session.getNamedQuery(namedQueryName).setInteger("bucket_num", (int) bucketNum)
+      Query query = session.getNamedQuery(namedQueryName).setCacheable(false)
+          .setFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
+          .setInteger("bucket_num", (int) bucketNum)
           .setInteger("total_buckets", (int) totalBuckets);
-      ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
-      results.addAll(query.list());
+
+      // Iterate, process, flush.
+      final int fetchSize = 5000;
+      query.setFetchSize(fetchSize);
+      ScrollableResults results = query.scroll(ScrollMode.FORWARD_ONLY);
+      ImmutableList.Builder<T> ret = new ImmutableList.Builder<>();
+      int cnt = 0;
+
+      while (results.next()) {
+        Object[] row = results.get();
+        ret.add((T) row[0]);
+
+        if (((++cnt) % fetchSize) == 0) {
+          LOGGER.info("recs read: {}", cnt);
+          session.flush();
+        }
+      }
+
+      session.flush();
+      results.close();
       txn.commit();
-      return results.build();
+      return ret.build();
+
     } catch (HibernateException h) {
       txn.rollback();
       throw new DaoException(h);
