@@ -392,7 +392,6 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject>
    */
   protected void processBucketPartitions() {
     LOGGER.warn("PROCESS EACH PARTITION");
-
     getPartitionRanges().parallelStream().forEach(p -> processBucket(1, p.getLeft(), p.getRight()));
   }
 
