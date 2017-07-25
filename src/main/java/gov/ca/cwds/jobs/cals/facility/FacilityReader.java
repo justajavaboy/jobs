@@ -6,7 +6,6 @@ import gov.ca.cwds.cals.inject.LisSessionFactory;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.cals.IncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.util.JobReader;
 import org.hibernate.SessionFactory;
 
@@ -18,9 +17,13 @@ import java.util.Iterator;
  */
 public class FacilityReader implements JobReader<ChangedFacilityDTO> {
 
-  private IncrementalLoadDateStrategy incrementalLoadDateStrategy;
-  private IncrementalLoadDateStrategy lisIncrementalLoadDateStrategy;
   private Iterator<ChangedFacilityDTO> facilityDTOIterator;
+
+  @Inject
+  private FacilityIncrementalLoadDateStrategy incrementalLoadDateStrategy;
+
+  @Inject
+  private LISFacilityIncrementalLoadDateStrategy lisIncrementalLoadDateStrategy;
 
   @Inject
   private ChangedFacilityService changedFacilityService;
@@ -36,11 +39,6 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
   @Inject
   @CmsSessionFactory
   private SessionFactory cwsCmcSessionFactory;
-
-  FacilityReader() {
-    this.incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
-    this.lisIncrementalLoadDateStrategy = new LISFacilityIncrementalLoadDateStrategy();
-  }
 
   @Override
   public void init() {

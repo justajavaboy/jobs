@@ -4,6 +4,8 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
+import com.google.inject.Inject;
+import gov.ca.cwds.jobs.config.JobOptions;
 import gov.ca.cwds.rest.api.ApiException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,6 +17,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Optional;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author CWDS TPT-2
@@ -25,7 +28,14 @@ public abstract class BaseIncrementalLoadDateStrategy implements IncrementalLoad
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
       .ofPattern(DATE_FORMAT);
 
+  @Inject
+  private JobOptions jobOptions;
+
   protected abstract String getDateFileName();
+
+  protected String getDateFileLocation () {
+    return FilenameUtils.concat(jobOptions.getLastRunLoc(), getDateFileName());
+  }
 
   protected DateTimeFormatter getDateTimeFormatter() {
     return DATE_TIME_FORMATTER;
@@ -39,7 +49,7 @@ public abstract class BaseIncrementalLoadDateStrategy implements IncrementalLoad
   public LocalDateTime calculateLocalDateTime() {
     try {
       LocalDateTime now = LocalDateTime.now();
-      Path runningFile = Paths.get(getDateFileName());
+      Path runningFile = Paths.get(getDateFileLocation());
 
       LocalDateTime result = runningFile.toFile().exists() ? readLastRunDateTime(runningFile)
           : getDateTimeForInitialLoad();

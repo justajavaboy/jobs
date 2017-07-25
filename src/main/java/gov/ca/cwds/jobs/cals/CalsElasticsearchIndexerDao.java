@@ -1,16 +1,15 @@
 package gov.ca.cwds.jobs.cals;
 
-import gov.ca.cwds.rest.ElasticsearchConfiguration;
 import java.io.Closeable;
 import java.io.IOException;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.LoggerFactory;
 
@@ -19,23 +18,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 /**
- * A DAO for Elasticsearch with writing indexes functionality.
- * It is not intended for searching, nor it can contain any index-specific code or hardcoded mapping.
+ * A DAO for Elasticsearch with writing indexes functionality. It is not intended for searching, nor
+ * it can contain any index-specific code or hardcoded mapping.
  *
- * <p>
- * Let Guice manage inject object instances. Don't manage instances in this class.
- * </p>
+ * <p> Let Guice manage inject object instances. Don't manage instances in this class. </p>
  *
  * @author CWDS TPT-2
- *
  */
 public class CalsElasticsearchIndexerDao implements Closeable {
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalsElasticsearchIndexerDao.class);
-
-  private static int NUMBER_OF_SHARDS = 5;
-
-  private static int NUMBER_OF_REPLICAS = 1;
+  private static final org.slf4j.Logger LOGGER = LoggerFactory
+      .getLogger(CalsElasticsearchIndexerDao.class);
 
   /**
    * Client is thread safe.
@@ -45,7 +38,7 @@ public class CalsElasticsearchIndexerDao implements Closeable {
   /**
    * Elasticsearch configuration
    */
-  private ElasticsearchConfiguration config;
+  private CalsElasticsearchConfiguration config;
 
   /**
    * Constructor.
@@ -54,7 +47,7 @@ public class CalsElasticsearchIndexerDao implements Closeable {
    * @param config The ElasticSearch configuration which is read from .yaml file
    */
   @Inject
-  public CalsElasticsearchIndexerDao(Client client, ElasticsearchConfiguration config) {
+  public CalsElasticsearchIndexerDao(Client client, CalsElasticsearchConfiguration config) {
     this.client = client;
     this.config = config;
   }
@@ -73,37 +66,35 @@ public class CalsElasticsearchIndexerDao implements Closeable {
 
   /**
    * Create an index before blasting documents into it.
-   *
-   * @param index index name or alias
-   * @param numShards number of shards
-   * @param numReplicas number of replicas
    */
-  private void createIndex(final String index, int numShards, int numReplicas) {
-    LOGGER.warn("CREATE ES INDEX {} with {} shards and {} replicas", index, numShards, numReplicas);
-    final Settings indexSettings = Settings.builder().put("number_of_shards", numShards)
-        .put("number_of_replicas", numReplicas).build();
-    CreateIndexRequest indexRequest = new CreateIndexRequest(index, indexSettings);
+  private void createIndex() {
+    LOGGER.warn("CREATING ES INDEX [{}] for type [{}]",
+        config.getElasticsearchAlias(), config.getElasticsearchDocType());
+
+    CreateIndexRequestBuilder createIndexRequestBuilder =
+        getClient().admin().indices().prepareCreate(config.getElasticsearchAlias());
+
+    createIndexRequestBuilder
+        .setSettings(config.getElasticsearchIndexSettings(), XContentType.JSON);
+    createIndexRequestBuilder
+        .addMapping(config.getElasticsearchDocType(), config.getElasticsearchDocumentMapping(),
+            XContentType.JSON);
+
+    CreateIndexRequest indexRequest = createIndexRequestBuilder.request();
     getClient().admin().indices().create(indexRequest).actionGet();
   }
 
   /**
-   * Create an index, if needed, before blasting documents into it.
+   * Create an index, if missing.
    *
-   * <p>
-   * Defaults to 5 shards and 1 replica.
-   * </p>
-   *
-   * <p>
-   * Method is intentionally synchronized to prevent race conditions and multiple attempts to create
-   * the same index.
-   * </p>
-   *
-   * @param index index name or alias
+   * <p> Method is intentionally synchronized to prevent race conditions and multiple attempts to
+   * create the same index. </p>
    */
-  public synchronized void createIndexIfNeeded(final String index) {
+  synchronized void createIndexIfMissing() {
+    final String index = config.getElasticsearchAlias();
     if (!doesIndexExist(index)) {
       LOGGER.warn("ES INDEX {} DOES NOT EXIST!!", index);
-      createIndex(index, NUMBER_OF_SHARDS, NUMBER_OF_REPLICAS);
+      createIndex();
 
       try {
         // Give Elasticsearch a moment to catch its breath.
@@ -128,7 +119,8 @@ public class CalsElasticsearchIndexerDao implements Closeable {
   public IndexRequest bulkAdd(final ObjectMapper mapper, final String id, final Object obj)
       throws JsonProcessingException {
     return client.prepareIndex(config.getElasticsearchAlias(),
-        config.getElasticsearchDocType(), id).setSource(mapper.writeValueAsBytes(obj), XContentType.JSON).request();
+        config.getElasticsearchDocType(), id)
+        .setSource(mapper.writeValueAsBytes(obj), XContentType.JSON).request();
   }
 
   /**
@@ -137,7 +129,7 @@ public class CalsElasticsearchIndexerDao implements Closeable {
    * @param id ES document id
    * @return prepared DeleteRequest
    */
-  public DeleteRequest bulkDelete(final String id) {
+  DeleteRequest bulkDelete(final String id) {
     return client.prepareDelete(config.getElasticsearchAlias(),
         config.getElasticsearchDocType(), id).request();
   }

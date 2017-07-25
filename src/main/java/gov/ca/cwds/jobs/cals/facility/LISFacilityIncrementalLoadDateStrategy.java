@@ -34,7 +34,7 @@ public final class LISFacilityIncrementalLoadDateStrategy extends BaseIncrementa
   public Date calculateDate() {
     try {
       LocalDate date = LocalDate.now();
-      Path runningFile = Paths.get(getDateFileName());
+      Path runningFile = Paths.get(getDateFileLocation());
       String currentDate = date.format(DATE_FORMATTER);
 
       if (runningFile.toFile().exists()) {

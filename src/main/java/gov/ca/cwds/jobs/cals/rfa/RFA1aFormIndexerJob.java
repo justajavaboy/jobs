@@ -11,8 +11,6 @@ import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * <p> Command line arguments: </p>
@@ -21,25 +19,15 @@ import org.apache.logging.log4j.Logger;
  * {@code run script: $ java -DDB_CALSNS_JDBC_URL="jdbc:postgresql://192.168.99.100:5432/?currentSchema=calsns" \
 -DDB_CALSNS_USER="postgres_data" -DDB_CALSNS_PASSWORD="CHANGEME" \
 -cp build/libs/DocumentIndexerJob-0.24.jar gov.ca.cwds.jobs.cals.rfa.RFA1aFormIndexerJob \
-config/CALS_RFA1aForm.yaml}
+-c config/cals/rfa/CALS_RFA1aForm.yaml -l ./ ^}
  * </pre>
  *
  * @author CWDS TPT-2
  */
 public final class RFA1aFormIndexerJob extends BaseCalsIndexerJob {
 
-  private static final Logger LOGGER = LogManager.getLogger(RFA1aFormIndexerJob.class);
-
   public static void main(String[] args) {
-    if (args.length == 0) {
-      LOGGER.warn(
-          "usage: java -cp jobs.jar gov.ca.cwds.jobs.cals.rfa.RFA1aFormIndexerJob path/to/config/file.yaml");
-    }
-    new RFA1aFormIndexerJob(args[0]).run();
-  }
-
-  private RFA1aFormIndexerJob(String configFileName) {
-    super(configFileName);
+    runJob(RFA1aFormIndexerJob.class, args);
   }
 
   @Override

@@ -13,8 +13,6 @@ import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * <p> Command line arguments: </p>
@@ -27,25 +25,15 @@ import org.apache.logging.log4j.Logger;
 -DDB_CMS_JDBC_URL="jdbc:db2://192.168.99.100:50000/DB0TDEV" -DDB_CMS_SCHEMA="CWSCMSRS" \
 -DDB_CMS_USER="db2inst1" -DDB_CMS_PASSWORD="CHANGEME" \
 -cp build/libs/DocumentIndexerJob-0.24.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob \
-config/facility.yaml}
+-c config/cals/facility/facility.yaml -l ./}
  * </pre>
  *
  * @author CWDS TPT-2
  */
 public final class FacilityIndexerJob extends BaseCalsIndexerJob {
 
-  private static final Logger LOGGER = LogManager.getLogger(FacilityIndexerJob.class);
-
   public static void main(String[] args) {
-    if (args.length == 0) {
-      LOGGER.warn(
-          "usage: java -cp jobs.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob path/to/config/file.yaml");
-    }
-    new FacilityIndexerJob(args[0]).run();
-  }
-
-  private FacilityIndexerJob(String configFileName) {
-    super(configFileName);
+    runJob(FacilityIndexerJob.class, args);
   }
 
   @Override

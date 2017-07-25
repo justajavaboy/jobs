@@ -3,6 +3,7 @@ package gov.ca.cwds.jobs.cals;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.inject.AbstractModule;
+import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -10,12 +11,13 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.jobs.Job;
+import gov.ca.cwds.jobs.config.JobOptions;
 import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.util.elastic.XPackUtils;
-import gov.ca.cwds.rest.ElasticsearchConfiguration;
 import gov.ca.cwds.rest.api.ApiException;
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
@@ -30,30 +32,90 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
 
   private static final Logger LOGGER = LogManager.getLogger(BaseCalsIndexerJob.class);
 
-  private File config;
-
-  protected BaseCalsIndexerJob(String configFileName) {
-    this.config = new File(configFileName);
-  }
+  private JobOptions jobOptions;
 
   @Override
   protected void configure() {
     install(new MappingModule());
+    bind(JobOptions.class).toInstance(jobOptions);
   }
 
-  protected final void run() {
+  private static <T extends BaseCalsIndexerJob> JobOptions buildJobOptions(Class<T> jobRunnerClass,
+      String[] args) {
     try {
-      final Injector injector = Guice.createInjector(this);
-      Job job = injector.getInstance(Job.class);
-      job.run();
-    } catch (RuntimeException e) {
-      LOGGER.fatal("ERROR: ", e.getMessage(), e);
+      if (args.length < 4) {
+        throw new JobsException("not enough command line arguments");
+      }
+      return validateJobOptions(JobOptions.parseCommandLine(args));
+    } catch (JobsException e) {
+      LOGGER.error(
+          "usage: java -D... -cp cals-jobs.jar {} -c path/to/config/file.yaml -l dir/for/time/files/",
+          jobRunnerClass.getName());
+      throw e;
     }
+  }
+
+  private static JobOptions validateJobOptions(JobOptions jobOptions) {
+    // check option: -c
+    File configFile = new File(jobOptions.getEsConfigLoc());
+    if (!configFile.exists()) {
+      throw new JobsException(
+          "job arguments error: specified config file " + configFile.getPath() + " not found");
+    }
+
+    if (!configFile.isFile()) {
+      throw new JobsException("job arguments error: specified config file " + configFile.getPath()
+          + " is not really a file");
+    }
+
+    // check option: -l
+    File timeFilesDir = new File(jobOptions.getLastRunLoc());
+    if (!timeFilesDir.exists()) {
+      throw new JobsException(
+          "job arguments error: specified time files directory " + timeFilesDir.getPath()
+              + " not found");
+    }
+
+    if (!timeFilesDir.isDirectory()) {
+      throw new JobsException(
+          "job arguments error: specified time files directory " + timeFilesDir.getPath()
+              + " is not really a directory");
+    }
+
+    return jobOptions;
+  }
+
+  private static <T extends BaseCalsIndexerJob> T newJobRunner(Class<T> jobRunnerClass,
+      String[] args) {
+    try {
+      JobOptions jobOptions = buildJobOptions(jobRunnerClass, args);
+      T jobRunner = jobRunnerClass.newInstance();
+      jobRunner.setJobOptions(jobOptions);
+      return jobRunner;
+    } catch (CreationException | InstantiationException | IllegalAccessException e) {
+      throw new JobsException(e);
+    }
+  }
+
+  protected static <T extends BaseCalsIndexerJob> void runJob(Class<T> jobRunnerClass,
+      String[] args) {
+    try {
+      final T jobRunner = newJobRunner(jobRunnerClass, args);
+      final Injector injector = Guice.createInjector(jobRunner);
+      injector.getInstance(Job.class).run();
+    } catch (RuntimeException e) {
+      LOGGER.error("ERROR: ", e.getMessage(), e);
+      System.exit(1);
+    }
+  }
+
+  void setJobOptions(JobOptions jobOptions) {
+    this.jobOptions = jobOptions;
   }
 
   @Provides
   @Inject
-  public Client elasticsearchClient(ElasticsearchConfiguration config) {
+  public Client elasticsearchClient(CalsElasticsearchConfiguration config) {
     TransportClient client = null;
     LOGGER.warn("Create NEW ES client");
     try {
@@ -63,7 +125,7 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
       client.addTransportAddress(
           new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
               Integer.parseInt(config.getElasticsearchPort())));
-    } catch (Exception e) {
+    } catch (RuntimeException | UnknownHostException e) {
       LOGGER.error("Error initializing Elasticsearch client: {}", e.getMessage(), e);
       if (client != null) {
         client.close();
@@ -77,23 +139,24 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
   @Singleton
   @Inject
   public CalsElasticsearchIndexerDao elasticsearchDao(Client client,
-      ElasticsearchConfiguration configuration) {
-    return new CalsElasticsearchIndexerDao(client, configuration);
+      CalsElasticsearchConfiguration configuration) {
+
+    CalsElasticsearchIndexerDao esIndexerDao = new CalsElasticsearchIndexerDao(client,
+        configuration);
+    esIndexerDao.createIndexIfMissing();
+
+    return esIndexerDao;
   }
 
   @Provides
-  public ElasticsearchConfiguration config() {
-    ElasticsearchConfiguration configuration = null;
-    if (config != null) {
-      try {
-        configuration =
-            new ObjectMapper(new YAMLFactory())
-                .readValue(config, ElasticsearchConfiguration.class);
-      } catch (Exception e) {
-        LOGGER.error("Error reading job configuration: {}", e.getMessage(), e);
-        throw new JobsException("Error reading job configuration: " + e.getMessage(), e);
-      }
+  public CalsElasticsearchConfiguration config() {
+    try {
+      File jobConfigFile = new File(jobOptions.getEsConfigLoc());
+      return new ObjectMapper(new YAMLFactory())
+          .readValue(jobConfigFile, CalsElasticsearchConfiguration.class);
+    } catch (Exception e) {
+      LOGGER.error("Error reading job configuration: {}", e.getMessage(), e);
+      throw new JobsException("Error reading job configuration: " + e.getMessage(), e);
     }
-    return configuration;
   }
 }
