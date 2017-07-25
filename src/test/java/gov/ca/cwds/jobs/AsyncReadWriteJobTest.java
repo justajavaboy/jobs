@@ -66,8 +66,12 @@ public class AsyncReadWriteJobTest {
       if (input.size() == 3) {
         return input.remove(0);
       } else {
-        Thread.sleep(1000); // NOSONAR
-        throw new RuntimeException("failed on second!");
+        try {
+          Thread.sleep(1000); // NOSONAR
+          throw new RuntimeException("failed on second!");
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
       }
     }, String::valueOf, output::addAll
 
