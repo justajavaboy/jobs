@@ -20,7 +20,7 @@ apply plugin: 'jacoco'
 project.ext {
     log4jVersion = "2.8"
     elasticsearchVersion = "5.5.0"
-    calsApiVersion =  '3.4-SNAPSHOT'
+    calsApiVersion =  '3.5-SNAPSHOT'
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
 }
 
