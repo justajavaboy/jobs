@@ -45,7 +45,7 @@ import gov.ca.cwds.data.std.ApiObjectIdentity;
         query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
             + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
             + "WHERE x1.LAST_CHG > CAST(:after AS TIMESTAMP) "
-            + ") ORDER BY CLT_IDENTIFIER FOR READ ONLY ",
+            + ") ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR ",
         resultClass = EsClientAddress.class, readOnly = true),
 
     @NamedNativeQuery(
@@ -53,7 +53,7 @@ import gov.ca.cwds.data.std.ApiObjectIdentity;
         query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
             + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
             + "WHERE x1.LAST_CHG > CAST(:after AS TIMESTAMP) "
-            + ") AND x.CLT_SENSTV_IND = 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY ",
+            + ") AND x.CLT_SENSTV_IND = 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR",
         resultClass = EsClientAddress.class, readOnly = true),
 
     @NamedNativeQuery(
@@ -61,7 +61,7 @@ import gov.ca.cwds.data.std.ApiObjectIdentity;
         query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
             + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
             + "WHERE x1.LAST_CHG > CAST(:after AS TIMESTAMP) "
-            + ") AND x.CLT_SENSTV_IND != 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY ",
+            + ") AND x.CLT_SENSTV_IND != 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR ",
         resultClass = EsClientAddress.class, readOnly = true)})
 public class EsClientAddress extends ApiObjectIdentity
     implements PersistentObject, ApiGroupNormalizer<ReplicatedClient> {
@@ -541,11 +541,11 @@ public class EsClientAddress extends ApiObjectIdentity
     ret.setCltReplicationOperation(strToRepOp(rs.getString("CLT_IBMSNAP_OPERATION")));
     ret.setCltReplicationDate(rs.getDate("CLT_IBMSNAP_LOGMARKER"));
     ret.setCltLastUpdatedId(rs.getString("CLT_LST_UPD_ID"));
-    ret.setCltLastUpdatedTime(rs.getDate("CLT_LST_UPD_TS"));
+    ret.setCltLastUpdatedTime(rs.getTimestamp("CLT_LST_UPD_TS"));
     ret.setClaReplicationOperation(strToRepOp(rs.getString("CLA_IBMSNAP_OPERATION")));
     ret.setClaReplicationDate(rs.getDate("CLA_IBMSNAP_LOGMARKER"));
     ret.setClaLastUpdatedId(rs.getString("CLA_LST_UPD_ID"));
-    ret.setClaLastUpdatedTime(rs.getDate("CLA_LST_UPD_TS"));
+    ret.setClaLastUpdatedTime(rs.getTimestamp("CLA_LST_UPD_TS"));
     ret.setClaId(rs.getString("CLA_IDENTIFIER"));
     ret.setClaFkAddress(rs.getString("CLA_FKADDRS_T"));
     ret.setClaFkClient(rs.getString("CLA_FKCLIENT_T"));
@@ -665,6 +665,7 @@ public class EsClientAddress extends ApiObjectIdentity
       ret.setUnemployedParentCode(getCltUnemployedParentCode());
       ret.setZippyCreatedIndicator(getCltZippyCreatedIndicator());
       ret.setReplicationDate(getCltReplicationDate());
+      ret.setLastUpdatedTime(getCltLastUpdatedTime());
     }
 
     // Client Address:
@@ -709,6 +710,7 @@ public class EsClientAddress extends ApiObjectIdentity
         adr.setZip4(getAdrZip4());
         adr.setReplicationDate(getAdrReplicationDate());
         adr.setReplicationOperation(getAdrReplicationOperation());
+        adr.setLastUpdatedTime(getClaLastUpdatedTime());
         rca.addAddress(adr);
       }
     }

@@ -134,7 +134,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
           + "FROM (SELECT (y.rn / (total_cnt/THE_TOTAL_BUCKETS)) + 1 AS bucket, y.rn, y.THE_ID_COL FROM ( "
           + "SELECT c.THE_ID_COL, ROW_NUMBER() OVER (ORDER BY 1) AS rn, COUNT(*) OVER (ORDER BY 1) AS total_cnt "
           + "FROM {h-schema}THE_TABLE c ORDER BY c.THE_ID_COL) y ORDER BY y.rn "
-          + ") z GROUP BY z.bucket FOR READ ONLY ";
+          + ") z GROUP BY z.bucket FOR READ ONLY WITH UR ";
 
   /**
    * Guice Injector used for all Job instances during the life of this batch JVM.
@@ -274,9 +274,9 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   }
 
   /**
-   * Get initial load sql query
+   * Get initial load SQL query.
    * 
-   * @param dbSchemaName The DB svhema name
+   * @param dbSchemaName The DB schema name
    * @return Inital load query
    */
   public String getInitialLoadQuery(String dbSchemaName) {
@@ -298,6 +298,16 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * @return True if limited access records must be deleted from ES, false otherwise.
    */
   public boolean mustDeleteLimitedAccessRecords() {
+    return false;
+  }
+
+  /**
+   * Mark a record for deletion. Intended for replicated records with deleted flag.
+   * 
+   * @param t bean to check
+   * @return true if marked for deletion
+   */
+  protected boolean isDelete(T t) {
     return false;
   }
 
@@ -329,7 +339,6 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected BulkProcessor buildBulkProcessor() {
     return BulkProcessor.builder(esDao.getClient(), new BulkProcessor.Listener() {
-
       @Override
       public void beforeBulk(long executionId, BulkRequest request) {
         recsBulkBefore.getAndAdd(request.numberOfActions());
@@ -347,7 +356,6 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
         recsBulkError.getAndIncrement();
         LOGGER.error("ERROR EXECUTING BULK", failure);
       }
-
     }).setBulkActions(ES_BULK_SIZE).setConcurrentRequests(0).setName("jobs_bp").build();
   }
 
@@ -554,7 +562,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   }
 
   /**
-   * True if the Job class intends to reduce denormalized results to normalized ones.
+   * True if the Job class reduces denormalized results to normalized ones.
    * 
    * @return true if class overrides {@link #normalize(List)}
    */
@@ -581,7 +589,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * @see #prepareUpsertRequest(ElasticSearchPerson, PersistentObject)
    */
   protected void prepareDocument(BulkProcessor bp, T t) throws IOException {
-    Arrays.stream(buildElasticSearchPersons(t)).map(esp -> prepareUpsertRequestNoChecked(esp, t))
+    Arrays.stream(buildElasticSearchPersons(t)).map(p -> prepareUpsertRequestNoChecked(p, t))
         .forEach(bp::add);
   }
 
@@ -621,7 +629,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected void prepareInsertCollections(ElasticSearchPerson esp, T t, String elementName,
       List<? extends ApiTypedIdentifier<String>> list, ESOptionalCollection... keep)
-          throws JsonProcessingException {
+      throws JsonProcessingException {
 
     // Null out optional collections for updates.
     esp.clearOptionalCollections(keep);
@@ -644,7 +652,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    */
   protected Pair<String, String> prepareUpsertJson(ElasticSearchPerson esp, T t, String elementName,
       List<? extends ApiTypedIdentifier<String>> list, ESOptionalCollection... keep)
-          throws JsonProcessingException {
+      throws JsonProcessingException {
 
     // Child classes: Set optional collections before serializing the insert JSON.
     prepareInsertCollections(esp, t, elementName, list, keep);
@@ -788,6 +796,10 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
   /**
    * ENTRY POINT FOR INITIAL LOAD.
    * 
+   * <p>
+   * Continue processing until
+   * </p>
+   * 
    * @throws IOException on JDBC error or Elasticsearch disconnect
    */
   protected void doInitialLoadJdbc() throws IOException {
@@ -844,15 +856,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
 
       // Linux MQT lacks ORDER BY clause. Must sort manually.
       // Detect platform or always force ORDER BY clause.
-
-      // StringBuilder buf = new StringBuilder();
-      // buf.append("SELECT x.* FROM ").append(getDBSchemaName()).append(".")
-      // .append(getInitialLoadViewName()).append(" x ").append(getJdbcOrderBy())
-      // .append(" FOR READ ONLY");
-      // final String query = buf.toString();
-
       final String query = getInitialLoadQuery(getDBSchemaName());
-
       M m;
 
       try (Statement stmt = con.createStatement()) {
@@ -1049,7 +1053,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
       }
 
       /**
-       * Delete records that are identified for deletion...
+       * Delete records identified for deletion...
        */
       if (!deletionResults.isEmpty()) {
         LOGGER.warn(MessageFormat.format("Found {0} people to delete", deletionResults.size())
@@ -1207,13 +1211,11 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     final Class<?> entityClass = jobDao.getEntityClass();
 
     String namedQueryName = entityClass.getName() + ".findAllUpdatedAfter";
-
     Session session = jobDao.getSessionFactory().getCurrentSession();
-
     Transaction txn = session.beginTransaction();
+
     try {
       NativeQuery<T> q = session.getNamedNativeQuery(namedQueryName);
-
       q.setTimestamp("after", new Timestamp(lastRunTime.getTime()));
 
       ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
@@ -1239,6 +1241,7 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
    * Pull from view for last run mode.
    * 
    * @param lastRunTime last successful run time
+   * @param deletionResults records to remove
    * @return List of normalized entities
    */
   protected List<T> extractLastRunRecsFromView(Date lastRunTime, Set<String> deletionResults) {
@@ -1285,15 +1288,19 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
 
         groupRecs.add(m);
         lastId = m.getNormalizationGroupKey();
+        if (lastId == null) {
+          // This could be due to data error (invalid data in db)
+          LOGGER.warn("NULL Normalization Group Key: " + m);
+          lastId = new Object();
+        }
       }
 
       if (!groupRecs.isEmpty()) {
         results.add(normalizeSingle(groupRecs));
       }
 
-
       /**
-       * Load records to delete
+       * Load records to delete.
        */
       if (mustDeleteLimitedAccessRecords()) {
         String namedQueryNameForDeletion =
@@ -1420,8 +1427,9 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
           : opts.getTotalBuckets();
       final javax.persistence.Query q = jobDao.getSessionFactory().createEntityManager()
           .createNativeQuery(QUERY_BUCKET_LIST.replaceAll("THE_TABLE", table)
-              .replaceAll("THE_ID_COL", getIdColumn())
-              .replaceAll("THE_TOTAL_BUCKETS", String.valueOf(totalBuckets)), BatchBucket.class);
+              .replaceAll("THE_ID_COL", getIdColumn()).replaceAll("THE_TOTAL_BUCKETS",
+                  String.valueOf(totalBuckets)),
+              BatchBucket.class);
 
       ret = q.getResultList();
       session.clear();
@@ -1617,6 +1625,9 @@ public abstract class BasePersonIndexerJob<T extends PersistentObject, M extends
     BasePersonIndexerJob.testMode = testMode;
   }
 
+  /**
+   * @return default CMS schema name
+   */
   protected static String getDBSchemaName() {
     return System.getProperty("DB_CMS_SCHEMA");
   }
