@@ -40,7 +40,7 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
     bind(JobOptions.class).toInstance(jobOptions);
   }
 
-  private static <T extends BaseCalsIndexerJob> JobOptions buildJobOptions(Class<T> jobRunnerClass,
+  static <T extends BaseCalsIndexerJob> JobOptions buildJobOptions(Class<T> jobRunnerClass,
       String[] args) {
     try {
       if (args.length < 4) {
@@ -115,6 +115,8 @@ public abstract class BaseCalsIndexerJob extends AbstractModule {
 
   @Provides
   @Inject
+  // the client should not be closed here, it is closed when job is done
+  @SuppressWarnings("squid:S2095")
   public Client elasticsearchClient(CalsElasticsearchConfiguration config) {
     TransportClient client = null;
     LOGGER.warn("Create NEW ES client");

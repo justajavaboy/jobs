@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import gov.ca.cwds.jobs.cals.facility.FacilityIncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.cals.facility.LISFacilityIncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.cals.rfa.RFA1aFormIncrementalLoadDateStrategy;
+import gov.ca.cwds.jobs.config.JobOptions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,67 +20,79 @@ import java.util.Date;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.internal.util.reflection.Whitebox;
 
 /**
  * @author CWDS TPT-2
  */
 public class IncrementalLoadDateStrategyTest {
 
+  private static final RFA1aFormIncrementalLoadDateStrategy RFA1A_FORM_LOAD_DATE_STRATEGY = new RFA1aFormIncrementalLoadDateStrategy();
+
+  private static final FacilityIncrementalLoadDateStrategy FACILITY_LOAD_DATE_STRATEGY = new FacilityIncrementalLoadDateStrategy();
+
+  private static final LISFacilityIncrementalLoadDateStrategy LIS_FACILITY_LOAD_DATE_STRATEGY = new LISFacilityIncrementalLoadDateStrategy();
+
+  private static void cleanUp() throws IOException {
+    Files.deleteIfExists(Paths.get(RFA1A_FORM_LOAD_DATE_STRATEGY.getDateFileLocation()));
+    Files.deleteIfExists(Paths.get(FACILITY_LOAD_DATE_STRATEGY.getDateFileLocation()));
+    Files.deleteIfExists(Paths.get(LIS_FACILITY_LOAD_DATE_STRATEGY.getDateFileLocation()));
+  }
+
   @BeforeClass
   public static void beforeClass() throws IOException {
-    Files.deleteIfExists(Paths.get(RFA1aFormIncrementalLoadDateStrategy.RUNNING_FILE_NAME));
-    Files.deleteIfExists(Paths.get(FacilityIncrementalLoadDateStrategy.RUNNING_FILE_NAME));
-    Files.deleteIfExists(Paths.get(LISFacilityIncrementalLoadDateStrategy.RUNNING_FILE_NAME));
+    JobOptions jobOptions = BaseCalsIndexerJob
+        .buildJobOptions(BaseCalsIndexerJob.class, new String[]{
+            "-c", "config/config.yaml", "-l", "./"
+        });
+    Whitebox.setInternalState(RFA1A_FORM_LOAD_DATE_STRATEGY, "jobOptions", jobOptions);
+    Whitebox.setInternalState(FACILITY_LOAD_DATE_STRATEGY, "jobOptions", jobOptions);
+    Whitebox.setInternalState(LIS_FACILITY_LOAD_DATE_STRATEGY, "jobOptions", jobOptions);
+    cleanUp();
   }
 
   @AfterClass
   public static void afterClass() throws IOException {
-    beforeClass();
+    cleanUp();
   }
 
   @Test
   public void testRFA1aFormIncrementalLoadDateStrategy() {
-    IncrementalLoadDateStrategy incrementalLoadDateStrategy = new RFA1aFormIncrementalLoadDateStrategy();
-
-    LocalDateTime calculatedTime0 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
+    LocalDateTime calculatedTime0 = toLocalDateTime(RFA1A_FORM_LOAD_DATE_STRATEGY.calculateDate());
     assertBefore(calculatedTime0, LocalDateTime.now().minusYears(99));
 
-    LocalDateTime calculatedTime1 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
+    LocalDateTime calculatedTime1 = toLocalDateTime(RFA1A_FORM_LOAD_DATE_STRATEGY.calculateDate());
     LocalDateTime now = LocalDateTime.now();
     assertBetween(calculatedTime1, now.minusMinutes(1), now);
 
-    LocalDateTime calculatedTime2 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
+    LocalDateTime calculatedTime2 = toLocalDateTime(RFA1A_FORM_LOAD_DATE_STRATEGY.calculateDate());
     assertAfter(calculatedTime2, calculatedTime1);
   }
 
   @Test
   public void testFacilityIncrementalLoadDateStrategy() {
-    IncrementalLoadDateStrategy incrementalLoadDateStrategy = new FacilityIncrementalLoadDateStrategy();
-
-    Date calculatedDate0 = incrementalLoadDateStrategy.calculateDate();
+    Date calculatedDate0 = FACILITY_LOAD_DATE_STRATEGY.calculateDate();
     assertThat(calculatedDate0, is(nullValue()));
 
-    LocalDateTime calculatedTime1 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
+    LocalDateTime calculatedTime1 = toLocalDateTime(FACILITY_LOAD_DATE_STRATEGY.calculateDate());
     LocalDateTime now = LocalDateTime.now();
     assertBetween(calculatedTime1, now.minusMinutes(1), now);
 
-    LocalDateTime calculatedTime2 = toLocalDateTime(incrementalLoadDateStrategy.calculateDate());
+    LocalDateTime calculatedTime2 = toLocalDateTime(FACILITY_LOAD_DATE_STRATEGY.calculateDate());
     assertAfter(calculatedTime2, calculatedTime1);
   }
 
   @Test
   public void testLISFacilityIncrementalLoadDateStrategy() {
-    IncrementalLoadDateStrategy incrementalLoadDateStrategy = new LISFacilityIncrementalLoadDateStrategy();
-
     LocalDate now = LocalDate.now();
 
-    LocalDate calculatedDate0 = toLocalDate(incrementalLoadDateStrategy.calculateDate());
+    LocalDate calculatedDate0 = toLocalDate(LIS_FACILITY_LOAD_DATE_STRATEGY.calculateDate());
     assertBefore(calculatedDate0, now.minusYears(99));
 
-    LocalDate calculatedDate1 = toLocalDate(incrementalLoadDateStrategy.calculateDate());
+    LocalDate calculatedDate1 = toLocalDate(LIS_FACILITY_LOAD_DATE_STRATEGY.calculateDate());
     assertBetween(calculatedDate1, now.minusDays(2), now);
 
-    LocalDate calculatedDate2 = toLocalDate(incrementalLoadDateStrategy.calculateDate());
+    LocalDate calculatedDate2 = toLocalDate(LIS_FACILITY_LOAD_DATE_STRATEGY.calculateDate());
     assertThat(calculatedDate2, is(equalTo(calculatedDate1)));
   }
 

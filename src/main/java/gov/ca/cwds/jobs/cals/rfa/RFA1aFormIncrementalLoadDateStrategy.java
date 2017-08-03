@@ -7,7 +7,7 @@ import gov.ca.cwds.jobs.cals.BaseIncrementalLoadDateStrategy;
  */
 public final class RFA1aFormIncrementalLoadDateStrategy extends BaseIncrementalLoadDateStrategy {
 
-  public static final String RUNNING_FILE_NAME = "CALS_RFA1aForm_last_load_time";
+  private static final String RUNNING_FILE_NAME = "CALS_RFA1aForm_last_load_time";
 
   @Override
   protected String getDateFileName() {
