@@ -4,55 +4,55 @@
   },
   "properties": {
     "applicants.applicant.first_name": {
-      "type": "string",
+      "type": "text",
       "fields": {
         "phonetic": {
-          "type":     "string",
+          "type":     "text",
           "analyzer": "dbl_metaphone"
         }
       }
     },
     "applicants.applicant.middle_name": {
-      "type": "string",
+      "type": "text",
       "fields": {
         "phonetic": {
-          "type":     "string",
+          "type":     "text",
           "analyzer": "dbl_metaphone"
         }
       }
     },
     "applicants.applicant.last_name": {
-      "type": "string",
+      "type": "text",
       "fields": {
         "phonetic": {
-          "type":     "string",
+          "type":     "text",
           "analyzer": "dbl_metaphone"
         }
       }
     },
     "applicants.applicant.other_names.first_name": {
-      "type": "string",
+      "type": "text",
       "fields": {
         "phonetic": {
-          "type":     "string",
+          "type":     "text",
           "analyzer": "dbl_metaphone"
         }
       }
     },
     "applicants.applicant.other_names.middle_name": {
-      "type": "string",
+      "type": "text",
       "fields": {
         "phonetic": {
-          "type":     "string",
+          "type":     "text",
           "analyzer": "dbl_metaphone"
         }
       }
     },
     "applicants.applicant.other_names.last_name": {
-      "type": "string",
+      "type": "text",
       "fields": {
         "phonetic": {
-          "type":     "string",
+          "type":     "text",
           "analyzer": "dbl_metaphone"
         }
       }

@@ -33,8 +33,16 @@ public abstract class BaseIncrementalLoadDateStrategy implements IncrementalLoad
 
   protected abstract String getDateFileName();
 
-  protected String getDateFileLocation () {
-    return FilenameUtils.concat(jobOptions.getLastRunLoc(), getDateFileName());
+  private String getDateFileLocation(String timeFilesDir) {
+    return FilenameUtils.concat(timeFilesDir, getDateFileName());
+  }
+
+  protected String getDateFileLocation() {
+    return getDateFileLocation(jobOptions.getLastRunLoc());
+  }
+
+  public final boolean reset(String timeFilesDir) throws IOException {
+    return Files.deleteIfExists(Paths.get(getDateFileLocation(timeFilesDir)));
   }
 
   protected DateTimeFormatter getDateTimeFormatter() {

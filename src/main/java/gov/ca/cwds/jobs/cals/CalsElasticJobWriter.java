@@ -7,15 +7,14 @@ import gov.ca.cwds.cals.service.dto.changed.ChangedDTO;
 import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author CWDS TPT-2
  */
 public class CalsElasticJobWriter<T extends ChangedDTO<?>> extends ElasticJobWriter<T> {
 
-  private static final Logger LOGGER = LogManager.getLogger(CalsElasticJobWriter.class);
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalsElasticJobWriter.class);
 
   /**
    * Constructor.

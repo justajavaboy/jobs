@@ -18,19 +18,18 @@ import gov.ca.cwds.rest.api.ApiException;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author CWDS TPT-2
  */
 public abstract class BaseCalsIndexerJob extends AbstractModule {
 
-  private static final Logger LOGGER = LogManager.getLogger(BaseCalsIndexerJob.class);
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BaseCalsIndexerJob.class);
 
   private JobOptions jobOptions;
 

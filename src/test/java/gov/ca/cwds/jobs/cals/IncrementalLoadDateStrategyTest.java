@@ -11,8 +11,6 @@ import gov.ca.cwds.jobs.cals.facility.LISFacilityIncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.cals.rfa.RFA1aFormIncrementalLoadDateStrategy;
 import gov.ca.cwds.jobs.config.JobOptions;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,6 +25,8 @@ import org.mockito.internal.util.reflection.Whitebox;
  */
 public class IncrementalLoadDateStrategyTest {
 
+  private static final String TIME_FILES_DIR = "./";
+
   private static final RFA1aFormIncrementalLoadDateStrategy RFA1A_FORM_LOAD_DATE_STRATEGY = new RFA1aFormIncrementalLoadDateStrategy();
 
   private static final FacilityIncrementalLoadDateStrategy FACILITY_LOAD_DATE_STRATEGY = new FacilityIncrementalLoadDateStrategy();
@@ -34,16 +34,16 @@ public class IncrementalLoadDateStrategyTest {
   private static final LISFacilityIncrementalLoadDateStrategy LIS_FACILITY_LOAD_DATE_STRATEGY = new LISFacilityIncrementalLoadDateStrategy();
 
   private static void cleanUp() throws IOException {
-    Files.deleteIfExists(Paths.get(RFA1A_FORM_LOAD_DATE_STRATEGY.getDateFileLocation()));
-    Files.deleteIfExists(Paths.get(FACILITY_LOAD_DATE_STRATEGY.getDateFileLocation()));
-    Files.deleteIfExists(Paths.get(LIS_FACILITY_LOAD_DATE_STRATEGY.getDateFileLocation()));
+    RFA1A_FORM_LOAD_DATE_STRATEGY.reset(TIME_FILES_DIR);
+    FACILITY_LOAD_DATE_STRATEGY.reset(TIME_FILES_DIR);
+    LIS_FACILITY_LOAD_DATE_STRATEGY.reset(TIME_FILES_DIR);
   }
 
   @BeforeClass
   public static void beforeClass() throws IOException {
     JobOptions jobOptions = BaseCalsIndexerJob
         .buildJobOptions(BaseCalsIndexerJob.class, new String[]{
-            "-c", "config/config.yaml", "-l", "./"
+            "-c", "config/config.yaml", "-l", TIME_FILES_DIR
         });
     Whitebox.setInternalState(RFA1A_FORM_LOAD_DATE_STRATEGY, "jobOptions", jobOptions);
     Whitebox.setInternalState(FACILITY_LOAD_DATE_STRATEGY, "jobOptions", jobOptions);
