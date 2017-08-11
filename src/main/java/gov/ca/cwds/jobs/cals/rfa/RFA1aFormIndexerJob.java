@@ -33,7 +33,7 @@ public final class RFA1aFormIndexerJob extends BaseCalsIndexerJob {
   @Override
   protected void configure() {
     super.configure();
-    install(new CalsnsDataAccessModule("calsns-hibernate.cfg.xml"));
+    install(new CalsnsDataAccessModule("cals-jobs-calsns-hibernate.cfg.xml"));
     bind(RFA1aFormReader.class);
     bind(RFA1aFormElasticJobWriter.class);
     bind(RFA1aFormsCollectionService.class);

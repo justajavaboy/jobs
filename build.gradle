@@ -158,7 +158,7 @@ sonarqube {
 import org.apache.tools.ant.taskdefs.condition.Os
 
 project.ext {
-    // assume that we use the Docker Toolbox on Windows OS
+    // assume that Windows users use the Docker Toolbox
     buildEnv = System.env.BUILD_ENV ?: (Os.isFamily(Os.FAMILY_WINDOWS) ? 'WIN_DEV' : 'JENKINS')
     devDockerHost = System.env.DEV_DOCKER_HOST ?: '192.168.99.100'
     devDockerPort = 2376
@@ -167,15 +167,13 @@ project.ext {
     elasticPort = 9200
 }
 
-if (project.buildEnv == 'WIN_DEV') {
-    project.ext.dockerEnvVars = [
-            DOCKER_CERT_PATH: System.getProperty("user.home") + '/.docker/machine/machines/default',
-            DOCKER_HOST: "tcp://$project.devDockerHost:$project.devDockerPort",
-            DOCKER_MACHINE_NAME: 'default',
-            DOCKER_TLS_VERIFY: '1',
-            COMPOSE_CONVERT_WINDOWS_PATHS: 'true'
-    ]
-}
+project.ext.dockerEnvVars = project.buildEnv != 'WIN_DEV' ? [:] : [
+        DOCKER_CERT_PATH: System.getProperty("user.home") + '/.docker/machine/machines/default',
+        DOCKER_HOST: "tcp://$project.devDockerHost:$project.devDockerPort",
+        DOCKER_MACHINE_NAME: 'default',
+        DOCKER_TLS_VERIFY: '1',
+        COMPOSE_CONVERT_WINDOWS_PATHS: 'true'
+]
 
 def testEsDockerImageName = 'cwds/jobs-test-elasticsearch'
 def testEsContainerName = 'jobs-test-elasticsearch'
@@ -196,7 +194,9 @@ void waitForPortToOpen(host, port, millis, maxAttempts) {
     while (!isOpen) {
         if (++attempts > maxAttempts) throw new GradleException("Failed to wait for $host:$port to open")
         isOpen = isPortOpen(host, port)
-        if (!isOpen) {
+        if (isOpen) {
+            println "\n$host:$port is open"
+        } else {
             println "\nWaiting ${millis}ms for $host:$port to open ($attempts/$maxAttempts)..."
             sleep(millis)
         }
@@ -221,7 +221,7 @@ task testEsDockerCleanUpBeforeTest(type: Exec, dependsOn: checkDockerService) {
         commandLine 'docker', 'rm', '-v', '--force', testEsContainerName
     }
     doLast {
-        commandLine 'docker', 'rmi', testEsDockerImageName
+        commandLine 'docker', 'rmi', '-v', '--force', testEsDockerImageName
     }
 }
 // have to duplicate the clean up actions to avoid circular dependencies, to be optimized
@@ -232,7 +232,7 @@ task testEsDockerCleanUpAfterTest(type: Exec, dependsOn: checkDockerService) {
         commandLine 'docker', 'rm', '-v', '--force', testEsContainerName
     }
     doLast {
-        commandLine 'docker', 'rmi', testEsDockerImageName
+        commandLine 'docker', 'rmi', '-v', '--force', testEsDockerImageName
     }
 }
 
@@ -240,7 +240,10 @@ task testEsDockerCreateImage(type: Exec, dependsOn: [checkDockerService, testEsD
     testEsDockerCleanUpBeforeTest.mustRunAfter(checkDockerService)
     environment << dockerEnvVars
     doFirst {
-        commandLine 'docker', 'build', '-t', testEsDockerImageName, '-f', "$projectDir/src/test/resources/es/Dockerfile", "$projectDir/src/test/resources/es/"
+        commandLine 'docker', 'build', '-t', testEsDockerImageName,
+                '-f', "$projectDir/src/test/resources/es/Dockerfile",
+                '--build-arg', "ELASTICSEARCH_VERSION=$project.elasticsearchVersion",
+                "$projectDir/src/test/resources/es/"
     }
 }
 
