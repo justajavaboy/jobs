@@ -131,7 +131,7 @@ public class ReplicatedReporter extends BaseReporter
   }
 
   @Override
-  public Object getNormalizationGroupKey() {
+  public String getNormalizationGroupKey() {
     return this.getPrimaryKey();
   }
 
@@ -151,7 +151,7 @@ public class ReplicatedReporter extends BaseReporter
 
   @Override
   public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
-    return ElasticTransformer.createLegacyDescriptor(getId(), getReplicationDate(),
+    return ElasticTransformer.createLegacyDescriptor(getId(), getLastUpdatedTime(),
         LegacyTable.REPORTER);
   }
 }

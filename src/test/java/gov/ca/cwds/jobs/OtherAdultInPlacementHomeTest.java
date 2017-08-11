@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.jobs.config.NeutronStaticSessionFactory;
 
 /**
  * 
@@ -33,9 +33,8 @@ public class OtherAdultInPlacementHomeTest {
 
   @BeforeClass
   public static void beforeClass() {
-    // sessionFactory =
-    // new Configuration().configure("test-cms-hibernate.cfg.xml").buildSessionFactory();
-    sessionFactory = NeutronStaticSessionFactory.getSessionFactory();
+    sessionFactory =
+        new Configuration().configure("test-cms-hibernate.cfg.xml").buildSessionFactory();
     dao = new ReplicatedOtherAdultInPlacemtHomeDao(sessionFactory);
   }
 

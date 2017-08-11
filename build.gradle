@@ -19,15 +19,15 @@ apply plugin: 'jacoco'
 
 project.ext {
     log4jVersion = "2.8"
-    elasticsearchVersion = "5.5.0"
-    calsApiVersion =  '3.5-SNAPSHOT'
+    elasticsearchVersion = "5.5.1"
+    calsApiVersion =  '3.6-SNAPSHOT'
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
 }
 
-version = 0.27
+version = 0.28
 
 repositories {
-    mavenLocal()
+    //mavenLocal()
     mavenCentral()
     maven {
         url "http://maven2.cwds.tabordasolutions.net"
@@ -42,7 +42,7 @@ dependencies {
     // ES 5.x:
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: elasticsearchVersion
     compile group: 'org.elasticsearch.client', name: 'transport', version: elasticsearchVersion
-    compile "org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion
+    compile ("org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion)
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
 
 	compile group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
@@ -59,11 +59,8 @@ dependencies {
 	compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
 	compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
 
-	// NO LONGER DEPENDS ON API!! HALLELUJAH!!
-	// compile group: "gov.ca.cwds.api", name: "api", version: "0.22.928"
-
 	// Exclude transitive dependencies.
-	compile ('gov.ca.cwds.api:api-core:0.28.381') {
+	compile ('gov.ca.cwds.api:api-core:0.28.398') {
 	    exclude group: 'org.glassfish.jersey.core'
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'
@@ -85,8 +82,6 @@ dependencies {
 	compile 'com.fasterxml.jackson.module:jackson-module-guice:2.8.2'
     compile group: 'org.json', name: 'json', version: '20090211'
 
-	// compile 'com.landawn:abacus-util:0.9.67'
-
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
     testCompile group: 'junit', name: 'junit', version: '4.+'
@@ -97,7 +92,7 @@ dependencies {
         exclude group: 'javax.servlet', module: 'javax.servlet-api'
         exclude group: 'junit', module: 'junit'
     }
-    
+
     // https://mvnrepository.com/artifact/nl.jqno.equalsverifier/equalsverifier
     testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '2.1.6'
     testCompile 'org.ow2.asm:asm-all:5.1'
@@ -138,7 +133,7 @@ task printProps << {
 
 tasks.withType(Test) {
     enableAssertions = true
-    systemProperties project.properties.subMap(["DB_CMS_JDBC_URL", "DB_CMS_PASSWORD", "DB_CMS_SCHEMA", "DB_CMS_USER", "DB_NS_JDBC_URL", "DB_NS_PASSWORD", "DB_NS_SCHEMA", "DB_NS_USER"])
+    systemProperties project.properties.subMap(["DB_CMS_JDBC_URL", "DB_CMS_PASSWORD", "DB_CMS_SCHEMA", "DB_CMS_REP_SCHEMA", "DB_CMS_USER", "DB_NS_JDBC_URL", "DB_NS_PASSWORD", "DB_NS_SCHEMA", "DB_NS_USER"])
 }
 
 jacocoTestReport {

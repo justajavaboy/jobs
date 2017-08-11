@@ -117,7 +117,7 @@ public class ReplicatedAttorney extends BaseAttorney
   }
 
   @Override
-  public Object getNormalizationGroupKey() {
+  public String getNormalizationGroupKey() {
     return this.getId();
   }
 
@@ -132,7 +132,7 @@ public class ReplicatedAttorney extends BaseAttorney
 
   @Override
   public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
-    return ElasticTransformer.createLegacyDescriptor(getId(), getReplicationDate(),
+    return ElasticTransformer.createLegacyDescriptor(getId(), getLastUpdatedTime(),
         LegacyTable.ATTORNEY);
   }
 

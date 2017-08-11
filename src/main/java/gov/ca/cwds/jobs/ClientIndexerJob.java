@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -29,8 +27,6 @@ import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
  */
 public class ClientIndexerJob extends BasePersonIndexerJob<ReplicatedClient, EsClientAddress>
     implements JobResultSetAware<EsClientAddress> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ClientIndexerJob.class);
 
   /**
    * Construct batch job instance with all required dependencies.
@@ -95,11 +91,6 @@ public class ClientIndexerJob extends BasePersonIndexerJob<ReplicatedClient, EsC
   }
 
   @Override
-  protected boolean isDelete(ReplicatedClient t) {
-    return t.isDelete(t);
-  }
-
-  @Override
   protected List<ReplicatedClient> normalize(List<EsClientAddress> recs) {
     return EntityNormalizer.<ReplicatedClient, EsClientAddress>normalizeList(recs);
   }
@@ -114,4 +105,3 @@ public class ClientIndexerJob extends BasePersonIndexerJob<ReplicatedClient, EsC
   }
 
 }
-

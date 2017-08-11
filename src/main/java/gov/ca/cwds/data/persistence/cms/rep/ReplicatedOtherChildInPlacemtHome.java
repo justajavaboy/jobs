@@ -114,7 +114,7 @@ public class ReplicatedOtherChildInPlacemtHome extends BaseOtherChildInPlacemtHo
   }
 
   @Override
-  public Object getNormalizationGroupKey() {
+  public String getNormalizationGroupKey() {
     return this.getId();
   }
 
@@ -129,7 +129,7 @@ public class ReplicatedOtherChildInPlacemtHome extends BaseOtherChildInPlacemtHo
 
   @Override
   public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
-    return ElasticTransformer.createLegacyDescriptor(getId(), getReplicationDate(),
+    return ElasticTransformer.createLegacyDescriptor(getId(), getLastUpdatedTime(),
         LegacyTable.CHILD_IN_PLACEMENT_HOME);
   }
 }

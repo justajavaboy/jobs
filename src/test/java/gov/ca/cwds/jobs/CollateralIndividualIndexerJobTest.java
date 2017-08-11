@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.jobs.config.NeutronStaticSessionFactory;
 
 /**
  * @author CWDS API Team
@@ -33,7 +33,8 @@ public class CollateralIndividualIndexerJobTest {
 
   @BeforeClass
   public static void beforeClass() {
-    sessionFactory = NeutronStaticSessionFactory.getSessionFactory();
+    sessionFactory =
+        new Configuration().configure("test-cms-hibernate.cfg.xml").buildSessionFactory();
     dao = new ReplicatedCollateralIndividualDao(sessionFactory);
   }
 
@@ -110,12 +111,12 @@ public class CollateralIndividualIndexerJobTest {
     SessionFactory sessionFactory = null;
     CollateralIndividualIndexerJob target = new CollateralIndividualIndexerJob(mainDao,
         elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
-    // given
-    // e.g. : given(mocked.called()).willReturn(1);
-    // when
+
+
+
     int actual = target.getJobTotalBuckets();
-    // then
-    // e.g. : verify(mocked).called();
+
+
     int expected = 12;
     assertThat(actual, is(equalTo(expected)));
   }
@@ -129,25 +130,25 @@ public class CollateralIndividualIndexerJobTest {
     SessionFactory sessionFactory = null;
     CollateralIndividualIndexerJob target = new CollateralIndividualIndexerJob(mainDao,
         elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
-    // given
-    // e.g. : given(mocked.called()).willReturn(1);
-    // when
+
+
+
     String actual = target.getLegacySourceTable();
-    // then
-    // e.g. : verify(mocked).called();
+
+
     String expected = "COLTRL_T";
     assertThat(actual, is(equalTo(expected)));
   }
 
   // @Test
   public void main_Args__StringArray() throws Exception {
-    // given
+
     String[] args = new String[] {};
-    // e.g. : given(mocked.called()).willReturn(1);
-    // when
+
+
     CollateralIndividualIndexerJob.main(args);
-    // then
-    // e.g. : verify(mocked).called();
+
+
   }
 
 }
