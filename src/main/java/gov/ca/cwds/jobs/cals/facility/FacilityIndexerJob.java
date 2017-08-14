@@ -3,6 +3,7 @@ package gov.ca.cwds.jobs.cals.facility;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import gov.ca.cwds.cals.inject.CalsnsDataAccessModule;
 import gov.ca.cwds.cals.inject.CwsCmsDataAccessModule;
 import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
@@ -24,6 +25,8 @@ import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
 -DDB_LIS_USER="postgres_data" -DDB_LIS_PASSWORD="CHANGEME" \
 -DDB_CMS_JDBC_URL="jdbc:db2://192.168.99.100:50000/DB0TDEV" -DDB_CMS_SCHEMA="CWSCMSRS" \
 -DDB_CMS_USER="db2inst1" -DDB_CMS_PASSWORD="CHANGEME" \
+-DDB_CALSNS_JDBC_URL="jdbc:postgresql://192.168.99.100:5432/?currentSchema=calsns" \
+-DDB_CALSNS_USER="postgres_data" -DDB_CALSNS_PASSWORD="CHANGEME" \
 -cp build/libs/DocumentIndexerJob-0.24.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob \
 -c config/cals/facility/facility.yaml -l ./}
  * </pre>
@@ -42,6 +45,7 @@ public final class FacilityIndexerJob extends BaseCalsIndexerJob {
     install(new CwsCmsDataAccessModule("cals-jobs-cms-hibernate.cfg.xml"));
     install(new LisDataAccessModule("cals-jobs-lis-hibernate.cfg.xml"));
     install(new FasDataAccessModule("cals-jobs-fas-hibernate.cfg.xml"));
+    install(new CalsnsDataAccessModule("cals-jobs-calsns-hibernate.cfg.xml"));
     bind(FacilityReader.class);
     bind(FacilityElasticJobWriter.class);
     bind(ChangedFacilityService.class);

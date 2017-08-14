@@ -1,6 +1,7 @@
 package gov.ca.cwds.jobs.cals.facility;
 
 import com.google.inject.Inject;
+import gov.ca.cwds.cals.inject.CalsnsSessionFactory;
 import gov.ca.cwds.cals.inject.FasSessionFactory;
 import gov.ca.cwds.cals.inject.LisSessionFactory;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
@@ -40,6 +41,10 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
   @CmsSessionFactory
   private SessionFactory cwsCmcSessionFactory;
 
+  @Inject
+  @CalsnsSessionFactory
+  private SessionFactory calsnsSessionFactory;
+
   @Override
   public void init() {
     Date dateAfter = incrementalLoadDateStrategy.calculateDate();
@@ -64,7 +69,11 @@ public class FacilityReader implements JobReader<ChangedFacilityDTO> {
       try {
         closeSessionFactory(lisSessionFactory);
       } finally {
-        closeSessionFactory(cwsCmcSessionFactory);
+        try {
+          closeSessionFactory(cwsCmcSessionFactory);
+        } finally {
+          closeSessionFactory(calsnsSessionFactory);
+        }
       }
     }
   }
