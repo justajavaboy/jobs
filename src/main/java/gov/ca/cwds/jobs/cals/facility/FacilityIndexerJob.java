@@ -39,7 +39,7 @@ public final class FacilityIndexerJob extends BaseCalsIndexerJob {
   @Override
   protected void configure() {
     super.configure();
-    install(new CwsCmsDataAccessModule("cals-jobs-cms-hibernate.cfg"));
+    install(new CwsCmsDataAccessModule("cals-jobs-cms-hibernate.cfg.xml"));
     install(new LisDataAccessModule("cals-jobs-lis-hibernate.cfg.xml"));
     install(new FasDataAccessModule("cals-jobs-fas-hibernate.cfg.xml"));
     bind(FacilityReader.class);

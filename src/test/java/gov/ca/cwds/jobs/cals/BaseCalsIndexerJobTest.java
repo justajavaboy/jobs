@@ -1,12 +1,23 @@
 package gov.ca.cwds.jobs.cals;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Map;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,4 +64,17 @@ public abstract class BaseCalsIndexerJobTest {
     }
   }
 
+  protected String readResource(String file) throws URISyntaxException, IOException {
+    URL url = Resources.getResource(file);
+    return FileUtils.readFileToString(new File(url.toURI()), "UTF-8");
+  }
+
+  protected void assertTotalHits(Response response, int expectedTotalHits) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> jsonMap = mapper.readValue(response.getEntity().getContent(), Map.class);
+    assertFalse(jsonMap.isEmpty());
+    assertNotNull(jsonMap.get("hits"));
+    Map<String, Object> hits = (Map<String, Object>) jsonMap.get("hits");
+    assertEquals(expectedTotalHits, hits.get("total"));
+  }
 }

@@ -1,13 +1,13 @@
 package gov.ca.cwds.jobs.cals.rfa;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.ca.cwds.cals.DatabaseHelper;
 import gov.ca.cwds.jobs.cals.BaseCalsIndexerJobTest;
-import java.util.Map;
+import java.util.Collections;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.junit.AfterClass;
@@ -28,6 +28,10 @@ public class RFA1aFormIndexerJobTest extends BaseCalsIndexerJobTest {
 
   private static final RFA1aFormIncrementalLoadDateStrategy RFA1A_FORM_LOAD_DATE_STRATEGY = new RFA1aFormIncrementalLoadDateStrategy();
 
+  private static final String SEARCH_URI_PATH = "/rfa1aforms/rfa1aform/_search";
+  private static final String QUERY_FILE_APPLICANT_FIRST_NAME = "cals/rfa/query_ApplicantFirstName.json";
+  private static final String QUERY_FILE_APPLICANT_FIRST_NAME_PHONETIC = "cals/rfa/query_ApplicantFirstName_phonetic.json";
+
   private static String tempDbFile;
 
   private static void cleanUp() throws Exception {
@@ -42,8 +46,6 @@ public class RFA1aFormIndexerJobTest extends BaseCalsIndexerJobTest {
     System.setProperty("DB_CALSNS_JDBC_URL", getCalsnsJdbcUrl());
     System.setProperty("DB_CALSNS_USER", CALSNS_USER);
     System.setProperty("DB_CALSNS_PASSWORD", CALSNS_PASSWORD);
-
-    // M:\ca-cwds\jobs\
 
     RFA1aFormIndexerJob.main(new String[]{
         "-c", TEST_CONFIG, "-l", TIME_FILES_DIR
@@ -62,15 +64,32 @@ public class RFA1aFormIndexerJobTest extends BaseCalsIndexerJobTest {
 
   @Test
   public void testTotalIndexedDocuments() throws Exception {
-    Response response = restClient.performRequest("GET", "/rfa1aforms/rfa1aform/_search");
+    Response response = restClient.performRequest("GET", SEARCH_URI_PATH);
     assertEquals(200, response.getStatusLine().getStatusCode());
 
-    ObjectMapper mapper = new ObjectMapper();
-    Map<String, Object> jsonMap = mapper.readValue(response.getEntity().getContent(), Map.class);
-    assertFalse(jsonMap.isEmpty());
-    assertNotNull(jsonMap.get("hits"));
-    Map<String, Object> hits = (Map<String, Object>) jsonMap.get("hits");
-    assertEquals(2, hits.get("total"));
+    assertTotalHits(response, 2);
+  }
+
+  @Test
+  public void testSearchByApplicantFirstName() throws Exception {
+    HttpEntity queryEntity = new NStringEntity(
+        readResource(QUERY_FILE_APPLICANT_FIRST_NAME), ContentType.APPLICATION_JSON);
+    Response response = restClient
+        .performRequest("POST", SEARCH_URI_PATH, Collections.emptyMap(), queryEntity);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+
+    assertTotalHits(response, 1);
+  }
+
+  @Test
+  public void testSearchByApplicantFirstNamePhonetic() throws Exception {
+    HttpEntity queryEntity = new NStringEntity(
+        readResource(QUERY_FILE_APPLICANT_FIRST_NAME_PHONETIC), ContentType.APPLICATION_JSON);
+    Response response = restClient
+        .performRequest("POST", SEARCH_URI_PATH, Collections.emptyMap(), queryEntity);
+    assertEquals(200, response.getStatusLine().getStatusCode());
+
+    assertTotalHits(response, 2);
   }
 
   private static String getCalsnsJdbcUrl() throws Exception {

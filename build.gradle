@@ -27,7 +27,6 @@ project.ext {
 version = 0.28
 
 repositories {
-    //mavenLocal()
     mavenCentral()
     maven {
         url "http://maven2.cwds.tabordasolutions.net"
