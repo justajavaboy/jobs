@@ -1,8 +1,8 @@
 package gov.ca.cwds.jobs.cals;
 
-import java.io.Closeable;
-import java.io.IOException;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -13,9 +13,8 @@ import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * A DAO for Elasticsearch with writing indexes functionality. It is not intended for searching, nor

@@ -29,7 +29,7 @@ public abstract class BaseCalsIndexerJobTest {
 
   protected static final String CALSNS_USER = "sa";
   protected static final String CALSNS_PASSWORD = "";
-  protected static final String TIME_FILES_DIR = "./";
+  protected static final String TIME_FILES_DIR = System.getProperty("user.dir");
 
   protected static RestClient anonymousRestClient;
   protected static RestClient restClient;

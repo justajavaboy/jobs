@@ -1,6 +1,7 @@
 package gov.ca.cwds.jobs.cals.facility;
 
 import gov.ca.cwds.jobs.cals.BaseIncrementalLoadDateStrategy;
+
 import java.time.LocalDateTime;
 
 /**

@@ -3,11 +3,12 @@ package gov.ca.cwds.jobs.cals;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
 import gov.ca.cwds.rest.api.ApiException;
-import java.io.File;
-import java.io.IOException;
-import javax.validation.constraints.NotNull;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
 
 class CalsElasticsearchConfiguration extends ElasticsearchConfiguration {
 

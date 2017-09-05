@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.ca.cwds.cals.RecordChangeOperation;
 import gov.ca.cwds.cals.service.dto.changed.ChangedDTO;
 import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
-import java.util.List;
+import gov.ca.cwds.jobs.cals.util.elastic.ElasticJobWriter;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author CWDS TPT-2

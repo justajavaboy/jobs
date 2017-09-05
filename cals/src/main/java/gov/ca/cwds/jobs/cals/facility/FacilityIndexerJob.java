@@ -9,11 +9,11 @@ import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
-import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
 import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
-import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
+import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
+import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
 
 /**
  * <p> Command line arguments: </p>
@@ -27,8 +27,8 @@ import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
 -DDB_CMS_USER="db2inst1" -DDB_CMS_PASSWORD="CHANGEME" \
 -DDB_CALSNS_JDBC_URL="jdbc:postgresql://192.168.99.100:5432/?currentSchema=calsns" \
 -DDB_CALSNS_USER="postgres_data" -DDB_CALSNS_PASSWORD="CHANGEME" \
--cp build/libs/DocumentIndexerJob-0.24.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob \
--c config/cals/facility/facility.yaml -l ./}
+-cp cals/build/libs/cals-jobs-<version>.jar gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob \
+-c cals/config/cals/facility/facility.yaml -l ./}
  * </pre>
  *
  * @author CWDS TPT-2

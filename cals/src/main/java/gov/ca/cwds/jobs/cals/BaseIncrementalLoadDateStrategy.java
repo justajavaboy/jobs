@@ -1,12 +1,10 @@
 package gov.ca.cwds.jobs.cals;
 
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
-
 import com.google.inject.Inject;
 import gov.ca.cwds.jobs.config.JobOptions;
 import gov.ca.cwds.rest.api.ApiException;
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +15,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Optional;
-import org.apache.commons.io.FilenameUtils;
+import java.util.stream.Stream;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * @author CWDS TPT-2
@@ -78,11 +78,13 @@ public abstract class BaseIncrementalLoadDateStrategy implements IncrementalLoad
   }
 
   private String readLastRunDateTimeString(Path runningFile) throws IOException {
-    Optional<String> firstLine = Files.lines(runningFile).findFirst();
-    if (!firstLine.isPresent()) {
-      throw new ApiException("Corrupted date file: " + runningFile);
+    try (Stream<String> stream = Files.lines(runningFile)) {
+      Optional<String> firstLine = stream.findFirst();
+      if (!firstLine.isPresent()) {
+        throw new ApiException("Corrupted date file: " + runningFile);
+      }
+      return firstLine.get();
     }
-    return firstLine.get();
   }
 
   protected LocalDateTime readLastRunDateTime(Path runningFile) throws IOException {

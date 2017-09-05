@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.util.elastic;
+package gov.ca.cwds.jobs.cals.util.elastic;
 
 import gov.ca.cwds.cals.Identifiable;
 import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;

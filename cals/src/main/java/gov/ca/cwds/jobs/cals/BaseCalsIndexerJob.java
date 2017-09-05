@@ -2,27 +2,22 @@ package gov.ca.cwds.jobs.cals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.inject.AbstractModule;
-import com.google.inject.CreationException;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import gov.ca.cwds.cals.inject.MappingModule;
 import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.config.JobOptions;
 import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.util.elastic.XPackUtils;
 import gov.ca.cwds.rest.api.ApiException;
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * @author CWDS TPT-2
