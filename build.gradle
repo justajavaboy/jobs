@@ -95,8 +95,6 @@ dependencies {
     // https://mvnrepository.com/artifact/nl.jqno.equalsverifier/equalsverifier
     testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '2.1.6'
     testCompile 'org.ow2.asm:asm-all:5.1'
-    // Used for testing CALS jobs only. To be moved to separate module.
-    testCompile group: 'org.liquibase', name: 'liquibase-core', version: '3.5.3'
 }
 
 shadowJar {
