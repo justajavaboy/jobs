@@ -15,6 +15,10 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'jacoco'
 
+project.ext {
+    calsApiVersion =  '3.6-SNAPSHOT'
+}
+
 sourceCompatibility = 1.8
 
 repositories {
@@ -39,6 +43,13 @@ dependencies {
     testCompile('org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.23.2') {
         exclude group: 'javax.servlet', module: 'javax.servlet-api'
         exclude group: 'junit', module: 'junit'
+    }
+
+    // CALS API for CALS Jobs
+    compile (group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion) {
+        exclude group: 'org.bouncycastle'
+        exclude group: 'gov.ca.cwds.api', module: 'api-core'
+        exclude group: 'org.liquibase', module: 'liquibase-core'
     }
 
     // https://mvnrepository.com/artifact/nl.jqno.equalsverifier/equalsverifier
