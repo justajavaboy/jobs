@@ -16,7 +16,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'jacoco'
 
 project.ext {
-    calsApiVersion =  '3.6-SNAPSHOT'
+    calsApiVersion =  '0.4.3-SNAPSHOT'
 }
 
 sourceCompatibility = 1.8
@@ -85,6 +85,7 @@ def testEsDockerImageName = 'cwds/jobs-test-elasticsearch'
 def testEsContainerName = 'jobs-test-elasticsearch'
 
 shadowJar {
+    zip64 true
     classifier = ''
     baseName = (System.properties.getProperty('baseName') != null) ? System.properties.getProperty('baseName') : 'cals-jobs'
     mergeServiceFiles()
