@@ -9,6 +9,7 @@ import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 import gov.ca.cwds.inject.CmsSessionFactory;
+import gov.ca.cwds.jobs.inject.JobRunner;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
 /**
@@ -20,29 +21,37 @@ public class EducationProviderContactIndexerJob extends
     BasePersonIndexerJob<ReplicatedEducationProviderContact, ReplicatedEducationProviderContact> {
 
   /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
+
+  /**
    * Construct batch job instance with all required dependencies.
    * 
-   * @param mainDao ServiceProvider DAO
-   * @param elasticsearchDao ElasticSearch DAO
+   * @param dao Education Provider DAO
+   * @param esDao ElasticSearch DAO
    * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public EducationProviderContactIndexerJob(final ReplicatedEducationProviderContactDao mainDao,
-      final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
+  public EducationProviderContactIndexerJob(final ReplicatedEducationProviderContactDao dao,
+      final ElasticsearchDao esDao, @LastRunFile final String lastJobRunTimeFilename,
       final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
-    super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
+    super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
   }
 
   @Override
-  protected int getJobTotalBuckets() {
+  public int getJobTotalBuckets() {
     return 12;
   }
 
+  /**
+   * @deprecated method scheduled for deletion
+   */
   @Override
   @Deprecated
-  protected String getLegacySourceTable() {
+  public String getLegacySourceTable() {
     return "EDPRVCNT";
   }
 
@@ -52,7 +61,7 @@ public class EducationProviderContactIndexerJob extends
    * @param args command line arguments
    */
   public static void main(String... args) {
-    runMain(EducationProviderContactIndexerJob.class, args);
+    JobRunner.runStandalone(EducationProviderContactIndexerJob.class, args);
   }
 
 }

@@ -7,8 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,21 +17,18 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.NamedNativeQueries;
 import org.hibernate.annotations.NamedNativeQuery;
 import org.hibernate.annotations.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.ca.cwds.data.es.ElasticSearchPersonRelationship;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
-import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
 /**
- * Entity bean for Materialized Query Table (MQT), VW_BI_DIR_RELATION.
+ * Entity bean for Materialized Query Table (MQT), VW_BI_DIR_RELATION. By request of the Intake
+ * team, it only reads relationships from CLN_RELT, for now.
  * 
  * <p>
  * Implements {@link ApiGroupNormalizer} and converts to {@link ReplicatedRelationships}.
@@ -42,62 +38,47 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  */
 @Entity
 @Table(name = "VW_LST_BI_DIR_RELATION")
-@NamedNativeQueries({
-    @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsRelationship.findAllUpdatedAfter",
-        query = "WITH driver as ( "
-            + " SELECT v1.THIS_LEGACY_ID, v1.RELATED_LEGACY_ID FROM {h-schema}VW_LST_BI_DIR_RELATION v1 "
-            + "where v1.LAST_CHG > CAST(:after AS TIMESTAMP) "
-            + ") SELECT v.REVERSE_RELATIONSHIP, v.THIS_LEGACY_ID, v.THIS_SENSITIVITY_IND, "
-            + "v.THIS_LEGACY_LAST_UPDATED, v.THIS_LEGACY_LAST_UPDATED_ID, v.THIS_FIRST_NAME, v.THIS_LAST_NAME, "
-            + "v.REL_CODE, v.RELATED_LEGACY_ID, v.RELATED_SENSITIVITY_IND, "
-            + "v.RELATED_LEGACY_LAST_UPDATED, v.RELATED_LEGACY_LAST_UPDATED_ID, "
-            + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, "
-            + "v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, "
-            + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG "
-            + "FROM {h-schema}VW_LST_BI_DIR_RELATION v "
-            + "WHERE v.THIS_LEGACY_ID IN (select d1.THIS_LEGACY_ID from driver d1) "
-            + "OR v.RELATED_LEGACY_ID IN (select d2.RELATED_LEGACY_ID from driver d2) "
-            + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
-        resultClass = EsRelationship.class, readOnly = true),
-    @NamedNativeQuery(
-        name = "gov.ca.cwds.data.persistence.cms.EsRelationship.findAllUpdatedAfterWithUnlimitedAccess",
-        query = "WITH driver as ( "
-            + " SELECT v1.THIS_LEGACY_ID, v1.RELATED_LEGACY_ID FROM {h-schema}VW_LST_BI_DIR_RELATION v1 "
-            + "where v1.LAST_CHG > CAST(:after AS TIMESTAMP) "
-            + ") SELECT v.REVERSE_RELATIONSHIP, v.THIS_LEGACY_ID, v.THIS_SENSITIVITY_IND, "
-            + "v.THIS_LEGACY_LAST_UPDATED, v.THIS_LEGACY_LAST_UPDATED_ID, v.THIS_FIRST_NAME, v.THIS_LAST_NAME, "
-            + "v.REL_CODE, v.RELATED_LEGACY_ID, v.RELATED_SENSITIVITY_IND, "
-            + "v.RELATED_LEGACY_LAST_UPDATED, v.RELATED_LEGACY_LAST_UPDATED_ID, "
-            + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, "
-            + "v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, "
-            + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG "
-            + "FROM {h-schema}VW_LST_BI_DIR_RELATION v "
-            + "WHERE (v.THIS_LEGACY_ID IN (select d1.THIS_LEGACY_ID from driver d1) "
-            + "OR v.RELATED_LEGACY_ID IN (select d2.RELATED_LEGACY_ID from driver d2)) "
-            + "AND (v.THIS_SENSITIVITY_IND = 'N' AND v.RELATED_SENSITIVITY_IND = 'N') "
-            + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
-        resultClass = EsRelationship.class, readOnly = true)})
+@NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsRelationship.findAllUpdatedAfter",
+    query = "WITH driver as (\n"
+        + " SELECT v1.THIS_LEGACY_ID, v1.RELATED_LEGACY_ID FROM {h-schema}VW_LST_BI_DIR_RELATION v1 \n"
+        + "where v1.LAST_CHG > :after \n"
+        + ") SELECT v.REVERSE_RELATIONSHIP, v.THIS_LEGACY_ID, v.THIS_SENSITIVITY_IND, \n"
+        + "v.THIS_LEGACY_LAST_UPDATED, v.THIS_LEGACY_LAST_UPDATED_ID, v.THIS_FIRST_NAME, v.THIS_LAST_NAME, \n"
+        + "v.REL_CODE, v.RELATED_LEGACY_ID, v.RELATED_SENSITIVITY_IND, \n"
+        + "v.RELATED_LEGACY_LAST_UPDATED, v.RELATED_LEGACY_LAST_UPDATED_ID, \n"
+        + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
+        + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG \n"
+        + "FROM {h-schema}VW_LST_BI_DIR_RELATION v \n"
+        + "WHERE v.THIS_LEGACY_ID IN (select d1.THIS_LEGACY_ID from driver d1) \n"
+        + "OR v.RELATED_LEGACY_ID IN (select d2.RELATED_LEGACY_ID from driver d2) \n"
+        + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
+    resultClass = EsRelationship.class, readOnly = true)
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.EsRelationship.findAllUpdatedAfterWithUnlimitedAccess",
+    query = "WITH driver as ( \n"
+        + " SELECT v1.THIS_LEGACY_ID, v1.RELATED_LEGACY_ID FROM {h-schema}VW_LST_BI_DIR_RELATION v1 \n"
+        + "where v1.LAST_CHG > :after \n"
+        + ") SELECT v.REVERSE_RELATIONSHIP, v.THIS_LEGACY_ID, v.THIS_SENSITIVITY_IND, \n"
+        + "v.THIS_LEGACY_LAST_UPDATED, v.THIS_LEGACY_LAST_UPDATED_ID, v.THIS_FIRST_NAME, v.THIS_LAST_NAME, \n"
+        + "v.REL_CODE, v.RELATED_LEGACY_ID, v.RELATED_SENSITIVITY_IND, \n"
+        + "v.RELATED_LEGACY_LAST_UPDATED, v.RELATED_LEGACY_LAST_UPDATED_ID, \n"
+        + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
+        + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG \n"
+        + "FROM {h-schema}VW_LST_BI_DIR_RELATION v \n"
+        + "WHERE (v.THIS_LEGACY_ID IN (select d1.THIS_LEGACY_ID from driver d1) \n"
+        + "OR v.RELATED_LEGACY_ID IN (select d2.RELATED_LEGACY_ID from driver d2)) \n"
+        + "AND (v.THIS_SENSITIVITY_IND = 'N' AND v.RELATED_SENSITIVITY_IND = 'N') \n"
+        + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
+    resultClass = EsRelationship.class, readOnly = true)
 public class EsRelationship
     implements PersistentObject, ApiGroupNormalizer<ReplicatedRelationships> {
+
+  private static final Map<Short, CmsRelationship> mapRelationCodes = new ConcurrentHashMap<>();
 
   /**
    * Default serialization.
    */
   private static final long serialVersionUID = 1L;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EsRelationship.class);
-
-  private static final Pattern RGX_RELATIONSHIP =
-      Pattern.compile("([A-Za-z0-9 _-]+)[/]?([A-Za-z0-9 _-]+)?\\s*(\\([A-Za-z0-9 _-]+\\))?");
-
-  // By request of the Intake team, only read relationships from CLN_RELT, for now.
-  // @Id
-  // @Column(name = "THIS_LEGACY_TABLE")
-  // private String thisLegacyTable;
-
-  // @Id
-  // @Column(name = "RELATED_LEGACY_TABLE")
-  // private String relatedLegacyTable;
 
   @Id
   @Type(type = "boolean")
@@ -137,7 +118,7 @@ public class EsRelationship
   @Type(type = "date")
   private Date relatedLegacyLastUpdated;
 
-  // TODO: add replication columns when available.
+  // NOTE: add replication columns when available.
   // Needed to delete ES documents.
 
   // @Enumerated(EnumType.STRING)
@@ -156,11 +137,7 @@ public class EsRelationship
    * @throws SQLException if unable to convert types or stream breaks, etc.
    */
   public static EsRelationship mapRow(ResultSet rs) throws SQLException {
-    EsRelationship ret = new EsRelationship();
-
-    // Only reading from CLN_RELT, for the moment.
-    // ret.setThisLegacyTable(ifNull(rs.getString("THIS_LEGACY_TABLE")));
-    // ret.setRelatedLegacyTable(ifNull(rs.getString("RELATED_LEGACY_TABLE")));
+    final EsRelationship ret = new EsRelationship();
 
     ret.setReverseRelationship(rs.getBoolean("REVERSE_RELATIONSHIP"));
     ret.setThisLegacyId(ifNull(rs.getString("THIS_LEGACY_ID")));
@@ -188,61 +165,26 @@ public class EsRelationship
    */
   protected void parseBiDirectionalRelationship(final ElasticSearchPersonRelationship rel) {
     if (this.relCode != null && this.relCode.intValue() != 0) {
-      final gov.ca.cwds.rest.api.domain.cms.SystemCode code =
-          SystemCodeCache.global().getSystemCode(this.relCode);
-      final String wholeRel = ifNull(code.getShortDescription());
-      String primaryRel = "";
-      String secondaryRel = "";
-      String relContext = "";
 
-      final Matcher m = RGX_RELATIONSHIP.matcher(wholeRel);
-      if (m.matches()) {
-        for (int i = 0; i <= m.groupCount(); i++) {
-          final String s = m.group(i);
-          switch (i) {
-            case 1:
-              primaryRel = s.trim();
-              break;
-
-            case 2:
-              secondaryRel = s.trim();
-              break;
-
-            case 3:
-              relContext = StringUtils.isNotBlank(s)
-                  ? s.replaceAll("\\(", "").replaceAll("\\)", "").trim() : "";
-              break;
-
-            default:
-              break;
-          }
-        }
-
-        // Reverse relationship direction.
-        if (getReverseRelationship() == null || getReverseRelationship().booleanValue()) {
-          rel.setIndexedPersonRelationship(secondaryRel);
-          rel.setRelatedPersonRelationship(primaryRel);
-        } else {
-          rel.setIndexedPersonRelationship(primaryRel);
-          rel.setRelatedPersonRelationship(secondaryRel);
-        }
-
-        // Context remains the same.
-        rel.setRelationshipContext(relContext);
-
-        // Java lambda requires variables to be "effectively" final.
-        // For example, primaryRel is assignable and therefore cannot be used in lambda.
-        final String priRel = primaryRel;
-        final String secRel = secondaryRel;
-
-        // Log **only if** trace is enabled.
-        LOGGER.trace("primaryRel={}, secondaryRel={}", priRel, secRel);
-
+      CmsRelationship relationship;
+      if (mapRelationCodes.containsKey(relCode)) {
+        relationship = mapRelationCodes.get(relCode);
       } else {
-        // Java lambda requires variables to be "effectively" final.
-        // Variable wholeRel is not assignable and therefore can be used in lambda.
-        LOGGER.trace("NO MATCH!! rel={}", wholeRel);
+        relationship = new CmsRelationship(relCode);
+        mapRelationCodes.put(relCode, relationship);
       }
+
+      // Reverse relationship direction.
+      if (getReverseRelationship() == null || getReverseRelationship().booleanValue()) {
+        rel.setIndexedPersonRelationship(relationship.secondaryRel);
+        rel.setRelatedPersonRelationship(relationship.primaryRel);
+      } else {
+        rel.setIndexedPersonRelationship(relationship.primaryRel);
+        rel.setRelatedPersonRelationship(relationship.secondaryRel);
+      }
+
+      // Context remains the same.
+      rel.setRelationshipContext(relationship.relContext);
     }
   }
 

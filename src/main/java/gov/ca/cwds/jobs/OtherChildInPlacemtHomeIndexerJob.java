@@ -9,6 +9,7 @@ import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
 import gov.ca.cwds.inject.CmsSessionFactory;
+import gov.ca.cwds.jobs.inject.JobRunner;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
 /**
@@ -18,6 +19,11 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  */
 public class OtherChildInPlacemtHomeIndexerJob extends
     BasePersonIndexerJob<ReplicatedOtherChildInPlacemtHome, ReplicatedOtherChildInPlacemtHome> {
+
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
 
   /**
    * Construct batch job instance with all required dependencies.
@@ -37,7 +43,7 @@ public class OtherChildInPlacemtHomeIndexerJob extends
 
   @Override
   @Deprecated
-  protected String getLegacySourceTable() {
+  public String getLegacySourceTable() {
     return "OTH_KIDT";
   }
 
@@ -47,9 +53,7 @@ public class OtherChildInPlacemtHomeIndexerJob extends
    * @param args command line arguments
    */
   public static void main(String... args) {
-    runMain(OtherChildInPlacemtHomeIndexerJob.class, args);
+    JobRunner.runStandalone(OtherChildInPlacemtHomeIndexerJob.class, args);
   }
 
 }
-
-

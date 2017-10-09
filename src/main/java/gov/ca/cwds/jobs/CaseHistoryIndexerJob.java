@@ -21,9 +21,10 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.inject.LastRunFile;
+import gov.ca.cwds.jobs.util.JobLogs;
 import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
+import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
 import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
 
 /**
@@ -35,7 +36,37 @@ public abstract class CaseHistoryIndexerJob
     extends BasePersonIndexerJob<ReplicatedPersonCases, EsPersonCase>
     implements JobResultSetAware<EsPersonCase> {
 
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CaseHistoryIndexerJob.class);
+
+  private static final String INSERT_CLIENT_LAST_CHG =
+      "INSERT INTO #SCHEMA#.GT_ID (IDENTIFIER)" + "\nSELECT CAS.IDENTIFIER "
+          + "\nFROM #SCHEMA#.CASE_T CAS " + "\nWHERE CAS.IBMSNAP_LOGMARKER > ##TIMESTAMP## "
+          + "\nUNION " + "\nSELECT CAS.IDENTIFIER " + "\nFROM #SCHEMA#.CASE_T CAS "
+          + "\nLEFT JOIN #SCHEMA#.CHLD_CLT CCL ON CCL.FKCLIENT_T = CAS.FKCHLD_CLT "
+          + "\nLEFT JOIN #SCHEMA#.CLIENT_T CLC ON CLC.IDENTIFIER = CCL.FKCLIENT_T "
+          + "\nWHERE CCL.IBMSNAP_LOGMARKER > ##TIMESTAMP## " + "\nUNION "
+          + "\nSELECT CAS.IDENTIFIER " + "\nFROM #SCHEMA#.CASE_T CAS "
+          + "\nLEFT JOIN #SCHEMA#.CHLD_CLT CCL ON CCL.FKCLIENT_T = CAS.FKCHLD_CLT "
+          + "\nLEFT JOIN #SCHEMA#.CLIENT_T CLC ON CLC.IDENTIFIER = CCL.FKCLIENT_T "
+          + "\nWHERE CLC.IBMSNAP_LOGMARKER > ##TIMESTAMP## " + "\nUNION "
+          + "\nSELECT CAS.IDENTIFIER " + "\nFROM #SCHEMA#.CASE_T CAS "
+          + "\nLEFT JOIN #SCHEMA#.CHLD_CLT CCL ON CCL.FKCLIENT_T = CAS.FKCHLD_CLT "
+          + "\nLEFT JOIN #SCHEMA#.CLIENT_T CLC ON CLC.IDENTIFIER = CCL.FKCLIENT_T "
+          + "\nJOIN #SCHEMA#.CLN_RELT CLR ON CLR.FKCLIENT_T = CCL.FKCLIENT_T AND ((CLR.CLNTRELC BETWEEN 187 and 214) OR "
+          + "\n(CLR.CLNTRELC BETWEEN 245 and 254) OR (CLR.CLNTRELC BETWEEN 282 and 294) OR (CLR.CLNTRELC IN (272, 273, 5620, 6360, 6361))) "
+          + "\nWHERE CLR.IBMSNAP_LOGMARKER > ##TIMESTAMP## " + "\nUNION "
+          + "\nSELECT CAS.IDENTIFIER " + "\nFROM #SCHEMA#.CASE_T CAS "
+          + "\nLEFT JOIN #SCHEMA#.CHLD_CLT CCL ON CCL.FKCLIENT_T = CAS.FKCHLD_CLT "
+          + "\nLEFT JOIN #SCHEMA#.CLIENT_T CLC ON CLC.IDENTIFIER = CCL.FKCLIENT_T "
+          + "\nJOIN #SCHEMA#.CLN_RELT CLR ON CLR.FKCLIENT_T = CCL.FKCLIENT_T AND ((CLR.CLNTRELC BETWEEN 187 and 214) OR "
+          + "\n(CLR.CLNTRELC BETWEEN 245 and 254) OR (CLR.CLNTRELC BETWEEN 282 and 294) OR (CLR.CLNTRELC IN (272, 273, 5620, 6360, 6361))) "
+          + "\nJOIN #SCHEMA#.CLIENT_T CLP ON CLP.IDENTIFIER = CLR.FKCLIENT_0 "
+          + "\nWHERE CLP.IBMSNAP_LOGMARKER > ##TIMESTAMP## ";
 
   /**
    * Construct batch job instance with all required dependencies.
@@ -54,13 +85,16 @@ public abstract class CaseHistoryIndexerJob
   }
 
   @Override
+  public String getPrepLastChangeSQL() {
+    return INSERT_CLIENT_LAST_CHG;
+  }
+
+  @Override
   public String getInitialLoadQuery(String dbSchemaName) {
-    StringBuilder buf = new StringBuilder();
-    buf.append("SELECT x.* FROM ");
-    buf.append(dbSchemaName);
-    buf.append(".");
-    buf.append(getInitialLoadViewName());
-    buf.append(" x ");
+    final StringBuilder buf = new StringBuilder();
+
+    buf.append("SELECT x.* FROM ").append(dbSchemaName).append(".").append(getInitialLoadViewName())
+        .append(" x ");
 
     if (!getOpts().isLoadSealedAndSensitive()) {
       buf.append(" WHERE x.LIMITED_ACCESS_CODE = 'N' ");
@@ -83,19 +117,18 @@ public abstract class CaseHistoryIndexerJob
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedPersonCases cases)
       throws IOException {
 
-    StringBuilder buf = new StringBuilder();
+    final StringBuilder buf = new StringBuilder();
     buf.append("{\"cases\":[");
 
-    List<ElasticSearchPersonCase> esPersonCasess = cases.getCases();
-    esp.setCases(esPersonCasess);
+    List<ElasticSearchPersonCase> esPersonCases = cases.getCases();
+    esp.setCases(esPersonCases);
 
-    if (!esPersonCasess.isEmpty()) {
+    if (!esPersonCases.isEmpty()) {
       try {
-        buf.append(esPersonCasess.stream().map(this::jsonify).sorted(String::compareTo)
+        buf.append(esPersonCases.stream().map(ElasticTransformer::jsonify).sorted(String::compareTo)
             .collect(Collectors.joining(",")));
       } catch (Exception e) {
-        LOGGER.error("ERROR SERIALIZING CASES", e);
-        throw new JobsException(e);
+        JobLogs.raiseError(LOGGER, e, "ERROR SERIALIZING CASES! {}", e.getMessage());
       }
     }
 
@@ -113,13 +146,12 @@ public abstract class CaseHistoryIndexerJob
   }
 
   @Override
-  protected ReplicatedPersonCases normalizeSingle(List<EsPersonCase> recs) {
-    return normalize(recs).get(0);
+  public ReplicatedPersonCases normalizeSingle(final List<EsPersonCase> recs) {
+    return recs != null && !recs.isEmpty() ? normalize(recs).get(0) : null;
   }
 
   @Override
-  protected List<ReplicatedPersonCases> normalize(List<EsPersonCase> recs) {
+  public List<ReplicatedPersonCases> normalize(final List<EsPersonCase> recs) {
     return EntityNormalizer.<ReplicatedPersonCases, EsPersonCase>normalizeList(recs);
   }
 }
-

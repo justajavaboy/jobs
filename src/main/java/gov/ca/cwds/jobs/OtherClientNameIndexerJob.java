@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.Table;
+
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.hibernate.SessionFactory;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedAkaDao;
+import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
@@ -23,9 +26,11 @@ import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.jobs.inject.JobRunner;
 import gov.ca.cwds.jobs.inject.LastRunFile;
+import gov.ca.cwds.jobs.util.JobLogs;
 import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
+import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
 import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
 
 /**
@@ -37,22 +42,43 @@ public class OtherClientNameIndexerJob
     extends BasePersonIndexerJob<ReplicatedAkas, ReplicatedOtherClientName>
     implements JobResultSetAware<ReplicatedOtherClientName> {
 
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(OtherClientNameIndexerJob.class);
+
+  private static final String INSERT_CLIENT_LAST_CHG = "INSERT INTO #SCHEMA#.GT_ID (IDENTIFIER)\n"
+      + "SELECT CLT.IDENTIFIER AS CLIENT_ID\n" + "FROM #SCHEMA#.OCL_NM_T ONM\n"
+      + "JOIN #SCHEMA#.CLIENT_T CLT ON CLT.IDENTIFIER = ONM.FKCLIENT_T\n"
+      + "WHERE ONM.IBMSNAP_LOGMARKER > ##TIMESTAMP##\n" + "UNION ALL\n" + "SELECT CLT.IDENTIFIER\n"
+      + "FROM #SCHEMA#.CLIENT_T CLT WHERE CLT.IBMSNAP_LOGMARKER > ##TIMESTAMP##";
+
+  private transient ReplicatedOtherClientNameDao denormDao;
 
   /**
    * Construct batch job instance with all required dependencies.
    * 
    * @param dao Relationship View DAO
+   * @param denormDao de-normalized DAO
    * @param esDao ElasticSearch DAO
    * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
    * @param sessionFactory Hibernate session factory
    */
   @Inject
-  public OtherClientNameIndexerJob(final ReplicatedAkaDao dao, final ElasticsearchDao esDao,
+  public OtherClientNameIndexerJob(final ReplicatedAkaDao dao,
+      final ReplicatedOtherClientNameDao denormDao, final ElasticsearchDao esDao,
       @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
       @CmsSessionFactory SessionFactory sessionFactory) {
     super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+    this.denormDao = denormDao;
+  }
+
+  @Override
+  public String getPrepLastChangeSQL() {
+    return INSERT_CLIENT_LAST_CHG;
   }
 
   @Override
@@ -61,18 +87,29 @@ public class OtherClientNameIndexerJob
   }
 
   @Override
-  protected Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
+  public Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
     return ReplicatedOtherClientName.class;
   }
 
   @Override
-  protected ReplicatedAkas normalizeSingle(List<ReplicatedOtherClientName> recs) {
-    return normalize(recs).get(0);
+  public ReplicatedAkas normalizeSingle(final List<ReplicatedOtherClientName> recs) {
+    return recs != null && !recs.isEmpty() ? normalize(recs).get(0) : null;
   }
 
   @Override
-  protected List<ReplicatedAkas> normalize(List<ReplicatedOtherClientName> recs) {
+  public List<ReplicatedAkas> normalize(final List<ReplicatedOtherClientName> recs) {
     return EntityNormalizer.<ReplicatedAkas, ReplicatedOtherClientName>normalizeList(recs);
+  }
+
+  @Override
+  public String getDriverTable() {
+    String ret = null;
+    final Table tbl = this.denormDao.getEntityClass().getDeclaredAnnotation(Table.class);
+    if (tbl != null) {
+      ret = tbl.name();
+    }
+
+    return ret;
   }
 
   @Override
@@ -85,11 +122,10 @@ public class OtherClientNameIndexerJob
 
     if (!p.getAkas().isEmpty()) {
       try {
-        buf.append(p.getAkas().stream().map(this::jsonify).sorted(String::compareTo)
+        buf.append(p.getAkas().stream().map(ElasticTransformer::jsonify).sorted(String::compareTo)
             .collect(Collectors.joining(",")));
       } catch (Exception e) {
-        LOGGER.error("ERROR SERIALIZING OTHER CLIENT NAMES", e);
-        throw new JobsException(e);
+        JobLogs.raiseError(LOGGER, e, "ERROR SERIALIZING OTHER CLIENT NAMES! {}", e.getMessage());
       }
     }
 
@@ -110,9 +146,12 @@ public class OtherClientNameIndexerJob
     return "MQT_OTHER_CLIENT_NAME";
   }
 
+  /**
+   * @deprecated delete after old legacy_source_table attribute is removed from ES
+   */
   @Override
   @Deprecated
-  protected String getLegacySourceTable() {
+  public String getLegacySourceTable() {
     return "OCL_NM_T";
   }
 
@@ -139,7 +178,7 @@ public class OtherClientNameIndexerJob
       buf.append(" WHERE x.CLIENT_SENSITIVITY_IND = 'N' ");
     }
 
-    buf.append(getJdbcOrderBy()).append(" FOR READ ONLY");
+    buf.append(getJdbcOrderBy()).append(" FOR READ ONLY WITH UR ");
     return buf.toString();
   }
 
@@ -149,7 +188,7 @@ public class OtherClientNameIndexerJob
    * @param args command line arguments
    */
   public static void main(String... args) {
-    runMain(OtherClientNameIndexerJob.class, args);
+    JobRunner.runStandalone(OtherClientNameIndexerJob.class, args);
   }
 
 }

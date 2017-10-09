@@ -1,5 +1,7 @@
 package gov.ca.cwds.jobs;
 
+import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -16,6 +18,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsChildPersonCase;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.inject.CmsSessionFactory;
+import gov.ca.cwds.jobs.inject.JobRunner;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
 /**
@@ -25,6 +28,10 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  */
 public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
 
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
   private static final Logger LOGGER = LoggerFactory.getLogger(ChildCaseHistoryIndexerJob.class);
 
   /**
@@ -45,66 +52,66 @@ public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
 
   @Override
   public EsChildPersonCase extract(ResultSet rs) throws SQLException {
+    final String caseId = rs.getString("CASE_ID");
     String focusChildId = rs.getString("FOCUS_CHILD_ID");
-    String caseId = rs.getString("CASE_ID");
 
     if (focusChildId == null) {
       LOGGER.warn("FOCUS_CHILD_ID is null for CASE_ID: {}", caseId);
       return null;
     }
 
-    EsChildPersonCase personCase = new EsChildPersonCase();
+    final EsChildPersonCase ret = new EsChildPersonCase();
 
     //
-    // Case
+    // Case:
     //
-    personCase.setCaseId(caseId);
-    personCase.setStartDate(rs.getDate("START_DATE"));
-    personCase.setEndDate(rs.getDate("END_DATE"));
-    personCase.setCaseLastUpdated(rs.getTimestamp("CASE_LAST_UPDATED"));
-    personCase.setCounty(rs.getInt("COUNTY"));
-    personCase.setServiceComponent(rs.getInt("SERVICE_COMP"));
+    ret.setCaseId(caseId);
+    ret.setStartDate(rs.getDate("START_DATE"));
+    ret.setEndDate(rs.getDate("END_DATE"));
+    ret.setCaseLastUpdated(rs.getTimestamp("CASE_LAST_UPDATED"));
+    ret.setCounty(rs.getInt("COUNTY"));
+    ret.setServiceComponent(rs.getInt("SERVICE_COMP"));
 
     //
-    // Child (client)
+    // Child (client):
     //
-    personCase.setFocusChildId(focusChildId);
-    personCase.setFocusChildFirstName(ifNull(rs.getString("FOCUS_CHLD_FIRST_NM")));
-    personCase.setFocusChildLastName(ifNull(rs.getString("FOCUS_CHLD_LAST_NM")));
-    personCase.setFocusChildLastUpdated(rs.getTimestamp("FOCUS_CHILD_LAST_UPDATED"));
-    personCase.setFocusChildSensitivityIndicator(rs.getString("FOCUS_CHILD_SENSITIVITY_IND"));
+    ret.setFocusChildId(focusChildId);
+    ret.setFocusChildFirstName(ifNull(rs.getString("FOCUS_CHLD_FIRST_NM")));
+    ret.setFocusChildLastName(ifNull(rs.getString("FOCUS_CHLD_LAST_NM")));
+    ret.setFocusChildLastUpdated(rs.getTimestamp("FOCUS_CHILD_LAST_UPDATED"));
+    ret.setFocusChildSensitivityIndicator(rs.getString("FOCUS_CHILD_SENSITIVITY_IND"));
 
     //
-    // Parent
+    // Parent:
     //
-    personCase.setParentId(ifNull(rs.getString("PARENT_ID")));
-    personCase.setParentFirstName(ifNull(rs.getString("PARENT_FIRST_NM")));
-    personCase.setParentLastName(ifNull(rs.getString("PARENT_LAST_NM")));
-    personCase.setParentRelationship(rs.getInt("PARENT_RELATIONSHIP"));
-    personCase.setParentLastUpdated(rs.getTimestamp("PARENT_LAST_UPDATED"));
-    personCase.setParentSourceTable(rs.getString("PARENT_SOURCE_TABLE"));
-    personCase.setParentSensitivityIndicator(rs.getString("PARENT_SENSITIVITY_IND"));
+    ret.setParentId(ifNull(rs.getString("PARENT_ID")));
+    ret.setParentFirstName(ifNull(rs.getString("PARENT_FIRST_NM")));
+    ret.setParentLastName(ifNull(rs.getString("PARENT_LAST_NM")));
+    ret.setParentRelationship(rs.getInt("PARENT_RELATIONSHIP"));
+    ret.setParentLastUpdated(rs.getTimestamp("PARENT_LAST_UPDATED"));
+    ret.setParentSourceTable(rs.getString("PARENT_SOURCE_TABLE"));
+    ret.setParentSensitivityIndicator(rs.getString("PARENT_SENSITIVITY_IND"));
 
     //
-    // Worker (staff)
+    // Worker (staff):
     //
-    personCase.setWorkerId(ifNull(rs.getString("WORKER_ID")));
-    personCase.setWorkerFirstName(ifNull(rs.getString("WORKER_FIRST_NM")));
-    personCase.setWorkerLastName(ifNull(rs.getString("WORKER_LAST_NM")));
-    personCase.setWorkerLastUpdated(rs.getTimestamp("WORKER_LAST_UPDATED"));
+    ret.setWorkerId(ifNull(rs.getString("WORKER_ID")));
+    ret.setWorkerFirstName(ifNull(rs.getString("WORKER_FIRST_NM")));
+    ret.setWorkerLastName(ifNull(rs.getString("WORKER_LAST_NM")));
+    ret.setWorkerLastUpdated(rs.getTimestamp("WORKER_LAST_UPDATED"));
 
     //
-    // Access Limitation
+    // Access Limitation:
     //
-    personCase.setLimitedAccessCode(ifNull(rs.getString("LIMITED_ACCESS_CODE")));
-    personCase.setLimitedAccessDate(rs.getDate("LIMITED_ACCESS_DATE"));
-    personCase.setLimitedAccessDescription(ifNull(rs.getString("LIMITED_ACCESS_DESCRIPTION")));
-    personCase.setLimitedAccessGovernmentEntityId(rs.getInt("LIMITED_ACCESS_GOVERNMENT_ENT"));
-    return personCase;
+    ret.setLimitedAccessCode(ifNull(rs.getString("LIMITED_ACCESS_CODE")));
+    ret.setLimitedAccessDate(rs.getDate("LIMITED_ACCESS_DATE"));
+    ret.setLimitedAccessDescription(ifNull(rs.getString("LIMITED_ACCESS_DESCRIPTION")));
+    ret.setLimitedAccessGovernmentEntityId(rs.getInt("LIMITED_ACCESS_GOVERNMENT_ENT"));
+    return ret;
   }
 
   @Override
-  protected Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
+  public Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
     return EsChildPersonCase.class;
   }
 
@@ -124,7 +131,6 @@ public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
    * @param args command line arguments
    */
   public static void main(String... args) {
-    runMain(ChildCaseHistoryIndexerJob.class, args);
+    JobRunner.runStandalone(ChildCaseHistoryIndexerJob.class, args);
   }
 }
-

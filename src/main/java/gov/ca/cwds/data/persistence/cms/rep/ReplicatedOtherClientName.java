@@ -18,8 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NamedNativeQueries;
 import org.hibernate.annotations.NamedNativeQuery;
 import org.hibernate.annotations.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -45,14 +43,13 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfter",
         query = "SELECT r.* FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r WHERE r.THIRD_ID IN ( "
             + "SELECT r1.THIRD_ID FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r1 "
-            + "WHERE r1.LAST_CHG > CAST(:after AS TIMESTAMP) "
-            + ") ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
+            + "WHERE r1.LAST_CHG > :after " + ") ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
         resultClass = ReplicatedOtherClientName.class),
     @NamedNativeQuery(
         name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfterWithUnlimitedAccess",
         query = "SELECT r.* FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r WHERE r.THIRD_ID IN ( "
             + "SELECT r1.THIRD_ID FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r1 "
-            + "WHERE r1.LAST_CHG > CAST(:after AS TIMESTAMP) "
+            + "WHERE r1.LAST_CHG > :after "
             + ") AND r.CLIENT_SENSITIVITY_IND = 'N' ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
         resultClass = ReplicatedOtherClientName.class)})
 @Entity
@@ -66,8 +63,6 @@ public class ReplicatedOtherClientName extends BaseOtherClientName implements Cm
    * Default serialization.
    */
   private static final long serialVersionUID = 1L;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ReplicatedOtherClientName.class);
 
   @Enumerated(EnumType.STRING)
   @Column(name = "IBMSNAP_OPERATION", updatable = false)

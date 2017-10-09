@@ -25,24 +25,30 @@ import gov.ca.cwds.data.persistence.ns.IntakeParticipant;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.inject.NsSessionFactory;
 import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.jobs.inject.JobRunner;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
 import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
 
 /**
- * Job to load Intake Screening from PostgreSQL into ElasticSearch.
+ * Job loads Intake Screenings from PostgreSQL into ElasticSearch.
  * 
  * @author CWDS API Team
  */
 public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, EsIntakeScreening>
     implements JobResultSetAware<EsIntakeScreening> {
 
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(IntakeScreeningJob.class);
 
   private static final ESOptionalCollection[] KEEP_COLLECTIONS =
       new ESOptionalCollection[] {ESOptionalCollection.SCREENING};
 
-  private EsIntakeScreeningDao viewDao;
+  private transient EsIntakeScreeningDao viewDao;
 
   /**
    * Construct batch job instance with all required dependencies.
@@ -64,30 +70,28 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
   }
 
   @Override
-  protected void threadExtractJdbc() {
+  protected void threadRetrieveByJdbc() {
     Thread.currentThread().setName("extract");
-    LOGGER.warn("BEGIN: Stage #1: NS View Reader");
+    LOGGER.info("BEGIN: Stage #1: NS View Reader");
 
     try {
       final List<EsIntakeScreening> results = this.viewDao.findAll();
       for (EsIntakeScreening es : results) {
-        // Hand the baton to the next runner ...
-        queueTransform.putLast(es);
+        queueNormalize.putLast(es);
       }
 
     } catch (Exception e) {
-      fatalError = true;
-      LOGGER.error("ERROR READING PG VIEW", e);
+      markFailed();
       throw new JobsException("ERROR READING PG VIEW", e);
     } finally {
-      doneExtract = true;
+      markRetrieveDone();
     }
 
-    LOGGER.warn("DONE: Stage #1: NS View Reader");
+    LOGGER.info("DONE: Stage #1: NS View Reader");
   }
 
   @Override
-  protected Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
+  public Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
     return EsIntakeScreening.class;
   }
 
@@ -103,18 +107,18 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
    * @return array of optional collections to keep in insert JSON
    */
   @Override
-  protected ESOptionalCollection[] keepCollections() {
+  public ESOptionalCollection[] keepCollections() {
     return KEEP_COLLECTIONS;
   }
 
   @Override
-  protected String getOptionalElementName() {
+  public String getOptionalElementName() {
     return "screenings";
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  protected void setInsertCollections(ElasticSearchPerson esp, IntakeParticipant t,
+  public void setInsertCollections(ElasticSearchPerson esp, IntakeParticipant t,
       List<? extends ApiTypedIdentifier<String>> list) {
     esp.setScreenings((List<ElasticSearchPersonScreening>) list);
   }
@@ -128,13 +132,13 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
    * @return List of ES person elements
    */
   @Override
-  protected List<? extends ApiTypedIdentifier<String>> getOptionalCollection(
-      ElasticSearchPerson esp, IntakeParticipant t) {
+  public List<? extends ApiTypedIdentifier<String>> getOptionalCollection(ElasticSearchPerson esp,
+      IntakeParticipant t) {
     return esp.getScreenings();
   }
 
   @Override
-  protected List<IntakeParticipant> normalize(List<EsIntakeScreening> recs) {
+  public List<IntakeParticipant> normalize(List<EsIntakeScreening> recs) {
     return EntityNormalizer.<IntakeParticipant, EsIntakeScreening>normalizeList(recs);
   }
 
@@ -144,8 +148,7 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
    * @param args command line arguments
    */
   public static void main(String... args) {
-    runMain(IntakeScreeningJob.class, args);
+    JobRunner.runStandalone(IntakeScreeningJob.class, args);
   }
 
 }
-

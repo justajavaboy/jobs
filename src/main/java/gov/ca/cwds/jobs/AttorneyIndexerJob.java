@@ -9,6 +9,7 @@ import gov.ca.cwds.dao.cms.ReplicatedAttorneyDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAttorney;
 import gov.ca.cwds.inject.CmsSessionFactory;
+import gov.ca.cwds.jobs.inject.JobRunner;
 import gov.ca.cwds.jobs.inject.LastRunFile;
 
 /**
@@ -18,6 +19,11 @@ import gov.ca.cwds.jobs.inject.LastRunFile;
  */
 public class AttorneyIndexerJob
     extends BasePersonIndexerJob<ReplicatedAttorney, ReplicatedAttorney> {
+
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
 
   /**
    * Construct batch job instance with all required dependencies.
@@ -35,9 +41,12 @@ public class AttorneyIndexerJob
     super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
   }
 
+  /**
+   * @deprecated older attribute will be removed
+   */
   @Override
   @Deprecated
-  protected String getLegacySourceTable() {
+  public String getLegacySourceTable() {
     return "ATTRNY_T";
   }
 
@@ -47,7 +56,7 @@ public class AttorneyIndexerJob
    * @param args command line arguments
    */
   public static void main(String... args) {
-    runMain(AttorneyIndexerJob.class, args);
+    JobRunner.runStandalone(AttorneyIndexerJob.class, args);
   }
 
 }

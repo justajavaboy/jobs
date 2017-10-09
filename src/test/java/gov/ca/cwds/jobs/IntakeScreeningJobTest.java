@@ -56,8 +56,6 @@ public class IntakeScreeningJobTest {
   // final IntakeScreeningJob target = new IntakeScreeningJob(normalizedDao, viewDao, esDao,
   // lastJobRunTimeFilename, mapper, sessionFactory);
   //
-  //
-  //
   // target.threadExtractJdbc();
   //
   //
@@ -185,7 +183,7 @@ public class IntakeScreeningJobTest {
     SessionFactory sessionFactory = null;
     IntakeScreeningJob target = new IntakeScreeningJob(normalizedDao, viewDao, esDao,
         lastJobRunTimeFilename, mapper, sessionFactory);
-    target.threadExtractJdbc();
+    target.threadRetrieveByJdbc();
   }
 
   // @Test

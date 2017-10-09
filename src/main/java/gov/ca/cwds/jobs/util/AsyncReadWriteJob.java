@@ -12,12 +12,17 @@ import gov.ca.cwds.jobs.exception.JobsException;
 @SuppressWarnings("unchecked")
 public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobComponent {
 
-  private JobReader reader;
-  private JobProcessor processor;
-  private JobWriter writer;
+  /**
+   * Default serialization.
+   */
+  private static final long serialVersionUID = 1L;
+
+  private transient JobReader reader;
+  private transient JobProcessor processor;
+  private transient JobWriter writer;
+  private transient List chunk = new LinkedList<>();
 
   private int chunkSize = 100;
-  private List chunk = new LinkedList<>();
 
   /**
    * @param reader reader
@@ -86,7 +91,6 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
     chunk.clear();
   }
 
-  @SuppressWarnings("ThrowFromFinallyBlock")
   @Override
   public void run() {
     try {
