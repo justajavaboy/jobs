@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -301,8 +302,11 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    */
   protected Map<String, StaffPerson> readStaffWorkers() throws NeutronException {
     try {
-      return staffPersonDao.findAll().stream()
-          .collect(Collectors.toMap(StaffPerson::getId, w -> w));
+      final Session session = staffPersonDao.getSessionFactory().getCurrentSession();
+      final Map<String, StaffPerson> ret =
+          staffPersonDao.findAll().stream().collect(Collectors.toMap(StaffPerson::getId, w -> w));
+      session.clear();
+      return ret;
     } catch (Exception e) {
       fail();
       throw new NeutronException("ERROR READING STAFF WORKERS", e);
