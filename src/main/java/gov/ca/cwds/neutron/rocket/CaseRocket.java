@@ -466,7 +466,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         caseParents = new HashMap<>();
         mapCaseParents.put(caseId, caseParents);
       }
-      // caseParents.put(caseId, focusChildParents.);
+      // caseParents.put(caseId, focusChildParents.); // confused ...
     }
   }
 
