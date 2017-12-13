@@ -408,12 +408,14 @@ public final class ElasticTransformer {
 
   protected static ElasticSearchSystemCode buildClientCounty(ApiPersonAware p) {
     ElasticSearchSystemCode ret = null;
-    if (p instanceof ApiClientCountyAware) {
-      ApiClientCountyAware countyAware = (ApiClientCountyAware) p;
-      ret = new ElasticSearchSystemCode();
-      ret.setId(countyAware.getClientCounty().toString());
-      ret.setDescription(
-          SystemCodeCache.global().getSystemCodeShortDescription(countyAware.getClientCounty()));
+    if (p != null && p instanceof ApiClientCountyAware) {
+      final ApiClientCountyAware countyAware = (ApiClientCountyAware) p;
+      final Short county = countyAware.getClientCounty();
+      if (county != null) {
+        ret = new ElasticSearchSystemCode();
+        ret.setId(county.toString());
+        ret.setDescription(SystemCodeCache.global().getSystemCodeShortDescription(county));
+      }
     }
     return ret;
   }
@@ -422,7 +424,7 @@ public final class ElasticTransformer {
     List<ElasticSearchSafetyAlert> ret = null;
     if (p instanceof ApiClientSafetyAlertsAware) {
       ApiClientSafetyAlertsAware alertsAware = (ApiClientSafetyAlertsAware) p;
-      List<ElasticSearchSafetyAlert> safetyAlerts = alertsAware.getClientSafetyAlerts();
+      final List<ElasticSearchSafetyAlert> safetyAlerts = alertsAware.getClientSafetyAlerts();
       if (safetyAlerts != null && !safetyAlerts.isEmpty()) {
         ret = safetyAlerts;
       }
@@ -434,7 +436,7 @@ public final class ElasticTransformer {
     List<ElasticSearchPersonAka> ret = null;
     if (p instanceof ApiOtherClientNamesAware) {
       ApiOtherClientNamesAware akasAware = (ApiOtherClientNamesAware) p;
-      List<ElasticSearchPersonAka> clientAkas = akasAware.getOtherClientNames();
+      final List<ElasticSearchPersonAka> clientAkas = akasAware.getOtherClientNames();
       if (clientAkas != null && !clientAkas.isEmpty()) {
         ret = clientAkas;
       }
