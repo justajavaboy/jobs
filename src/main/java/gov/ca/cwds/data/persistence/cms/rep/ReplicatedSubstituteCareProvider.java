@@ -56,9 +56,6 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 public class ReplicatedSubstituteCareProvider extends BaseSubstituteCareProvider
     implements CmsReplicatedEntity, ApiGroupNormalizer<ReplicatedSubstituteCareProvider> {
 
-  /**
-   * Generated serialization version.
-   */
   private static final long serialVersionUID = 6160989831851057517L;
 
   private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
@@ -94,6 +91,11 @@ public class ReplicatedSubstituteCareProvider extends BaseSubstituteCareProvider
   }
 
   @Override
+  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
+    return replicatedEntity;
+  }
+
+  @Override
   public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
     return ElasticTransformer.createLegacyDescriptor(getId(), getLastUpdatedTime(),
         LegacyTable.SUBSTITUTE_CARE_PROVIDER);
@@ -107,11 +109,6 @@ public class ReplicatedSubstituteCareProvider extends BaseSubstituteCareProvider
   @Override
   public boolean equals(Object obj) {
     return EqualsBuilder.reflectionEquals(this, obj, false);
-  }
-
-  @Override
-  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
-    return replicatedEntity;
   }
 
 }

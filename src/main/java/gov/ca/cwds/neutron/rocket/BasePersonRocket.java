@@ -665,7 +665,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * Pull records changed since the last successful run.
    * 
    * <p>
-   * If this job defines a de-normalized view entity, then pull from that. Otherwise, pull from the
+   * If this job defines a denormalized view entity, then pull from that. Otherwise, pull from the
    * table entity.
    * </p>
    * 

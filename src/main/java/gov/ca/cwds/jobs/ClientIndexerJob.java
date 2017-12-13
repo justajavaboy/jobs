@@ -185,7 +185,6 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   public boolean validateAddresses(final ReplicatedClient client,
       final ElasticSearchPerson person) {
     try {
-
       final String clientId = person.getId();
       final Map<String, ReplicatedAddress> repAddresses =
           client.getClientAddresses().stream().flatMap(ca -> ca.getAddresses().stream())
@@ -215,7 +214,9 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
 
     } catch (Exception e) {
       LOGGER.error("ERROR VALIDATING!", e);
+      return false;
     }
+
     return true;
   }
 
