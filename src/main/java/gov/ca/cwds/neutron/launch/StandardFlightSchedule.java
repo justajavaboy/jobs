@@ -85,17 +85,17 @@ public enum StandardFlightSchedule {
   /**
    * Combines child and parent case.
    */
-  CASES(ChildCaseHistoryIndexerJob.class, "cases", 70, 30, 550, "cases", true, true),
+  CASES(ChildCaseHistoryIndexerJob.class, "case", 70, 30, 550, "cases", true, true),
 
-  /**
-   * Child cases.
-   */
+  // /**
+  // * Child cases.
+  // */
   // CHILD_CASE(ChildCaseHistoryIndexerJob.class, "child_case", 50, 70, 30, 550, "cases", true,
   // true),
 
-  /**
-   * Parent cases.
-   */
+  // /**
+  // * Parent cases.
+  // */
   // PARENT_CASE(ParentCaseHistoryIndexerJob.class, "parent_case", 55, 80, 30, 575, "cases", true,
   // true),
 
