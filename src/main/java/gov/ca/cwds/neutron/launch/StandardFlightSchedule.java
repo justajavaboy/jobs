@@ -202,11 +202,21 @@ public enum StandardFlightSchedule {
     return ret;
   }
 
+  /**
+   * Gets the default list of rockets for initial load.
+   * 
+   * @return rockets for initial load
+   */
   public static List<StandardFlightSchedule> getInitialLoadRockets() {
     return Arrays.asList(values()).stream().sequential()
         .filter(StandardFlightSchedule::isRunInitialLoad).collect(Collectors.toList());
   }
 
+  /**
+   * Gets the default list of rockets for last run.
+   * 
+   * @return rockets for last run
+   */
   public static List<StandardFlightSchedule> getLastChangeRockets() {
     return Arrays.asList(values()).stream().sequential()
         .filter(StandardFlightSchedule::isRunLastChange).collect(Collectors.toList());
