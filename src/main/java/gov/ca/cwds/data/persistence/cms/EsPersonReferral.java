@@ -401,6 +401,7 @@ public class EsPersonReferral
     this.reporterId = ifNull(ref.reporterId);
     this.reporterLastName = ifNull(ref.reporterLastName);
     this.reporterLastUpdated = ref.reporterLastUpdated;
+
     this.worker.setWorkerFirstName(ifNull(ref.getWorkerFirstName()));
     this.worker.setWorkerId(ref.getWorkerId());
     this.worker.setWorkerLastName(ifNull(ref.getWorkerLastName()));
@@ -660,7 +661,7 @@ public class EsPersonReferral
   }
 
   public String getWorkerId() {
-    return this.worker.getWorkerId();
+    return this.worker != null ? this.worker.getWorkerId() : null;
   }
 
   public void setWorkerId(String workerId) {
@@ -668,7 +669,7 @@ public class EsPersonReferral
   }
 
   public String getWorkerFirstName() {
-    return this.worker.getWorkerFirstName();
+    return this.worker != null ? this.worker.getWorkerFirstName() : null;
   }
 
   public void setWorkerFirstName(String workerFirstName) {
@@ -676,7 +677,7 @@ public class EsPersonReferral
   }
 
   public String getWorkerLastName() {
-    return this.worker.getWorkerLastName();
+    return this.worker != null ? this.worker.getWorkerLastName() : null;
   }
 
   public void setWorkerLastName(String workerLastName) {
@@ -772,7 +773,8 @@ public class EsPersonReferral
   }
 
   public Date getWorkerLastUpdated() {
-    return NeutronDateUtils.freshDate(this.worker.getWorkerLastUpdated());
+    return this.worker != null ? NeutronDateUtils.freshDate(this.worker.getWorkerLastUpdated())
+        : null;
   }
 
   public void setWorkerLastUpdated(Date workerLastUpdated) {

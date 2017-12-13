@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.listeners.JobChainingJobListener;
 
+import gov.ca.cwds.jobs.ChildCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.CollateralIndividualIndexerJob;
 import gov.ca.cwds.jobs.EducationProviderContactIndexerJob;
@@ -17,6 +18,7 @@ import gov.ca.cwds.jobs.IntakeScreeningJob;
 import gov.ca.cwds.jobs.OtherAdultInPlacemtHomeIndexerJob;
 import gov.ca.cwds.jobs.OtherChildInPlacemtHomeIndexerJob;
 import gov.ca.cwds.jobs.OtherClientNameIndexerJob;
+import gov.ca.cwds.jobs.ParentCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ReferralHistoryIndexerJob;
 import gov.ca.cwds.jobs.RelationshipIndexerJob;
 import gov.ca.cwds.jobs.ReporterIndexerJob;
@@ -83,21 +85,10 @@ public enum StandardFlightSchedule {
   OTHER_CLIENT_NAME(OtherClientNameIndexerJob.class, "other_client_name", 90, 45, 300, "akas", true, true),
 
   /**
-   * Combines child and parent case.
+   * Combines child and parent case. {@link ParentCaseHistoryIndexerJob} and
+   * {@link ChildCaseHistoryIndexerJob} are obsolete.
    */
   CASES(CaseRocket.class, "case", 70, 30, 550, "cases", true, true),
-
-  // /**
-  // * Child cases.
-  // */
-  // CHILD_CASE(ChildCaseHistoryIndexerJob.class, "child_case", 50, 70, 30, 550, "cases", true,
-  // true),
-
-  // /**
-  // * Parent cases.
-  // */
-  // PARENT_CASE(ParentCaseHistoryIndexerJob.class, "parent_case", 55, 80, 30, 575, "cases", true,
-  // true),
 
   /**
    * Relationships.
@@ -118,11 +109,6 @@ public enum StandardFlightSchedule {
    * Screenings.
    */
   INTAKE_SCREENING(IntakeScreeningJob.class, "intake_screening", 90, 20, 900, "screenings", true, true),
-
-  // /**
-  // * Validation.
-  // */
-  // , SANITY_CHECK(SanityCheckRocket.class, "sanity_check", 100, 90, 10, 1, null)
 
   /**
    * Exit the initial load process.
