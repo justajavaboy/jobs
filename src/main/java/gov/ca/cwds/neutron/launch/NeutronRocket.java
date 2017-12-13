@@ -15,6 +15,7 @@ import org.slf4j.MDC;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
@@ -65,6 +66,7 @@ public class NeutronRocket implements InterruptableJob {
   public void execute(JobExecutionContext context) throws JobExecutionException {
     final JobDataMap map = context.getJobDetail().getJobDataMap();
     final String rocketName = context.getTrigger().getJobKey().getName();
+    NeutronThreadUtils.nameThread(rocketName, this);
     LOGGER.warn("\n>>>>>> LAUNCH! {}, instance # {}", rocket.getClass().getName(), instanceNumber);
 
     try (final BasePersonRocket flight = rocket) {
@@ -97,10 +99,12 @@ public class NeutronRocket implements InterruptableJob {
     LOGGER.warn("ABORT FLIGHT!");
   }
 
+  @SuppressWarnings("javadoc")
   public FlightLog getFlightLog() {
     return flightLog;
   }
 
+  @SuppressWarnings("javadoc")
   public void setFlightLog(FlightLog track) {
     this.flightLog = track;
   }
@@ -110,6 +114,7 @@ public class NeutronRocket implements InterruptableJob {
     return rocket;
   }
 
+  @SuppressWarnings("javadoc")
   public int getInstanceNumber() {
     return instanceNumber;
   }
