@@ -184,32 +184,38 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
    */
   public boolean validateAddresses(final ReplicatedClient client,
       final ElasticSearchPerson person) {
-    final String clientId = person.getId();
-    final Map<String, ReplicatedAddress> repAddresses =
-        client.getClientAddresses().stream().flatMap(ca -> ca.getAddresses().stream())
-            .collect(Collectors.toMap(ReplicatedAddress::getId, a -> a));
+    try {
 
-    final Map<String, ElasticSearchPersonAddress> docAddresses = person.getAddresses().stream()
-        .collect(Collectors.toMap(ElasticSearchPersonAddress::getId, a -> a));
+      final String clientId = person.getId();
+      final Map<String, ReplicatedAddress> repAddresses =
+          client.getClientAddresses().stream().flatMap(ca -> ca.getAddresses().stream())
+              .collect(Collectors.toMap(ReplicatedAddress::getId, a -> a));
 
-    for (ElasticSearchPersonAddress docAddr : docAddresses.values()) {
-      if (!repAddresses.containsKey(docAddr.getAddressId())) {
-        LOGGER.warn("DOC ADDRESS ID {} NOT FOUND IN DATABASE {}", docAddr.getAddressId(), clientId);
-        return false;
+      final Map<String, ElasticSearchPersonAddress> docAddresses = person.getAddresses().stream()
+          .collect(Collectors.toMap(ElasticSearchPersonAddress::getId, a -> a));
+
+      for (ElasticSearchPersonAddress docAddr : docAddresses.values()) {
+        if (!repAddresses.containsKey(docAddr.getAddressId())) {
+          LOGGER.warn("DOC ADDRESS ID {} NOT FOUND IN DATABASE {}", docAddr.getAddressId(),
+              clientId);
+          return false;
+        }
       }
-    }
 
-    for (ReplicatedAddress repAddr : repAddresses.values()) {
-      if (!docAddresses.containsKey(repAddr.getAddressId())) {
-        LOGGER.warn("ADDRESS ID {} NOT FOUND IN DOCUMENT {}", repAddr.getAddressId(), clientId);
-        return false;
+      for (ReplicatedAddress repAddr : repAddresses.values()) {
+        if (!docAddresses.containsKey(repAddr.getAddressId())) {
+          LOGGER.warn("ADDRESS ID {} NOT FOUND IN DOCUMENT {}", repAddr.getAddressId(), clientId);
+          return false;
+        }
       }
+
+      LOGGER.warn("set size: docAddresses: {}, repAddresses: {}, client addrs: {}, doc addrs: {}",
+          docAddresses.size(), repAddresses.size(), client.getClientAddresses().size(),
+          person.getAddresses().size());
+
+    } catch (Exception e) {
+      LOGGER.error("ERROR VALIDATING!", e);
     }
-
-    LOGGER.warn("set size: docAddresses: {}, repAddresses: {}, client addrs: {}, doc addrs: {}",
-        docAddresses.size(), repAddresses.size(), client.getClientAddresses().size(),
-        person.getAddresses().size());
-
     return true;
   }
 
