@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.listeners.JobChainingJobListener;
 
-import gov.ca.cwds.jobs.ChildCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.CollateralIndividualIndexerJob;
 import gov.ca.cwds.jobs.EducationProviderContactIndexerJob;
@@ -27,6 +26,7 @@ import gov.ca.cwds.jobs.SubstituteCareProviderIndexJob;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
+import gov.ca.cwds.neutron.rocket.CaseRocket;
 import gov.ca.cwds.neutron.rocket.ExitInitialLoadRocket;
 import gov.ca.cwds.neutron.rocket.IndexResetRocket;
 
@@ -74,7 +74,7 @@ public enum StandardFlightSchedule {
       true, true),
 
   //
-  // JSON elements inside ES document.
+  // Nested JSON elements, inside a person document.
   //
 
   /**
@@ -85,7 +85,7 @@ public enum StandardFlightSchedule {
   /**
    * Combines child and parent case.
    */
-  CASES(ChildCaseHistoryIndexerJob.class, "case", 70, 30, 550, "cases", true, true),
+  CASES(CaseRocket.class, "case", 70, 30, 550, "cases", true, true),
 
   // /**
   // * Child cases.
