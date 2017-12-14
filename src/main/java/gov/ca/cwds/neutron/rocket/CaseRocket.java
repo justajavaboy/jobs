@@ -58,6 +58,7 @@ import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.cases.CaseClientRelative;
+import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
@@ -168,7 +169,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
-    return NeutronJdbcUtils.getCommonPartitionRanges64(this);
+    return new ReferralJobRanges().getPartitionRanges(this);
   }
 
   @Override

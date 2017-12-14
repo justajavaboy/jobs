@@ -11,8 +11,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
-import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -38,8 +36,8 @@ public class ReferralJobRanges {
     return Pair.of(pieces[0], pieces[1]);
   }
 
-  private List<Pair<String, String>> limitRange(
-      BasePersonRocket<ReplicatedPersonReferrals, EsPersonReferral> rocket,
+  @SuppressWarnings("rawtypes")
+  private List<Pair<String, String>> limitRange(BasePersonRocket rocket,
       final List<Pair<String, String>> allKeyPairs) {
     List<Pair<String, String>> ret = allKeyPairs;
     final FlightPlan flightPlan = rocket.getFlightPlan();
@@ -62,8 +60,8 @@ public class ReferralJobRanges {
    * @return key pairs
    * @throws NeutronException on parse error
    */
-  public List<Pair<String, String>> getPartitionRanges(
-      BasePersonRocket<ReplicatedPersonReferrals, EsPersonReferral> rocket)
+  @SuppressWarnings("rawtypes")
+  public List<Pair<String, String>> getPartitionRanges(BasePersonRocket rocket)
       throws NeutronException {
     List<Pair<String, String>> ret = new ArrayList<>();
 
