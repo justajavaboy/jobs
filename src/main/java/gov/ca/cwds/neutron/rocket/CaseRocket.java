@@ -58,7 +58,6 @@ import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.cases.CaseClientRelative;
-import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
@@ -169,8 +168,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
-    // return NeutronJdbcUtils.getCommonPartitionRanges64(this);
-    return new ReferralJobRanges().getPartitionRanges(this);
+    return NeutronJdbcUtils.getCommonPartitionRanges64(this);
   }
 
   @Override
@@ -248,11 +246,11 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     stmtInsClient.setQueryTimeout(0);
 
     if (!getFlightPlan().isLastRunMode()) {
-      LOGGER.info("INITIAL LOAD");
+      LOGGER.debug("INITIAL LOAD");
       stmtInsClient.setString(1, p.getLeft());
       stmtInsClient.setString(2, p.getRight());
     } else {
-      LOGGER.info("LAST RUN");
+      LOGGER.debug("LAST RUN");
       final String strTimestamp =
           NeutronJdbcUtils.makeSimpleTimestampString(getFlightLog().getLastChangeSince());
       for (int i = 1; i <= 5; i++) {

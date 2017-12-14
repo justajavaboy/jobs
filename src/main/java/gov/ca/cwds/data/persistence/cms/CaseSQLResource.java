@@ -12,7 +12,7 @@ public class CaseSQLResource implements ApiMarker {
           +" SELECT c.IDENTIFIER \n"
           +" FROM CLIENT_T C \n"
           +" WHERE c.IDENTIFIER BETWEEN ? AND ? \n"
-     //   +" AND c.IBMSNAP_OPERATION IN ('I','U') \n"
+      //  +" AND c.IBMSNAP_OPERATION IN ('I','U') \n"
           +" AND ( \n"
           +"  EXISTS ( \n"
           +"     SELECT CAS1.FKCHLD_CLT \n"
