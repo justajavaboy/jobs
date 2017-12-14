@@ -242,6 +242,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   private void prepAffectedClients(final PreparedStatement stmtInsClient,
       final Pair<String, String> p) throws SQLException {
+    LOGGER.info("prepAffectedClients: range: {} - {}", p.getLeft(), p.getRight());
     stmtInsClient.setMaxRows(0);
     stmtInsClient.setQueryTimeout(0);
 
@@ -262,6 +263,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   private void readClientCaseRelationship(final PreparedStatement stmtSelClientCaseRelation,
       final List<CaseClientRelative> listCaseClientRelation) throws SQLException {
+    LOGGER.info("readClientCaseRelationship");
     stmtSelClientCaseRelation.setMaxRows(0);
     stmtSelClientCaseRelation.setQueryTimeout(0);
     stmtSelClientCaseRelation.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
@@ -280,6 +282,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   private void readCases(final PreparedStatement stmtSelCase,
       final Map<String, EsCaseRelatedPerson> mapCases) throws SQLException {
+    LOGGER.info("readCases");
     stmtSelCase.setMaxRows(0);
     stmtSelCase.setQueryTimeout(0);
     stmtSelCase.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
@@ -301,6 +304,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * @throws NeutronException on database error
    */
   protected Map<String, StaffPerson> readStaffWorkers() throws NeutronException {
+    LOGGER.info("readStaffWorkers");
     try {
       return staffPersonDao.findAll().stream()
           .collect(Collectors.toMap(StaffPerson::getId, w -> w));
@@ -605,6 +609,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       final Map<String, EsCaseRelatedPerson> mapCases,
       final Map<String, ReplicatedClient> mapClients, final Map<String, Set<String>> mapClientCases)
       throws NeutronException {
+    LOGGER.info("assemblePieces");
     int countNormalized = 0;
 
     try {
