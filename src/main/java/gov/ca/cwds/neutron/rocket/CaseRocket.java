@@ -486,10 +486,9 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         theCase.setFocusChildLastName(focusChild.getLastName());
         theCase.setFocusChildSensitivityIndicator(focusChild.getSensitivityIndicator());
         theCase.setFocusChildLastUpdated(focusChild.getLastUpdatedTime());
+      } else {
+        LOGGER.error("FOCUS CHILD NOT FOUND!! client id: {}", theCase.getFocusChildId());
       }
-      // else {
-      // LOGGER.error("FOCUS CHILD NOT FOUND!! client id: {}", theCase.getFocusChildId());
-      // }
     }
   }
 
