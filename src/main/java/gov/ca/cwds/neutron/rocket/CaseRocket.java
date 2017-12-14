@@ -169,6 +169,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    // return NeutronJdbcUtils.getCommonPartitionRanges64(this);
     return new ReferralJobRanges().getPartitionRanges(this);
   }
 
@@ -247,9 +248,11 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     stmtInsClient.setQueryTimeout(0);
 
     if (!getFlightPlan().isLastRunMode()) {
+      LOGGER.info("INITIAL LOAD");
       stmtInsClient.setString(1, p.getLeft());
       stmtInsClient.setString(2, p.getRight());
     } else {
+      LOGGER.info("LAST RUN");
       final String strTimestamp =
           NeutronJdbcUtils.makeSimpleTimestampString(getFlightLog().getLastChangeSince());
       for (int i = 1; i <= 5; i++) {
@@ -762,7 +765,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   private void runMultiThreadIndexing() {
-    nameThread("case_main");
+    nameThread("main");
     LOGGER.info("BEGIN: main read thread");
     doneTransform(); // normalize in place **WITHOUT** the transform thread
 
