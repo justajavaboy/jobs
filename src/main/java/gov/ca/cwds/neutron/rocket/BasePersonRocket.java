@@ -450,7 +450,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * The "load" part of ETL. Read from the normalized record queue and index into ES.
    */
   protected void threadIndex() {
-    nameThread("es_indexer");
+    nameThread("indexer");
     LOGGER.info("BEGIN: indexer thread");
     final BulkProcessor bp = buildBulkProcessor();
     int cntr = 0;
