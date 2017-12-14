@@ -614,7 +614,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    */
   @Override
   public Date launch(Date lastSuccessfulRunTime) throws NeutronException {
-    LOGGER.info("RUNNING JOB: {}", getClass().getName());
+    LOGGER.info("LAUNCH ROCKET! {}", getClass().getName());
     Date ret;
 
     try {
