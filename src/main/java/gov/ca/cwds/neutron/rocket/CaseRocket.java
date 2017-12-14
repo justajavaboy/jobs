@@ -58,6 +58,7 @@ import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.cases.CaseClientRelative;
+import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
@@ -168,7 +169,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
-    return NeutronJdbcUtils.getCommonPartitionRanges64(this);
+    // return NeutronJdbcUtils.getCommonPartitionRanges64(this);
+    return new ReferralJobRanges().getPartitionRanges(this);
   }
 
   @Override
@@ -240,7 +242,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   // =====================
 
   private void prepAffectedClients(final PreparedStatement stmtInsClient,
-      final Pair<String, String> p) throws SQLException {
+      final PreparedStatement stmtInsClientCase, final Pair<String, String> p) throws SQLException {
     LOGGER.info("prepAffectedClients: range: {} - {}", p.getLeft(), p.getRight());
     stmtInsClient.setMaxRows(0);
     stmtInsClient.setQueryTimeout(0);
@@ -260,6 +262,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     final int countInsClientCases = stmtInsClient.executeUpdate();
     LOGGER.info("affected client/cases: {}", countInsClientCases);
+
+    stmtInsClientCase.executeUpdate();
   }
 
   private void readClientCaseRelationship(final PreparedStatement stmtSelClientCaseRelation,
@@ -724,12 +728,14 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       NeutronDB2Utils.enableParallelism(con);
 
       try (final PreparedStatement stmtInsClient = con.prepareStatement(buildAffectedClientsSQL());
+          final PreparedStatement stmtInsClientCase =
+              con.prepareStatement(CaseSQLResource.INSERT_CLIENT_CASE);
           final PreparedStatement stmtSelClient =
               con.prepareStatement(CaseSQLResource.SELECT_CLIENT);
           final PreparedStatement stmtSelCase = con.prepareStatement(CaseSQLResource.SELECT_CASE);
           final PreparedStatement stmtSelCaseClientRelationship =
               con.prepareStatement(CaseSQLResource.SELECT_CLIENT_CASE_RELATIONSHIP)) {
-        prepAffectedClients(stmtInsClient, keyRange);
+        prepAffectedClients(stmtInsClient, stmtInsClientCase, keyRange);
         readClients(stmtSelClient, mapClients);
         readCases(stmtSelCase, mapCasesById);
         readClientCaseRelationship(stmtSelCaseClientRelationship, listCaseClientRelative);
