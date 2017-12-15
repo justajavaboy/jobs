@@ -86,28 +86,28 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * Neutron rocket reuses threads for performance, since thread creation is expensive.
    * </p>
    */
-  protected transient ThreadLocal<List<EsCaseRelatedPerson>> allocCases = new ThreadLocal<>();
-
-  protected transient ThreadLocal<List<CaseClientRelative>> allocCaseClientRelative =
-      new ThreadLocal<>();
-
-  /**
-   * k=case id, v=case
-   */
-  protected transient ThreadLocal<Map<String, EsCaseRelatedPerson>> allocMapCases =
-      new ThreadLocal<>();
-
-  /**
-   * k=client id, v=cases
-   */
-  protected transient ThreadLocal<Map<String, Set<String>>> allocMapClientCases =
-      new ThreadLocal<>();
-
-  /**
-   * k=client id, v=client
-   */
-  protected transient ThreadLocal<Map<String, ReplicatedClient>> allocMapClients =
-      new ThreadLocal<>();
+  // protected transient ThreadLocal<List<EsCaseRelatedPerson>> allocCases = new ThreadLocal<>();
+  //
+  // protected transient ThreadLocal<List<CaseClientRelative>> allocCaseClientRelative =
+  // new ThreadLocal<>();
+  //
+  // /**
+  // * k=case id, v=case
+  // */
+  // protected transient ThreadLocal<Map<String, EsCaseRelatedPerson>> allocMapCases =
+  // new ThreadLocal<>();
+  //
+  // /**
+  // * k=client id, v=cases
+  // */
+  // protected transient ThreadLocal<Map<String, Set<String>>> allocMapClientCases =
+  // new ThreadLocal<>();
+  //
+  // /**
+  // * k=client id, v=client
+  // */
+  // protected transient ThreadLocal<Map<String, ReplicatedClient>> allocMapClients =
+  // new ThreadLocal<>();
 
   private final AtomicInteger rowsReadCases = new AtomicInteger(0);
 
@@ -260,10 +260,11 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       }
     }
 
-    final int countInsClientCases = stmtInsClient.executeUpdate();
-    LOGGER.info("affected client/cases: {}", countInsClientCases);
+    final int countInsClient = stmtInsClient.executeUpdate();
+    LOGGER.info("affected clients: {}", countInsClient);
 
-    stmtInsClientCase.executeUpdate();
+    final int countInsClientCases = stmtInsClientCase.executeUpdate();
+    LOGGER.info("affected client/cases: {}", countInsClientCases);
   }
 
   private void readClientCaseRelationship(final PreparedStatement stmtSelClientCaseRelation,
@@ -715,10 +716,17 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     LOGGER.info("BEGIN");
     getFlightLog().markRangeStart(keyRange);
 
-    allocateThreadMemory();
-    final List<CaseClientRelative> listCaseClientRelative = allocCaseClientRelative.get();
-    final Map<String, ReplicatedClient> mapClients = allocMapClients.get();
-    final Map<String, EsCaseRelatedPerson> mapCasesById = allocMapCases.get();
+    // allocateThreadMemory();
+    // final List<CaseClientRelative> listCaseClientRelative = allocCaseClientRelative.get();
+    // final Map<String, ReplicatedClient> mapClients = allocMapClients.get();
+    // final Map<String, EsCaseRelatedPerson> mapCasesById = allocMapCases.get();
+
+    // allocCases.set(new ArrayList<>(205000));
+    // allocMapClients.set(new HashMap<>(69029)); // Prime
+
+    final List<CaseClientRelative> listCaseClientRelative = new ArrayList<>(205000);
+    final Map<String, ReplicatedClient> mapClients = new HashMap<>(99881); // Prime
+    final Map<String, EsCaseRelatedPerson> mapCasesById = new HashMap<>(69029); // Prime
 
     // Retrieve records.
     try (final Connection con = getConnection()) {
@@ -754,7 +762,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     int recordsProcessed = 0;
     try {
       recordsProcessed = assemblePieces(listCaseClientRelative, mapCasesById, mapClients,
-          allocMapClientCases.get());
+          // allocMapClientCases.get()
+          new HashMap<>(99881));
     } catch (NeutronException e) {
       fail();
       throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE {} - {}: {}", keyRange.getLeft(),
@@ -836,15 +845,15 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   // =====================
 
   private void clearThreadContainers() {
-    final List<EsCaseRelatedPerson> cases = allocCases.get();
-    if (cases != null) {
-      cases.clear();
-      this.allocCaseClientRelative.get().clear();
-      this.allocMapClientCases.get().clear();
-      this.allocMapClients.get().clear();
-      this.allocMapCases.get().clear();
-      System.gc(); // NOSONAR
-    }
+    // final List<EsCaseRelatedPerson> cases = allocCases.get();
+    // if (cases != null) {
+    // cases.clear();
+    // this.allocCaseClientRelative.get().clear();
+    // this.allocMapClientCases.get().clear();
+    // this.allocMapClients.get().clear();
+    // this.allocMapCases.get().clear();
+    // System.gc(); // NOSONAR
+    // }
   }
 
   /**
@@ -855,24 +864,24 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * </p>
    */
   protected void allocateThreadMemory() {
-    if (allocCases.get() == null) {
-      allocCases.set(new ArrayList<>(205000));
-      allocCaseClientRelative.set(new ArrayList<>(205000));
-      allocMapClientCases.set(new HashMap<>(99881)); // Prime
-      allocMapCases.set(new HashMap<>(69029)); // Prime
-      allocMapClients.set(new HashMap<>(69029)); // Prime
-      clearThreadContainers();
-    }
+    // if (allocCases.get() == null) {
+    // allocCases.set(new ArrayList<>(205000));
+    // allocCaseClientRelative.set(new ArrayList<>(205000));
+    // allocMapClientCases.set(new HashMap<>(99881)); // Prime
+    // allocMapCases.set(new HashMap<>(69029)); // Prime
+    // allocMapClients.set(new HashMap<>(69029)); // Prime
+    // clearThreadContainers();
+    // }
   }
 
   private void deallocateThreadMemory() {
-    if (allocCases.get() != null) {
-      allocCases.set(null);
-      allocMapClientCases.set(null);
-      allocMapCases.set(null);
-      allocMapClients.set(null);
-      allocCaseClientRelative.set(null);
-    }
+    // if (allocCases.get() != null) {
+    // allocCases.set(null);
+    // allocMapClientCases.set(null);
+    // allocMapCases.set(null);
+    // allocMapClients.set(null);
+    // allocCaseClientRelative.set(null);
+    // }
   }
 
   @SuppressWarnings("javadoc")
