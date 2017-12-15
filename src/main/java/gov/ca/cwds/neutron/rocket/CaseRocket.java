@@ -504,99 +504,103 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   private void reduceCase(final ReplicatedPersonCases cases, EsCaseRelatedPerson rawCase,
       final Map<String, ReplicatedClient> mapClients,
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents) {
-    final ElasticSearchPersonCase esPersonCase = new ElasticSearchPersonCase();
-    final String caseId = rawCase.getCaseId();
-    final String focusChildId = rawCase.getFocusChildId();
+    if (rawCase != null) {
+      final ElasticSearchPersonCase esPersonCase = new ElasticSearchPersonCase();
+      final String caseId = rawCase.getCaseId();
+      final String focusChildId = rawCase.getFocusChildId();
 
-    //
-    // Case:
-    //
-    esPersonCase.setId(caseId);
-    esPersonCase.setLegacyId(caseId);
-    esPersonCase.setLegacyLastUpdated(DomainChef.cookStrictTimestamp(rawCase.getCaseLastUpdated()));
-    esPersonCase.setStartDate(DomainChef.cookDate(rawCase.getStartDate()));
-    esPersonCase.setEndDate(DomainChef.cookDate(rawCase.getEndDate()));
+      //
+      // Case:
+      //
+      esPersonCase.setId(caseId);
+      esPersonCase.setLegacyId(caseId);
+      esPersonCase
+          .setLegacyLastUpdated(DomainChef.cookStrictTimestamp(rawCase.getCaseLastUpdated()));
+      esPersonCase.setStartDate(DomainChef.cookDate(rawCase.getStartDate()));
+      esPersonCase.setEndDate(DomainChef.cookDate(rawCase.getEndDate()));
 
-    final Integer county = rawCase.getCounty();
-    esPersonCase.setCountyId(county == null ? null : county.toString());
-    esPersonCase.setCountyName(SystemCodeCache.global().getSystemCodeShortDescription(county));
-    esPersonCase.setServiceComponentId(
-        rawCase.getServiceComponent() == null ? null : rawCase.getServiceComponent().toString());
-    esPersonCase.setServiceComponent(
-        SystemCodeCache.global().getSystemCodeShortDescription(rawCase.getServiceComponent()));
-    esPersonCase.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(rawCase.getCaseId(),
-        rawCase.getCaseLastUpdated(), LegacyTable.CASE));
+      final Integer county = rawCase.getCounty();
+      esPersonCase.setCountyId(county == null ? null : county.toString());
+      esPersonCase.setCountyName(SystemCodeCache.global().getSystemCodeShortDescription(county));
+      esPersonCase.setServiceComponentId(
+          rawCase.getServiceComponent() == null ? null : rawCase.getServiceComponent().toString());
+      esPersonCase.setServiceComponent(
+          SystemCodeCache.global().getSystemCodeShortDescription(rawCase.getServiceComponent()));
+      esPersonCase.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(
+          rawCase.getCaseId(), rawCase.getCaseLastUpdated(), LegacyTable.CASE));
 
-    //
-    // Child:
-    //
-    final ElasticSearchPersonChild child = new ElasticSearchPersonChild();
-    child.setId(focusChildId);
-    child.setLegacyClientId(focusChildId);
-    child.setLegacyLastUpdated(DomainChef.cookStrictTimestamp(rawCase.getFocusChildLastUpdated()));
-    child.setFirstName(rawCase.getFocusChildFirstName());
-    child.setLastName(rawCase.getFocusChildLastName());
-    child.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(focusChildId,
-        rawCase.getFocusChildLastUpdated(), LegacyTable.CLIENT));
-    child.setSensitivityIndicator(rawCase.getFocusChildSensitivityIndicator());
-    esPersonCase.setFocusChild(child);
+      //
+      // Child:
+      //
+      final ElasticSearchPersonChild child = new ElasticSearchPersonChild();
+      child.setId(focusChildId);
+      child.setLegacyClientId(focusChildId);
+      child
+          .setLegacyLastUpdated(DomainChef.cookStrictTimestamp(rawCase.getFocusChildLastUpdated()));
+      child.setFirstName(rawCase.getFocusChildFirstName());
+      child.setLastName(rawCase.getFocusChildLastName());
+      child.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(focusChildId,
+          rawCase.getFocusChildLastUpdated(), LegacyTable.CLIENT));
+      child.setSensitivityIndicator(rawCase.getFocusChildSensitivityIndicator());
+      esPersonCase.setFocusChild(child);
 
-    //
-    // Assigned Worker:
-    //
-    final ElasticSearchPersonSocialWorker assignedWorker = new ElasticSearchPersonSocialWorker();
-    assignedWorker.setId(rawCase.getWorker().getWorkerId());
-    assignedWorker.setLegacyClientId(rawCase.getWorker().getWorkerId());
-    assignedWorker.setLegacyLastUpdated(
-        DomainChef.cookStrictTimestamp(rawCase.getWorker().getWorkerLastUpdated()));
-    assignedWorker.setFirstName(rawCase.getWorker().getWorkerFirstName());
-    assignedWorker.setLastName(rawCase.getWorker().getWorkerLastName());
-    assignedWorker.setLegacyDescriptor(
-        ElasticTransformer.createLegacyDescriptor(rawCase.getWorker().getWorkerId(),
-            rawCase.getWorker().getWorkerLastUpdated(), LegacyTable.STAFF_PERSON));
-    esPersonCase.setAssignedSocialWorker(assignedWorker);
+      //
+      // Assigned Worker:
+      //
+      final ElasticSearchPersonSocialWorker assignedWorker = new ElasticSearchPersonSocialWorker();
+      assignedWorker.setId(rawCase.getWorker().getWorkerId());
+      assignedWorker.setLegacyClientId(rawCase.getWorker().getWorkerId());
+      assignedWorker.setLegacyLastUpdated(
+          DomainChef.cookStrictTimestamp(rawCase.getWorker().getWorkerLastUpdated()));
+      assignedWorker.setFirstName(rawCase.getWorker().getWorkerFirstName());
+      assignedWorker.setLastName(rawCase.getWorker().getWorkerLastName());
+      assignedWorker.setLegacyDescriptor(
+          ElasticTransformer.createLegacyDescriptor(rawCase.getWorker().getWorkerId(),
+              rawCase.getWorker().getWorkerLastUpdated(), LegacyTable.STAFF_PERSON));
+      esPersonCase.setAssignedSocialWorker(assignedWorker);
 
-    //
-    // Access Limitation:
-    //
-    final ElasticSearchAccessLimitation accessLimit = new ElasticSearchAccessLimitation();
-    accessLimit.setLimitedAccessCode(rawCase.getAccessLimitation().getLimitedAccessCode());
-    accessLimit.setLimitedAccessDate(
-        DomainChef.cookDate(rawCase.getAccessLimitation().getLimitedAccessDate()));
-    accessLimit
-        .setLimitedAccessDescription(rawCase.getAccessLimitation().getLimitedAccessDescription());
-    accessLimit.setLimitedAccessGovernmentEntityId(
-        rawCase.getAccessLimitation().getLimitedAccessGovernmentEntityId() == null ? null
-            : rawCase.getAccessLimitation().getLimitedAccessGovernmentEntityId().toString());
-    accessLimit.setLimitedAccessGovernmentEntityName(
-        SystemCodeCache.global().getSystemCodeShortDescription(
-            rawCase.getAccessLimitation().getLimitedAccessGovernmentEntityId()));
-    esPersonCase.setAccessLimitation(accessLimit);
+      //
+      // Access Limitation:
+      //
+      final ElasticSearchAccessLimitation accessLimit = new ElasticSearchAccessLimitation();
+      accessLimit.setLimitedAccessCode(rawCase.getAccessLimitation().getLimitedAccessCode());
+      accessLimit.setLimitedAccessDate(
+          DomainChef.cookDate(rawCase.getAccessLimitation().getLimitedAccessDate()));
+      accessLimit
+          .setLimitedAccessDescription(rawCase.getAccessLimitation().getLimitedAccessDescription());
+      accessLimit.setLimitedAccessGovernmentEntityId(
+          rawCase.getAccessLimitation().getLimitedAccessGovernmentEntityId() == null ? null
+              : rawCase.getAccessLimitation().getLimitedAccessGovernmentEntityId().toString());
+      accessLimit.setLimitedAccessGovernmentEntityName(
+          SystemCodeCache.global().getSystemCodeShortDescription(
+              rawCase.getAccessLimitation().getLimitedAccessGovernmentEntityId()));
+      esPersonCase.setAccessLimitation(accessLimit);
 
-    //
-    // A Case may have more than one parents:
-    //
-    final Map<String, CaseClientRelative> parents = mapFocusChildParents.get(focusChildId);
-    if (parents != null && !parents.isEmpty()) {
-      parents.values().stream().forEach(p -> {
-        final ElasticSearchPersonParent parent = new ElasticSearchPersonParent();
-        final ReplicatedClient parentClient = mapClients.get(p.getRelatedClientId());
+      //
+      // A Case may have more than one parents:
+      //
+      final Map<String, CaseClientRelative> parents = mapFocusChildParents.get(focusChildId);
+      if (parents != null && !parents.isEmpty()) {
+        parents.values().stream().forEach(p -> {
+          final ElasticSearchPersonParent parent = new ElasticSearchPersonParent();
+          final ReplicatedClient parentClient = mapClients.get(p.getRelatedClientId());
 
-        parent.setId(parentClient.getId());
-        parent.setLegacyClientId(parentClient.getId());
-        parent.setLegacyLastUpdated(
-            DomainChef.cookStrictTimestamp(parentClient.getLastUpdatedTime()));
-        parent.setLegacySourceTable(LegacyTable.CLIENT.getName());
-        parent.setFirstName(parentClient.getFirstName());
-        parent.setLastName(parentClient.getLastName());
-        parent.setRelationship(p.translateRelationshipToString());
-        parent.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(parentClient.getId(),
-            parentClient.getLastUpdatedTime(), LegacyTable.CLIENT));
-        parent.setSensitivityIndicator(parentClient.getSensitivityIndicator());
-        cases.addCase(esPersonCase, parent);
-      });
-    } else {
-      cases.addCase(esPersonCase, null);
+          parent.setId(parentClient.getId());
+          parent.setLegacyClientId(parentClient.getId());
+          parent.setLegacyLastUpdated(
+              DomainChef.cookStrictTimestamp(parentClient.getLastUpdatedTime()));
+          parent.setLegacySourceTable(LegacyTable.CLIENT.getName());
+          parent.setFirstName(parentClient.getFirstName());
+          parent.setLastName(parentClient.getLastName());
+          parent.setRelationship(p.translateRelationshipToString());
+          parent.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(parentClient.getId(),
+              parentClient.getLastUpdatedTime(), LegacyTable.CLIENT));
+          parent.setSensitivityIndicator(parentClient.getSensitivityIndicator());
+          cases.addCase(esPersonCase, parent);
+        });
+      } else {
+        cases.addCase(esPersonCase, null);
+      }
     }
   }
 
