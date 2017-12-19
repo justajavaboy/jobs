@@ -6,11 +6,11 @@ import com.google.inject.Provides;
 import gov.ca.cwds.cals.inject.CalsnsDataAccessModule;
 import gov.ca.cwds.cals.service.dto.changed.ChangedRFA1aFormDTO;
 import gov.ca.cwds.cals.service.rfa.RFA1aFormsCollectionService;
-import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
 import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
 import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
-import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.Job;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.util.AsyncReadWriteJob;
 
 /**
  * <p> Command line arguments: </p>

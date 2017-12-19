@@ -9,11 +9,11 @@ import gov.ca.cwds.cals.inject.FasDataAccessModule;
 import gov.ca.cwds.cals.inject.LisDataAccessModule;
 import gov.ca.cwds.cals.service.ChangedFacilityService;
 import gov.ca.cwds.cals.service.dto.changed.ChangedFacilityDTO;
-import gov.ca.cwds.jobs.Job;
 import gov.ca.cwds.jobs.cals.BaseCalsIndexerJob;
 import gov.ca.cwds.jobs.cals.CalsElasticJobWriter;
 import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
-import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.Job;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.util.AsyncReadWriteJob;
 
 /**
  * <p> Command line arguments: </p>

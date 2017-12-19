@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import gov.ca.cwds.cals.inject.CalsnsSessionFactory;
 import gov.ca.cwds.cals.service.dto.changed.ChangedRFA1aFormDTO;
 import gov.ca.cwds.cals.service.rfa.RFA1aFormsCollectionService;
-import gov.ca.cwds.jobs.util.JobReader;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.util.JobReader;
 import org.hibernate.SessionFactory;
 
 import java.time.LocalDateTime;

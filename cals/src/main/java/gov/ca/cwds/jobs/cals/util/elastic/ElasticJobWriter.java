@@ -2,7 +2,7 @@ package gov.ca.cwds.jobs.cals.util.elastic;
 
 import gov.ca.cwds.cals.Identifiable;
 import gov.ca.cwds.jobs.cals.CalsElasticsearchIndexerDao;
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.exception.JobsException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.ca.cwds.jobs.util.JobWriter;
+import gov.ca.cwds.jobs.cals.jobgeneric.jobs.util.JobWriter;
 
 /**
  * @author CWDS TPT-2
