@@ -31,6 +31,9 @@ public abstract class BaseCalsIndexerJobTest {
   protected static final String CALSNS_PASSWORD = "";
   protected static final String TIME_FILES_DIR = System.getProperty("user.dir");
 
+  private static final String ES_HOSTNAME = "127.0.0.1";
+  private static final int ES_PORT = 9200;
+
   protected static RestClient anonymousRestClient;
   protected static RestClient restClient;
 
@@ -43,13 +46,13 @@ public abstract class BaseCalsIndexerJobTest {
   @BeforeClass
   public static void initClients() {
     anonymousRestClient = RestClient.builder(
-        new HttpHost("192.168.99.100", 9200, "http")).build();
+        new HttpHost(ES_HOSTNAME, ES_PORT, "http")).build();
 
     // create authorized REST client
     final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     credentialsProvider.setCredentials(AuthScope.ANY,
         new UsernamePasswordCredentials("elastic", "changeme"));
-    restClient = RestClient.builder(new HttpHost("192.168.99.100", 9200))
+    restClient = RestClient.builder(new HttpHost(ES_HOSTNAME, ES_PORT))
         .setHttpClientConfigCallback(
             httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
         .build();
@@ -69,6 +72,7 @@ public abstract class BaseCalsIndexerJobTest {
     return FileUtils.readFileToString(new File(url.toURI()), "UTF-8");
   }
 
+  @SuppressWarnings("unchecked")
   protected void assertTotalHits(Response response, int expectedTotalHits) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     Map<String, Object> jsonMap = mapper.readValue(response.getEntity().getContent(), Map.class);

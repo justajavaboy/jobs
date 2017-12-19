@@ -21,6 +21,7 @@ apply plugin: 'jacoco'
 project.ext {
     log4jVersion = "2.8"
     elasticsearchVersion = "5.5.1"
+    coreApiVersion = "3.6.458"
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
 }
 
@@ -61,7 +62,7 @@ dependencies {
     compile 'org.hibernate:hibernate-c3p0:5.2.10.Final'
 
 	// Exclude transitive dependencies.
-	compile ('gov.ca.cwds.api:api-core:3.6.458') {
+    compile ("gov.ca.cwds.api:api-core:" + coreApiVersion) {
 	    exclude group: 'org.glassfish.jersey.core'
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'

@@ -63,9 +63,9 @@ import org.apache.tools.ant.taskdefs.condition.Os
 project.ext {
     // assume that Windows users use the Docker Toolbox
     buildEnv = System.env.BUILD_ENV ?: (Os.isFamily(Os.FAMILY_WINDOWS) ? 'WIN_DEV' : 'JENKINS')
-    devDockerHost = System.env.DEV_DOCKER_HOST ?: '192.168.99.100'
+    devDockerHost = System.env.DEV_DOCKER_HOST ?: 'localhost'
     devDockerPort = 2376
-    elasticHost = buildEnv == 'WIN_DEV' ? '192.168.99.100' : 'localhost'
+    elasticHost = 'localhost'
     elasticPort = 9200
     log4jVersion = "2.8"
     elasticsearchVersion = "5.5.1"
