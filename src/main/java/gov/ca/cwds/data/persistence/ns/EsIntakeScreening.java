@@ -360,7 +360,6 @@ public class EsIntakeScreening extends CommonScreening
 
         // Synthetic, composite field, "state_name", not found in legacy.
         addr.setStreetAddress(streetAddress);
-        // addr.setType(addressType); // Not compatible with Perf index.
         addr.setZip(zip);
         otherPartc.addAddress(addr);
       }
