@@ -24,6 +24,7 @@ apply plugin: 'jacoco'
 project.ext {
     log4jVersion = "2.8"
     elasticsearchVersion = "5.5.0"
+    coreApiVersion = "3.6.516"
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
     dropwizardVersion = "1.1.0"
 }
@@ -60,11 +61,11 @@ dependencies {
     compile 'com.google.inject.extensions:guice-jmx:4.1.0'
 
     compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
-    compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.0.0-rc4"
+    compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
     compile 'org.hibernate:hibernate-c3p0:5.2.10.Final'
 
     // Exclude transitive dependencies.
-    compile ('gov.ca.cwds.api:api-core:3.6.516') {
+    compile ("gov.ca.cwds.api:api-core:" + coreApiVersion) {
         exclude group: 'org.glassfish.jersey.core'
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'

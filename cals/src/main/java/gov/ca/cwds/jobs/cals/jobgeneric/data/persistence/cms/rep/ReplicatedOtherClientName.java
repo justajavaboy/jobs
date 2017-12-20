@@ -1,6 +1,6 @@
 package gov.ca.cwds.jobs.cals.jobgeneric.data.persistence.cms.rep;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+import static gov.ca.cwds.jobs.cals.jobgeneric.jobs.util.transform.JobTransformUtils.ifNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

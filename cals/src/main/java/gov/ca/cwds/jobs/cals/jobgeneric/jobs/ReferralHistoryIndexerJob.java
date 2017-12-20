@@ -1,6 +1,6 @@
 package gov.ca.cwds.jobs.cals.jobgeneric.jobs;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+import static gov.ca.cwds.jobs.cals.jobgeneric.jobs.util.transform.JobTransformUtils.ifNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
