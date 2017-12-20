@@ -1,16 +1,19 @@
 package gov.ca.cwds.data.persistence.cms;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+import static gov.ca.cwds.neutron.util.transform.JobTransformUtils.ifNull;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -22,13 +25,19 @@ import org.hibernate.annotations.Type;
 
 import gov.ca.cwds.data.es.ElasticSearchPersonRelationship;
 import gov.ca.cwds.data.persistence.PersistentObject;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.data.std.ApiMarker;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
- * Entity bean for Materialized Query Table (MQT), VW_BI_DIR_RELATION. By request of the Intake
- * team, it only reads relationships from CLN_RELT, for now.
+ * Entity bean for Materialized Query Table (MQT), VW_BI_DIR_RELATION.
+ * 
+ * <p>
+ * By request of the Intake team, it only reads relationships from CLN_RELT, for now.
+ * </p>
  * 
  * <p>
  * Implements {@link ApiGroupNormalizer} and converts to {@link ReplicatedRelationships}.
@@ -71,13 +80,39 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
     resultClass = EsRelationship.class, readOnly = true)
 public class EsRelationship
-    implements PersistentObject, ApiGroupNormalizer<ReplicatedRelationships> {
-
-  private static final Map<Short, CmsRelationship> mapRelationCodes = new ConcurrentHashMap<>();
+    implements PersistentObject, ApiGroupNormalizer<ReplicatedRelationships>,
+    Comparable<EsRelationship>, Comparator<EsRelationship> {
 
   /**
-   * Default serialization.
+   * Instead of repeatedly parsing relationship components, just parse once and lookup, as needed.
    */
+  public static final class SonarQubeMemoryBloatComplaintCache implements ApiMarker {
+
+    private static final long serialVersionUID = 1L;
+
+    private final Map<Short, CmsRelationship> mapRelationCodes = new ConcurrentHashMap<>();
+
+    private static final SonarQubeMemoryBloatComplaintCache instance =
+        new SonarQubeMemoryBloatComplaintCache();
+
+    private SonarQubeMemoryBloatComplaintCache() {
+      // whatever
+    }
+
+    public static SonarQubeMemoryBloatComplaintCache getInstance() {
+      return instance;
+    }
+
+    public void clearCache() {
+      mapRelationCodes.clear();
+    }
+
+    public Map<Short, CmsRelationship> getMapRelationCodes() {
+      return mapRelationCodes;
+    }
+
+  }
+
   private static final long serialVersionUID = 1L;
 
   @Id
@@ -121,13 +156,21 @@ public class EsRelationship
   // NOTE: add replication columns when available.
   // Needed to delete ES documents.
 
-  // @Enumerated(EnumType.STRING)
-  // @Column(name = "CLT_IBMSNAP_OPERATION", updatable = false)
-  // private CmsReplicationOperation cltReplicationOperation;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "THIS_IBMSNAP_OPERATION", updatable = false)
+  private CmsReplicationOperation thisReplicationOperation;
 
-  // @Type(type = "timestamp")
-  // @Column(name = "CLT_IBMSNAP_LOGMARKER", updatable = false)
-  // private Date cltReplicationDate;
+  @Type(type = "timestamp")
+  @Column(name = "THIS_IBMSNAP_LOGMARKER", updatable = false)
+  private Date thisReplicationDate;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "RELATED_IBMSNAP_OPERATION", updatable = false)
+  private CmsReplicationOperation relatedReplicationOperation;
+
+  @Type(type = "timestamp")
+  @Column(name = "RELATED_IBMSNAP_LOGMARKER", updatable = false)
+  private Date relatedReplicationDate;
 
   /**
    * Build an EsRelationship from an incoming ResultSet.
@@ -167,6 +210,8 @@ public class EsRelationship
     if (this.relCode != null && this.relCode.intValue() != 0) {
 
       CmsRelationship relationship;
+      final Map<Short, CmsRelationship> mapRelationCodes =
+          SonarQubeMemoryBloatComplaintCache.getInstance().getMapRelationCodes();
       if (mapRelationCodes.containsKey(relCode)) {
         relationship = mapRelationCodes.get(relCode);
       } else {
@@ -320,18 +365,61 @@ public class EsRelationship
   }
 
   public Date getThisLegacyLastUpdated() {
-    return thisLegacyLastUpdated;
+    return NeutronDateUtils.freshDate(thisLegacyLastUpdated);
   }
 
   public void setThisLegacyLastUpdated(Date thisLegacyLastUpdated) {
-    this.thisLegacyLastUpdated = thisLegacyLastUpdated;
+    this.thisLegacyLastUpdated = NeutronDateUtils.freshDate(thisLegacyLastUpdated);
   }
 
   public Date getRelatedLegacyLastUpdated() {
-    return relatedLegacyLastUpdated;
+    return NeutronDateUtils.freshDate(relatedLegacyLastUpdated);
   }
 
   public void setRelatedLegacyLastUpdated(Date relatedLegacyLastUpdated) {
-    this.relatedLegacyLastUpdated = relatedLegacyLastUpdated;
+    this.relatedLegacyLastUpdated = NeutronDateUtils.freshDate(relatedLegacyLastUpdated);
   }
+
+  public CmsReplicationOperation getThisReplicationOperation() {
+    return thisReplicationOperation;
+  }
+
+  public void setThisReplicationOperation(CmsReplicationOperation thisReplicationOperation) {
+    this.thisReplicationOperation = thisReplicationOperation;
+  }
+
+  public Date getThisReplicationDate() {
+    return NeutronDateUtils.freshDate(thisReplicationDate);
+  }
+
+  public void setThisReplicationDate(Date thisReplicationDate) {
+    this.thisReplicationDate = NeutronDateUtils.freshDate(thisReplicationDate);
+  }
+
+  public CmsReplicationOperation getRelatedReplicationOperation() {
+    return relatedReplicationOperation;
+  }
+
+  public void setRelatedReplicationOperation(CmsReplicationOperation relatedReplicationOperation) {
+    this.relatedReplicationOperation = relatedReplicationOperation;
+  }
+
+  public Date getRelatedReplicationDate() {
+    return NeutronDateUtils.freshDate(relatedReplicationDate);
+  }
+
+  public void setRelatedReplicationDate(Date relatedReplicationDate) {
+    this.relatedReplicationDate = NeutronDateUtils.freshDate(relatedReplicationDate);
+  }
+
+  @Override
+  public int compare(EsRelationship o1, EsRelationship o2) {
+    return o1.getThisLegacyId().compareTo(o2.getThisLegacyId());
+  }
+
+  @Override
+  public int compareTo(EsRelationship o) {
+    return compare(this, o);
+  }
+
 }

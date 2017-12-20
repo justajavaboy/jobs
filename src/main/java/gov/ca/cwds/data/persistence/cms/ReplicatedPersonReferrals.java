@@ -2,24 +2,23 @@ package gov.ca.cwds.data.persistence.cms;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import gov.ca.cwds.data.es.ElasticSearchPersonAllegation;
 import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
-import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.data.std.ApiObjectIdentity;
-import gov.ca.cwds.data.std.ApiPersonAware;
+import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
 
 /**
- * Pseudo-normalized container for CMS person referral.
+ * Normalized container for CMS person referral.
  * 
  * @author CWDS API Team
  */
-public class ReplicatedPersonReferrals extends ApiObjectIdentity
-    implements PersistentObject, ApiPersonAware {
+public class ReplicatedPersonReferrals implements RetrovillePerson {
 
   private static final long serialVersionUID = -8746969311364544478L;
 
@@ -56,10 +55,15 @@ public class ReplicatedPersonReferrals extends ApiObjectIdentity
     return new ArrayList<>(referrals.values());
   }
 
+  /**
+   * @param referralId referral to look up
+   * @return whether referral is here here
+   */
   public boolean hasReferral(String referralId) {
     return referrals.containsKey(referralId);
   }
 
+  @SuppressWarnings("javadoc")
   public ElasticSearchPersonReferral getReferral(String referralId) {
     return referrals.get(referralId);
   }
@@ -101,47 +105,24 @@ public class ReplicatedPersonReferrals extends ApiObjectIdentity
     return this.clientId;
   }
 
-  @Override
-  public Date getBirthDate() {
-    return null;
-  }
-
-  @Override
-  public String getFirstName() {
-    return null;
-  }
-
-  @Override
-  public String getGender() {
-    return null;
-  }
-
-  @Override
-  public String getLastName() {
-    return null;
-  }
-
-  @Override
-  public String getMiddleName() {
-    return null;
-  }
-
-  @Override
-  public String getNameSuffix() {
-    return null;
-  }
-
-  @Override
-  public String getSsn() {
-    return null;
-  }
-
+  @SuppressWarnings("javadoc")
   public String getClientId() {
     return clientId;
   }
 
+  @SuppressWarnings("javadoc")
   public void setClientId(String clientId) {
     this.clientId = clientId;
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

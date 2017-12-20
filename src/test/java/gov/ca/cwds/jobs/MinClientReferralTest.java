@@ -5,18 +5,20 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
+import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 
 public class MinClientReferralTest
-    extends PersonJobTester<ReplicatedPersonReferrals, EsPersonReferral> {
+    extends Goddard<ReplicatedPersonReferrals, EsPersonReferral> {
 
   String clientId = DEFAULT_CLIENT_ID;
   String referralId = "ref1234567";
@@ -27,7 +29,7 @@ public class MinClientReferralTest
   @Before
   public void setup() throws Exception {
     super.setup();
-    target = new MinClientReferral(clientId, referralId, sensitivity);
+    target = new MinClientReferral(clientId, referralId, sensitivity, null);
   }
 
   @Test
@@ -47,10 +49,9 @@ public class MinClientReferralTest
   }
 
   @Test
-  @Ignore
   public void extract_Args__ResultSet_T__SQLException() throws Exception {
     try {
-      // when(rs.close())
+      when(rs.getString(any(String.class))).thenThrow(SQLException.class);
       MinClientReferral.extract(rs);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {

@@ -4,7 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
@@ -13,15 +14,15 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import gov.ca.cwds.ObjectMapperUtils;
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
+import gov.ca.cwds.data.es.ElasticSearchPerson;
+import gov.ca.cwds.data.es.ElasticSearchPersonAddress;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientAddress;
 import gov.ca.cwds.jobs.exception.JobsException;
 
 /**
@@ -29,9 +30,7 @@ import gov.ca.cwds.jobs.exception.JobsException;
  * @author CWDS API Team
  */
 @SuppressWarnings("javadoc")
-public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsClientAddress> {
-
-  protected static final ObjectMapper mapper = ObjectMapperUtils.createObjectMapper();
+public class ClientIndexerJobTest extends Goddard<ReplicatedClient, EsClientAddress> {
 
   ReplicatedClientDao dao;
   ClientIndexerJob target;
@@ -40,9 +39,10 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
   @Before
   public void setup() throws Exception {
     super.setup();
+
+    when(rs.next()).thenReturn(true, true, false);
     dao = new ReplicatedClientDao(sessionFactory);
-    target = new ClientIndexerJob(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
-    target.setOpts(opts);
+    target = new ClientIndexerJob(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
   @Test
@@ -52,36 +52,8 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
 
   @Test
   public void instantiation() throws Exception {
-    target = new ClientIndexerJob(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+    target = new ClientIndexerJob(dao, esDao, lastRunFile, mapper, flightPlan);
     assertThat(target, notNullValue());
-  }
-
-  @Test(expected = JobsException.class)
-  @Ignore
-  public void main_Args$StringArray() throws Exception {
-    final String[] args = new String[] {};
-    ClientIndexerJob.main(args);
-  }
-
-  @Test(expected = JobsException.class)
-  @Ignore
-  public void main_Args__StringArray__t_je() throws Exception {
-    String[] args = new String[] {};
-    ClientIndexerJob.main(args);
-  }
-
-  @Test(expected = JobsException.class)
-  @Ignore
-  public void main_Args__bucket_range() throws Exception {
-    final String[] args = new String[] {"-c", "config/local.yaml", "-r", "21-22", "-b", "500"};
-    ClientIndexerJob.main(args);
-  }
-
-  @Test(expected = JobsException.class)
-  @Ignore
-  public void main_Args__bucket_range_not_digit() throws Exception {
-    final String[] args = new String[] {"-c", "config/local.yaml", "-r", "abc-xyz", "-b", "500"};
-    ClientIndexerJob.main(args);
   }
 
   @Test
@@ -89,14 +61,13 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
     when(rs.getString("CLT_IBMSNAP_OPERATION")).thenReturn("I");
     final EsClientAddress actual = target.extract(rs);
     final EsClientAddress expected = new EsClientAddress();
-
     final short s = (short) 0;
-    expected.setCltBirthCountryCodeType(s);
-    expected.setCltBirthStateCodeType(s);
-    expected.setCltDriverLicenseStateCodeType(s);
+    // expected.setCltBirthCountryCodeType(s);
+    // expected.setCltBirthStateCodeType(s);
+    // expected.setCltDriverLicenseStateCodeType(s);
     expected.setCltImmigrationCountryCodeType(s);
-    expected.setCltMaritalStatusType(s);
-    expected.setCltNameType(s);
+    // expected.setCltMaritalStatusType(s);
+    // expected.setCltNameType(s);
     expected.setCltPrimaryEthnicityType(s);
     expected.setCltPrimaryLanguageType(s);
     expected.setCltSecondaryLanguageType(s);
@@ -105,24 +76,13 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
     expected.setClaAddressType(s);
     expected.setClaAddressType(s);
     expected.setAdrEmergencyExtension(0);
-    expected.setAdrPrimaryExtension(0);
-    expected.setAdrState(s);
-    expected.setAdrZip4(s);
-    expected.setAdrUnitDesignationCd(s);
+    // expected.setAdrPrimaryExtension(0);
+    // expected.setAdrState(s);
+    // expected.setAdrZip4(s);
+    // expected.setAdrUnitDesignationCd(s);
     // expected.setAdrPostDirCd(0);
-
     // assertThat(actual, is(equalTo(expected)));
     assertThat(actual, notNullValue());
-  }
-
-  @Test
-  @Ignore
-  public void extract_Args__ResultSet_T__SQLException() throws Exception {
-    try {
-      target.extract(rs);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
   }
 
   @Test
@@ -166,12 +126,12 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
     final String actual =
         target.getInitialLoadQuery("CWSINT").trim().replace("\\s{2,}", " ").replaceAll("  ", " ");
     final String expected =
-        "SELECT x.* FROM CWSINT.MQT_CLIENT_ADDRESS x WHERE x.clt_identifier > ':fromId' AND x.clt_identifier <= ':toId' AND x.CLT_SENSTV_IND = 'N' ORDER BY x.clt_identifier FOR READ ONLY WITH UR";
+        "SELECT x.* FROM CWSINT.MQT_CLIENT_ADDRESS x WHERE x.clt_identifier BETWEEN ':fromId' AND ':toId' AND x.CLT_SENSTV_IND = 'N' ORDER BY X.CLT_IDENTIFIER FOR READ ONLY WITH UR";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
-  public void handOff_Args__List() throws Exception {
+  public void normalizeAndQueueIndex() throws Exception {
     List<EsClientAddress> grpRecs = new ArrayList<EsClientAddress>();
     target.normalizeAndQueueIndex(grpRecs);
   }
@@ -183,7 +143,18 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
 
   @Test
   public void pullRange_Args__Pair() throws Exception {
-    final Pair<String, String> p = Pair.of("aaaaaaaaaa", "9999999999");
+    final Pair<String, String> p = pair;
+    target.pullRange(p);
+  }
+
+  @Test(expected = JobsException.class)
+  public void pullRange_Args__Pair__Exception() throws Exception {
+    when(con.createStatement()).thenThrow(SQLException.class);
+    final Pair<String, String> p = pair;
+
+    TestClientIndexerJob target = new TestClientIndexerJob(dao, esDao, lastRunFile, mapper,
+        sessionFactory, flightRecorder, flightPlan);
+    target.setTxn(transaction);
     target.pullRange(p);
   }
 
@@ -191,7 +162,7 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
   public void getPartitionRanges_Args() throws Exception {
     final List actual = target.getPartitionRanges();
     final List expected = new ArrayList<>();
-    expected.add(Pair.of("aaaaaaaaaa", "9999999999"));
+    expected.add(pair);
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -199,13 +170,172 @@ public class ClientIndexerJobTest extends PersonJobTester<ReplicatedClient, EsCl
   public void getPartitionRanges_RSQ() throws Exception {
     System.setProperty("DB_CMS_SCHEMA", "CWSRSQ");
     final List actual = target.getPartitionRanges();
-    assertThat(actual.size(), is(equalTo(16)));
+    assertThat(actual.size(), is(equalTo(64)));
   }
 
   @Test
   public void mustDeleteLimitedAccessRecords_Args__() throws Exception {
     boolean actual = target.mustDeleteLimitedAccessRecords();
     boolean expected = true;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void mustDeleteLimitedAccessRecords_Args__2() throws Exception {
+    when(flightPlan.isLoadSealedAndSensitive()).thenReturn(true);
+    boolean actual = target.mustDeleteLimitedAccessRecords();
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void useTransformThread_Args__() throws Exception {
+    boolean actual = target.useTransformThread();
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPrepLastChangeSQL_Args__() throws Exception {
+    String actual = target.getPrepLastChangeSQL();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void normalizeAndQueueIndex_Args__List() throws Exception {
+    List<EsClientAddress> grpRecs = new ArrayList<EsClientAddress>();
+    target.normalizeAndQueueIndex(grpRecs);
+  }
+
+  @Test
+  public void iterateRangeResults_Args__ResultSet() throws Exception {
+    target.initialLoadProcessRangeResults(rs);
+  }
+
+  @Test
+  public void validateDocument_Args__ElasticSearchPerson() throws Exception {
+    final ElasticSearchPerson person = new ElasticSearchPerson();
+    person.setId(DEFAULT_CLIENT_ID);
+
+    final ReplicatedClient rep = new ReplicatedClient();
+    rep.setCommonLastName("Young");
+    rep.setCommonFirstName("Angus");
+    rep.setCommonMiddleName("McKinnon");
+    rep.setBirthCity("Glasgow");
+
+    dao = mock(ReplicatedClientDao.class);
+    TestClientIndexerJob target = new TestClientIndexerJob(dao, esDao, lastRunFile, mapper,
+        sessionFactory, flightRecorder, flightPlan);
+    target.setTxn(transaction);
+    when(dao.find(any())).thenReturn(rep);
+
+    boolean actual = target.validateDocument(person);
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void threadRetrieveByJdbc_Args__() throws Exception {
+    target.threadRetrieveByJdbc();
+  }
+
+  @Test
+  public void isInitialLoadJdbc_Args__() throws Exception {
+    boolean actual = target.isInitialLoadJdbc();
+    boolean expected = true;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPartitionRanges_Args__() throws Exception {
+    final List actual = target.getPartitionRanges();
+    final List expected = new ArrayList<>();
+    expected.add(pair);
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    ClientIndexerJob.main(args);
+  }
+
+  @Test
+  public void getMQTName_Args__() throws Exception {
+    final String actual = target.getMQTName();
+    final String expected = "MQT_CLIENT_ADDRESS";
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void handleRangeResults_Args__ResultSet() throws Exception {
+    target.initialLoadProcessRangeResults(rs);
+  }
+
+  @Test
+  public void handleRangeResults_Args__ResultSet__2() throws Exception {
+    target.initialLoadProcessRangeResults(rs);
+  }
+
+  @Test
+  public void validateAddresses_Args__ReplicatedClient__ElasticSearchPerson() throws Exception {
+    ReplicatedClient client = new ReplicatedClient();
+    ElasticSearchPerson person = new ElasticSearchPerson();
+
+    ReplicatedAddress repAddr = new ReplicatedAddress();
+    repAddr.setId(DEFAULT_CLIENT_ID);
+    repAddr.setCity("Provo");
+    repAddr.setZip("80604");
+
+    ReplicatedClientAddress ca = new ReplicatedClientAddress();
+    ca.addAddress(repAddr);
+    client.addClientAddress(ca);
+
+    ElasticSearchPersonAddress espAddr = new ElasticSearchPersonAddress();
+    espAddr.setId(DEFAULT_CLIENT_ID);
+    espAddr.setCity("Provo");
+    espAddr.setZip("80604");
+    esp.getAddresses().add(espAddr);
+
+    boolean actual = target.validateAddresses(client, person);
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void validateAddresses_Args__ReplicatedClient__ElasticSearchPerson__2() throws Exception {
+    ReplicatedClient client = new ReplicatedClient();
+    ElasticSearchPerson person = new ElasticSearchPerson();
+
+    ReplicatedAddress repAddr = new ReplicatedAddress();
+    repAddr.setId(DEFAULT_CLIENT_ID);
+    repAddr.setCity("Provo");
+    repAddr.setZip("80604");
+
+    ReplicatedClientAddress ca = new ReplicatedClientAddress();
+    ca.addAddress(repAddr);
+    client.addClientAddress(ca);
+
+    boolean actual = target.validateAddresses(client, person);
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void validateAddresses_Args__ReplicatedClient__ElasticSearchPerson__3() throws Exception {
+    ReplicatedClient client = new ReplicatedClient();
+    ElasticSearchPerson person = new ElasticSearchPerson();
+
+    boolean actual = target.validateAddresses(client, person);
+    boolean expected = true;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void nextThreadNumber_Args__() throws Exception {
+    int actual = target.nextThreadNumber();
+    int expected = 1;
     assertThat(actual, is(equalTo(expected)));
   }
 

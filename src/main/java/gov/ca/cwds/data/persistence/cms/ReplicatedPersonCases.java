@@ -2,26 +2,27 @@ package gov.ca.cwds.data.persistence.cms;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.google.common.collect.Lists;
 
 import gov.ca.cwds.data.es.ElasticSearchPersonCase;
 import gov.ca.cwds.data.es.ElasticSearchPersonParent;
-import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.data.std.ApiObjectIdentity;
-import gov.ca.cwds.data.std.ApiPersonAware;
+import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
 
 /**
  * Pseudo-normalized container for CMS person case.
  * 
  * @author CWDS API Team
  */
-public class ReplicatedPersonCases extends ApiObjectIdentity
-    implements PersistentObject, ApiPersonAware {
+public class ReplicatedPersonCases implements RetrovillePerson {
 
   private static final long serialVersionUID = -8746969311364544478L;
 
@@ -31,13 +32,13 @@ public class ReplicatedPersonCases extends ApiObjectIdentity
    * Key: Case ID <br>
    * Value: ElasticSearchPersonCase objects for the keyed case id.
    */
-  private Map<String, ElasticSearchPersonCase> personCases = new HashMap<>();
+  private Map<String, ElasticSearchPersonCase> personCases = new LinkedHashMap<>();
 
   /**
    * Key: Case ID <br>
    * Value: ElasticSearchPersonParent objects for the keyed case id.
    */
-  private Map<String, List<ElasticSearchPersonParent>> caseParents = new HashMap<>();
+  private Map<String, List<ElasticSearchPersonParent>> caseParents = new LinkedHashMap<>();
 
   /**
    * Construct the object
@@ -84,37 +85,22 @@ public class ReplicatedPersonCases extends ApiObjectIdentity
   }
 
   @Override
-  public Date getBirthDate() {
-    return null;
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, true);
   }
 
   @Override
-  public String getFirstName() {
-    return null;
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
   }
 
   @Override
-  public String getGender() {
-    return null;
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
-  @Override
-  public String getLastName() {
-    return null;
+  public String getGroupId() {
+    return groupId;
   }
 
-  @Override
-  public String getMiddleName() {
-    return null;
-  }
-
-  @Override
-  public String getNameSuffix() {
-    return null;
-  }
-
-  @Override
-  public String getSsn() {
-    return null;
-  }
 }

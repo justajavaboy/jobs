@@ -2,20 +2,21 @@ package gov.ca.cwds.data.persistence.cms;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import gov.ca.cwds.data.es.ElasticSearchPersonAka;
-import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.data.std.ApiObjectIdentity;
-import gov.ca.cwds.data.std.ApiPersonAware;
+import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
 
 /**
- * Pseudo-normalized container for CMS legacy "other client names" by legacy client id.
+ * Pseudo-normalized container for CMS legacy "other client names" (name aliases) by legacy client
+ * id.
  * 
  * @author CWDS API Team
  */
-public class ReplicatedAkas extends ApiObjectIdentity implements PersistentObject, ApiPersonAware {
+public class ReplicatedAkas implements RetrovillePerson {
 
   /**
    * Default serialization.
@@ -27,7 +28,6 @@ public class ReplicatedAkas extends ApiObjectIdentity implements PersistentObjec
    */
   private String id;
 
-  // @JsonIgnore
   private List<ElasticSearchPersonAka> akas = new ArrayList<>();
 
   /**
@@ -77,38 +77,13 @@ public class ReplicatedAkas extends ApiObjectIdentity implements PersistentObjec
   }
 
   @Override
-  public Date getBirthDate() {
-    return null;
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
   }
 
   @Override
-  public String getFirstName() {
-    return null;
-  }
-
-  @Override
-  public String getGender() {
-    return null;
-  }
-
-  @Override
-  public String getLastName() {
-    return null;
-  }
-
-  @Override
-  public String getMiddleName() {
-    return null;
-  }
-
-  @Override
-  public String getNameSuffix() {
-    return null;
-  }
-
-  @Override
-  public String getSsn() {
-    return null;
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

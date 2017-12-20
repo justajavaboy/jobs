@@ -1,6 +1,8 @@
 package gov.ca.cwds.jobs;
 
-import org.hibernate.SessionFactory;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -8,55 +10,52 @@ import com.google.inject.Inject;
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
-import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.rocket.BasePersonRocket;
+import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 
 /**
- * Job to load Other Adult In Placement Home from CMS into ElasticSearch.
+ * Rocket to load Other Adult In Placement Home from CMS into ElasticSearch.
  * 
  * @author CWDS API Team
  */
-public class OtherAdultInPlacemtHomeIndexerJob extends
-    BasePersonIndexerJob<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
+public class OtherAdultInPlacemtHomeIndexerJob
+    extends BasePersonRocket<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
    * @param dao OtherAdultInPlacemtHome DAO
    * @param esDao ElasticSearch DAO
-   * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
+   * @param lastRunFile last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
-   * @param sessionFactory Hibernate session factory
+   * @param flightPlan command line options
    */
   @Inject
   public OtherAdultInPlacemtHomeIndexerJob(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      final ElasticsearchDao esDao, @LastRunFile final String lastJobRunTimeFilename,
-      final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
-    super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+      final ElasticsearchDao esDao, @LastRunFile final String lastRunFile,
+      final ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
-  /**
-   * @deprecated soon to be removed
-   */
   @Override
-  @Deprecated
-  public String getLegacySourceTable() {
-    return "OTH_ADLT";
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    return NeutronJdbcUtils.getCommonPartitionRanges4(this);
   }
 
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception on launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(OtherAdultInPlacemtHomeIndexerJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(OtherAdultInPlacemtHomeIndexerJob.class, args);
   }
 
 }

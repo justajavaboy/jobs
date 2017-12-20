@@ -4,23 +4,16 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.elasticsearch.action.update.UpdateRequest;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,48 +21,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.ca.cwds.ObjectMapperUtils;
 import gov.ca.cwds.dao.cms.ReplicatedSafetyAlertsDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
-import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsSafetyAlert;
 import gov.ca.cwds.data.persistence.cms.ReplicatedSafetyAlerts;
-import gov.ca.cwds.jobs.config.JobOptions;
 import gov.ca.cwds.jobs.test.SimpleTestSystemCodeCache;
-import gov.ca.cwds.rest.ElasticsearchConfiguration;
 
-public class SafetyAlertIndexerJobTest {
+public class SafetyAlertIndexerJobTest extends Goddard {
 
   private static final ObjectMapper mapper = ObjectMapperUtils.createObjectMapper();
 
-  SessionFactory sessionFactory;
-  Session session;
-  ElasticsearchDao esDao;
-  ReplicatedSafetyAlertsDao clientDao;
-  String lastJobRunTimeFilename = null;
+  ReplicatedSafetyAlertsDao dao;
   SafetyAlertIndexerJob target;
-  JobOptions opts;
-  ElasticsearchConfiguration esConfig;
-  Transaction transaction;
 
+  @Override
   @Before
   public void setup() throws Exception {
-    sessionFactory = mock(SessionFactory.class);
-    session = mock(Session.class);
-    esDao = mock(ElasticsearchDao.class);
-    esConfig = mock(ElasticsearchConfiguration.class);
-    opts = mock(JobOptions.class);
-    transaction = mock(Transaction.class);
+    super.setup();
 
     when(sessionFactory.getCurrentSession()).thenReturn(session);
     when(session.beginTransaction()).thenReturn(transaction);
-    when(opts.isLoadSealedAndSensitive()).thenReturn(false);
+    when(flightPlan.isLoadSealedAndSensitive()).thenReturn(false);
     when(esDao.getConfig()).thenReturn(esConfig);
     when(esConfig.getElasticsearchAlias()).thenReturn("people");
     when(esConfig.getElasticsearchDocType()).thenReturn("person");
 
+    dao = new ReplicatedSafetyAlertsDao(sessionFactory);
     SimpleTestSystemCodeCache.init();
 
-    target =
-        new SafetyAlertIndexerJob(clientDao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
-    target.setOpts(opts);
+    target = new SafetyAlertIndexerJob(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
   @Test
@@ -104,13 +82,6 @@ public class SafetyAlertIndexerJobTest {
   }
 
   @Test
-  public void getLegacySourceTable_Args__() throws Exception {
-    String actual = target.getLegacySourceTable();
-    String expected = "SAF_ALRT";
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  @Test
   public void getInitialLoadQuery_Args__String() throws Exception {
     String dbSchemaName = "CWSINT";
     String actual = target.getInitialLoadQuery(dbSchemaName).replaceAll("  ", " ").trim();
@@ -121,7 +92,7 @@ public class SafetyAlertIndexerJobTest {
 
   @Test
   public void getInitialLoadQuery_Args__sealed() throws Exception {
-    when(opts.isLoadSealedAndSensitive()).thenReturn(true);
+    when(flightPlan.isLoadSealedAndSensitive()).thenReturn(true);
     String dbSchemaName = "CWSINT";
     String actual = target.getInitialLoadQuery(dbSchemaName).replaceAll("  ", " ").trim();
     String expected =
@@ -159,50 +130,51 @@ public class SafetyAlertIndexerJobTest {
     ReplicatedSafetyAlerts safetyAlerts = new ReplicatedSafetyAlerts();
     UpdateRequest actual = target.prepareUpsertRequest(esp, safetyAlerts);
     UpdateRequest expected = new UpdateRequest();
-    // assertThat(actual, is(equalTo(expected)));
     assertThat(actual, notNullValue());
   }
 
   @Test
-  public void prepareUpsertRequest_Args__ElasticSearchPerson__ReplicatedSafetyAlerts_T__IOException()
-      throws Exception {
-    ElasticSearchPerson esp = mock(ElasticSearchPerson.class);
-    ReplicatedSafetyAlerts safetyAlerts = mock(ReplicatedSafetyAlerts.class);
-    try {
-      target.prepareUpsertRequest(esp, safetyAlerts);
-      fail("Expected exception was not thrown!");
-    } catch (IOException e) {
-    }
+  public void extract_Args__ResultSet() throws Exception {
+    final EsSafetyAlert actual = target.extract(rs);
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test(expected = SQLException.class)
+  public void extract_Args__ResultSet_T__SQLException() throws Exception {
+    when(rs.next()).thenThrow(new SQLException());
+    when(rs.getString(any(String.class))).thenThrow(new SQLException());
+    target.extract(rs);
   }
 
   @Test
-  public void extract_Args__ResultSet() throws Exception {
-    final ResultSet rs = mock(ResultSet.class);
-    final EsSafetyAlert actual = target.extract(rs);
-    final EsSafetyAlert expected = new EsSafetyAlert();
-    expected.setActivationReasonCode(0);
-    expected.setActivationCountyCode(0);
-    expected.setDeactivationCountyCode(0);
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    SafetyAlertIndexerJob.main(args);
+  }
+
+  @Test
+  public void isInitialLoadJdbc_Args__() throws Exception {
+    boolean actual = target.isInitialLoadJdbc();
+    boolean expected = true;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
-  public void extract_Args__ResultSet_T__SQLException() throws Exception {
-    final ResultSet rs = mock(ResultSet.class);
-    when(rs.next()).thenThrow(new SQLException());
-    when(rs.getString(any(String.class))).thenThrow(new SQLException());
-    try {
-      target.extract(rs);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
+  public void getPartitionRanges_Args__() throws Exception {
+    final javax.persistence.Query q = mock(javax.persistence.Query.class);
+    when(em.createNativeQuery(any(String.class), any(Class.class))).thenReturn(q);
+    when(q.setParameter(any(String.class), any(String.class))).thenReturn(q);
+
+    List actual = target.getPartitionRanges();
+    assertThat(actual.size(), is(1));
   }
 
   @Test
-  @Ignore
-  public void main_Args__StringArray() throws Exception {
-    String[] args = new String[] {};
-    SafetyAlertIndexerJob.main(args);
+  public void getOptionalElementName_Args__() throws Exception {
+    String actual = target.getOptionalElementName();
+    String expected = "safety_alerts";
+    assertThat(actual, is(equalTo(expected)));
   }
 
 }

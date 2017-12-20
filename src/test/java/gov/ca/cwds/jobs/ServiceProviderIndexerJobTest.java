@@ -1,6 +1,5 @@
 package gov.ca.cwds.jobs;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -11,46 +10,42 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.SessionFactory;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.dao.cms.ReplicatedServiceProviderDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
-import gov.ca.cwds.jobs.config.JobOptionsTest;
+import gov.ca.cwds.neutron.flight.FlightPlanTest;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.launch.FlightRecorder;
 
 /**
  * @author CWDS API Team
  */
 @SuppressWarnings("javadoc")
-public class ServiceProviderIndexerJobTest extends PersonJobTester {
+public class ServiceProviderIndexerJobTest extends Goddard {
 
   private static final class TestServiceProviderIndexerJob extends ServiceProviderIndexerJob {
 
     public TestServiceProviderIndexerJob(ReplicatedServiceProviderDao dao, ElasticsearchDao esDao,
-        String lastJobRunTimeFilename, ObjectMapper mapper, SessionFactory sessionFactory) {
-      super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+        String lastJobRunTimeFilename, ObjectMapper mapper, SessionFactory sessionFactory,
+        FlightRecorder jobHistory, FlightPlan opts) {
+      super(dao, esDao, lastJobRunTimeFilename, mapper, opts);
     }
-
-    // @Override
-    // protected DB2SystemMonitor monitorStart(final Connection con) {
-    // return new TestDB2SystemMonitor();
-    // }
 
   }
 
-  ServiceProviderIndexerJob target;
   ReplicatedServiceProviderDao dao;
+  ServiceProviderIndexerJob target;
 
   @Override
   @Before
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedServiceProviderDao(sessionFactory);
-    target =
-        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
-    target.setOpts(JobOptionsTest.makeGeneric());
+    target = new ServiceProviderIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
+    target.setFlightPlan(FlightPlanTest.makeGeneric());
   }
 
   @After
@@ -65,8 +60,7 @@ public class ServiceProviderIndexerJobTest extends PersonJobTester {
 
   @Test
   public void testInstantiation() throws Exception {
-    target =
-        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
+    target = new ServiceProviderIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
     assertThat(target, notNullValue());
   }
 
@@ -88,18 +82,8 @@ public class ServiceProviderIndexerJobTest extends PersonJobTester {
   }
 
   @Test
-  public void getLegacySourceTable_Args__() throws Exception {
-    target =
-        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
-    String actual = target.getLegacySourceTable();
-    String expected = "SVC_PVRT";
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  @Test
   public void getPartitionRanges_Args__() throws Exception {
-    target =
-        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
+    target = new ServiceProviderIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
     final List<Pair<String, String>> actual = target.getPartitionRanges();
     assertThat(actual, is(notNullValue()));
   }
@@ -107,16 +91,15 @@ public class ServiceProviderIndexerJobTest extends PersonJobTester {
   @Test
   public void getPartitionRanges_RSQ() throws Exception {
     System.setProperty("DB_CMS_SCHEMA", "CWSRSQ");
-    target =
-        new ServiceProviderIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
+    target = new ServiceProviderIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
     final List<Pair<String, String>> actual = target.getPartitionRanges();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
-  @Ignore
   public void main_Args__StringArray() throws Exception {
-    String[] args = new String[] {};
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
     ServiceProviderIndexerJob.main(args);
   }
 

@@ -1,19 +1,16 @@
 package gov.ca.cwds.data.persistence.cms.rep;
 
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -37,15 +34,9 @@ public class ReplicatedClientAddress extends BaseClientAddress implements CmsRep
   @OneToMany(fetch = FetchType.EAGER)
   @JoinColumn(name = "IDENTIFIER", referencedColumnName = "FKADDRS_T", insertable = false,
       updatable = false, unique = false)
-  protected transient Set<ReplicatedAddress> addresses = new LinkedHashSet<>();
+  private Set<ReplicatedAddress> addresses = new LinkedHashSet<>();
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "IBMSNAP_OPERATION", updatable = false)
-  private CmsReplicationOperation replicationOperation;
-
-  @Type(type = "timestamp")
-  @Column(name = "IBMSNAP_LOGMARKER", updatable = false)
-  private Date replicationDate;
+  private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
 
   /**
    * Default constructor
@@ -99,28 +90,19 @@ public class ReplicatedClientAddress extends BaseClientAddress implements CmsRep
     return null;
   }
 
-  // =======================
-  // CmsReplicatedEntity:
-  // =======================
-
   @Override
-  public CmsReplicationOperation getReplicationOperation() {
-    return replicationOperation;
+  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
+    return replicatedEntity;
   }
 
   @Override
-  public void setReplicationOperation(CmsReplicationOperation replicationOperation) {
-    this.replicationOperation = replicationOperation;
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
   }
 
   @Override
-  public Date getReplicationDate() {
-    return replicationDate;
-  }
-
-  @Override
-  public void setReplicationDate(Date replicationDate) {
-    this.replicationDate = replicationDate;
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

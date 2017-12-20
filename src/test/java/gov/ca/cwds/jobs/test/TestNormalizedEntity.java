@@ -6,6 +6,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import gov.ca.cwds.dao.ApiLegacyAware;
@@ -23,9 +26,11 @@ import gov.ca.cwds.data.std.ApiObjectIdentity;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 
 @JsonPropertyOrder(alphabetic = true)
+@Entity
+@Table(name = "GOOBER_T")
 public class TestNormalizedEntity extends ApiObjectIdentity implements PersistentObject,
     ApiPersonAware, ApiTypedIdentifier<String>, ApiLegacyAware, ApiMultiplePhonesAware,
     ApiMultipleAddressesAware, ApiMultipleLanguagesAware, ApiGroupNormalizer<PersistentObject> {
@@ -42,6 +47,13 @@ public class TestNormalizedEntity extends ApiObjectIdentity implements Persisten
 
   public TestNormalizedEntity(String id) {
     this.id = id;
+  }
+
+  public TestNormalizedEntity(String id, String... ids) {
+    this.id = id;
+    for (int i = 0; i < ids.length; i++) {
+      entries.add(new TestNormalizedEntry(ids[i], "whatever"));
+    }
   }
 
   @Override

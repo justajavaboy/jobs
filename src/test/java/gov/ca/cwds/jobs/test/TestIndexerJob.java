@@ -1,48 +1,65 @@
 package gov.ca.cwds.jobs.test;
 
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.hibernate.SessionFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.BasePersonIndexerJob;
 import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.inject.LastRunFile;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.launch.FlightRecorder;
+import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 
-public class TestIndexerJob
-    extends BasePersonIndexerJob<TestNormalizedEntity, TestDenormalizedEntity>
+public class TestIndexerJob extends BasePersonRocket<TestNormalizedEntity, TestDenormalizedEntity>
     implements ApiGroupNormalizer<TestDenormalizedEntity> {
 
   private boolean fakeMarkDone;
   private boolean fakeFinish = true;
+  private boolean fakeBulkProcessor = true;
+  private boolean fakeRanges = false;
+  private boolean baseRanges = false;
+  private boolean blowUpNameThread = false;
+  private boolean shouldDelete = false;
 
-  public TestIndexerJob(final TestNormalizedEntityDao mainDao,
-      final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
-      final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
-    super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  @Inject
+  public TestIndexerJob(final TestNormalizedEntityDao dao, final ElasticsearchDao esDao,
+      @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
+      @CmsSessionFactory SessionFactory sessionFactory, FlightRecorder jobHistory) {
+    super(dao, esDao, lastJobRunTimeFilename, mapper, null);
+  }
+
+  @Override
+  public boolean mustDeleteLimitedAccessRecords() {
+    return true;
+  }
+
+  @Override
+  public TestDenormalizedEntity extract(final ResultSet rs) throws SQLException {
+    return new TestDenormalizedEntity("abc1234567", "1", "2", "3");
   }
 
   @Override
   public String getLegacySourceTable() {
-    return super.getLegacySourceTable();
+    return "CRAP_T";
   }
 
   @Override
   public String getInitialLoadViewName() {
     return "VW_NUTTIN";
-  }
-
-  @Override
-  public String getDriverTable() {
-    return "GOOBER_T";
   }
 
   public String getDriverTableNative() {
@@ -75,24 +92,50 @@ public class TestIndexerJob
   }
 
   @Override
-  public void markJobDone() {
+  public void done() {
     if (isFakeMarkDone()) {
       throw new JobsException("fake error");
     }
 
-    super.markJobDone();
+    super.done();
   }
 
   @Override
-  protected void awaitBulkProcessorClose(BulkProcessor bp) {
-    // Do nothing.
+  public void awaitBulkProcessorClose(BulkProcessor bp) {
+    if (!fakeBulkProcessor) {
+      super.awaitBulkProcessorClose(bp);
+    }
   }
 
   @Override
-  public synchronized void finish() {
+  public void nameThread(String title) {
+    if (blowUpNameThread) {
+      throw new JobsException("test bombing");
+    }
+
+    super.nameThread(title);
+  }
+
+  @Override
+  public synchronized void finish() throws NeutronException {
     if (!fakeFinish) {
       super.finish();
     }
+  }
+
+  @Override
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    if (baseRanges) {
+      return super.getPartitionRanges();
+    }
+
+    final List<Pair<String, String>> ret = new ArrayList<>();
+
+    if (fakeRanges) {
+      ret.add(Pair.of("aaaaaaaaaa", "999999999"));
+    }
+
+    return ret;
   }
 
   public boolean isFakeFinish() {
@@ -109,6 +152,51 @@ public class TestIndexerJob
 
   public void setFakeMarkDone(boolean fakeMarkDone) {
     this.fakeMarkDone = fakeMarkDone;
+  }
+
+  public boolean isFakeBulkProcessor() {
+    return fakeBulkProcessor;
+  }
+
+  public void setFakeBulkProcessor(boolean fakeBulkProcessor) {
+    this.fakeBulkProcessor = fakeBulkProcessor;
+  }
+
+  public boolean isFakeRanges() {
+    return fakeRanges;
+  }
+
+  public void setFakeRanges(boolean fakeRanges) {
+    this.fakeRanges = fakeRanges;
+  }
+
+  public boolean isBlowUpNameThread() {
+    return blowUpNameThread;
+  }
+
+  public void setBlowUpNameThread(boolean blowUpThreadIndex) {
+    this.blowUpNameThread = blowUpThreadIndex;
+  }
+
+  public boolean isBaseRanges() {
+    return baseRanges;
+  }
+
+  public void setBaseRanges(boolean baseRanges) {
+    this.baseRanges = baseRanges;
+  }
+
+  @Override
+  public boolean isDelete(TestNormalizedEntity t) {
+    return shouldDelete;
+  }
+
+  public boolean isShouldDelete() {
+    return shouldDelete;
+  }
+
+  public void setShouldDelete(boolean shouldDelete) {
+    this.shouldDelete = shouldDelete;
   }
 
 }

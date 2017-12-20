@@ -5,13 +5,17 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
 import gov.ca.cwds.data.persistence.cms.BaseAddress;
 import gov.ca.cwds.data.persistence.cms.CmsPersistentObject;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
@@ -26,14 +30,18 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReplicatedAddress extends BaseAddress implements CmsReplicatedEntity {
 
-  private CmsReplicationOperation replicationOperation;
-  private Date replicationDate;
+  private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
 
   /**
    * Default constructor.
    */
   public ReplicatedAddress() {
     super();
+  }
+
+  @Override
+  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
+    return replicatedEntity;
   }
 
   @Override
@@ -49,21 +57,32 @@ public class ReplicatedAddress extends BaseAddress implements CmsReplicatedEntit
 
   @Override
   public CmsReplicationOperation getReplicationOperation() {
-    return replicationOperation;
+    return replicatedEntity.getReplicationOperation();
   }
 
   @Override
   public Date getReplicationDate() {
-    return replicationDate;
+    return NeutronDateUtils.freshDate(replicatedEntity.getReplicationDate());
   }
 
   @Override
   public void setReplicationOperation(CmsReplicationOperation replicationOperation) {
-    this.replicationOperation = replicationOperation;
+    this.replicatedEntity.setReplicationOperation(replicationOperation);
   }
 
   @Override
   public void setReplicationDate(Date replicationDate) {
-    this.replicationDate = replicationDate;
+    this.replicatedEntity.setReplicationDate(NeutronDateUtils.freshDate(replicationDate));
   }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
 }

@@ -1,19 +1,12 @@
 package gov.ca.cwds.jobs;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.hibernate.Query;
-import org.hibernate.SessionFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import gov.ca.cwds.dao.cms.ReplicatedEducationProviderContactDao;
-import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
 
 /**
@@ -21,7 +14,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
  */
 @SuppressWarnings("javadoc")
 public class EducationProviderContactIndexerJobTest extends
-    PersonJobTester<ReplicatedEducationProviderContact, ReplicatedEducationProviderContact> {
+    Goddard<ReplicatedEducationProviderContact, ReplicatedEducationProviderContact> {
 
   ReplicatedEducationProviderContactDao dao;
   EducationProviderContactIndexerJob target;
@@ -31,10 +24,9 @@ public class EducationProviderContactIndexerJobTest extends
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedEducationProviderContactDao(this.sessionFactory);
-    target = new EducationProviderContactIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER,
-        sessionFactory);
+    target = new EducationProviderContactIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        flightPlan);
   }
-
 
   @Test
   public void testType() throws Exception {
@@ -43,23 +35,14 @@ public class EducationProviderContactIndexerJobTest extends
 
   @Test
   public void testInstantiation() throws Exception {
-    ReplicatedEducationProviderContactDao educationProviderContactDao = null;
-    ElasticsearchDao elasticsearchDao = null;
-    String lastJobRunTimeFilename = null;
-    ObjectMapper mapper = null;
-    SessionFactory sessionFactory = null;
-    EducationProviderContactIndexerJob target =
-        new EducationProviderContactIndexerJob(educationProviderContactDao, elasticsearchDao,
-            lastJobRunTimeFilename, mapper, sessionFactory);
     assertThat(target, notNullValue());
   }
 
   @Test
-  @Ignore
-  public void testfindAllUpdatedAfterNamedQueryExists() throws Exception {
-    Query query = session.getNamedQuery(
-        "gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact.findAllUpdatedAfter");
-    assertThat(query, is(notNullValue()));
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    EducationProviderContactIndexerJob.main(args);
   }
 
 }

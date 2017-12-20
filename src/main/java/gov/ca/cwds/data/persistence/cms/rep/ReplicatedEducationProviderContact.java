@@ -1,16 +1,13 @@
 package gov.ca.cwds.data.persistence.cms.rep;
 
-import java.util.Date;
 import java.util.Map;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.NamedNativeQuery;
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -19,7 +16,7 @@ import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.BaseEducationProviderContact;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
@@ -38,7 +35,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
     query = "SELECT z.IDENTIFIER, z.PRICNTIND, z.PH_NUMBR, z.PH_EXTNO, z.FAX_NO, "
         + "z.FIRST_NME, z.MIDDLE_NM, z.LAST_NME, z.NM_PREFIX, z.SUFFX_TITL, "
         + "z.TITLDESC, z.EMAILADR, z.DOE_IND, z.LST_UPD_ID, z.LST_UPD_TS, z.FKED_PVDRT, "
-        + "z.IBMSNAP_COMMITSEQ, z.IBMSNAP_INTENTSEQ, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
+        + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
         + "from {h-schema}EDPRVCNT z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
     resultClass = ReplicatedEducationProviderContact.class, readOnly = true)
 @NamedNativeQuery(
@@ -46,7 +43,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
     query = "SELECT z.IDENTIFIER, z.PRICNTIND, z.PH_NUMBR, z.PH_EXTNO, z.FAX_NO, "
         + "z.FIRST_NME, z.MIDDLE_NM, z.LAST_NME, z.NM_PREFIX, z.SUFFX_TITL, "
         + "z.TITLDESC, z.EMAILADR, z.DOE_IND, z.LST_UPD_ID, z.LST_UPD_TS, z.FKED_PVDRT, "
-        + "z.IBMSNAP_COMMITSEQ, z.IBMSNAP_INTENTSEQ, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
+        + "z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
         + "from ( select mod(y.rn, CAST(:total_buckets AS INTEGER)) + 1 as bucket, y.* "
         + "from ( select row_number() over (order by 1) as rn, x.* "
         + "from {h-schema}EDPRVCNT x ) y ) z where z.bucket = :bucket_num FOR READ ONLY WITH UR",
@@ -58,42 +55,9 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 public class ReplicatedEducationProviderContact extends BaseEducationProviderContact
     implements CmsReplicatedEntity, ApiGroupNormalizer<ReplicatedEducationProviderContact> {
 
-  /**
-   * Default.
-   */
   private static final long serialVersionUID = 1L;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "IBMSNAP_OPERATION", updatable = false)
-  private CmsReplicationOperation replicationOperation;
-
-  @Type(type = "timestamp")
-  @Column(name = "IBMSNAP_LOGMARKER", updatable = false)
-  private Date replicationDate;
-
-  // =======================
-  // CmsReplicatedEntity:
-  // =======================
-
-  @Override
-  public CmsReplicationOperation getReplicationOperation() {
-    return replicationOperation;
-  }
-
-  @Override
-  public void setReplicationOperation(CmsReplicationOperation replicationOperation) {
-    this.replicationOperation = replicationOperation;
-  }
-
-  @Override
-  public Date getReplicationDate() {
-    return replicationDate;
-  }
-
-  @Override
-  public void setReplicationDate(Date replicationDate) {
-    this.replicationDate = replicationDate;
-  }
+  private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
 
   // =======================
   // ApiGroupNormalizer:
@@ -130,4 +94,20 @@ public class ReplicatedEducationProviderContact extends BaseEducationProviderCon
     return ElasticTransformer.createLegacyDescriptor(getId(), getLastUpdatedTime(),
         LegacyTable.EDUCATION_PROVIDER);
   }
+
+  @Override
+  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
+    return replicatedEntity;
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
 }

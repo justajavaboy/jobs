@@ -1,68 +1,58 @@
 package gov.ca.cwds.jobs;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+import static gov.ca.cwds.neutron.util.transform.JobTransformUtils.ifNull;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.elasticsearch.action.index.IndexRequest;
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.hibernate.SessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedSafetyAlertsDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
-import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsSafetyAlert;
 import gov.ca.cwds.data.persistence.cms.ReplicatedSafetyAlerts;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
-import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
-import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.rocket.InitialLoadJdbcRocket;
+import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
+import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
- * Job to load person referrals from CMS into ElasticSearch.
+ * Rocket to load safety alerts from CMS into ElasticSearch.
  * 
  * @author CWDS API Team
  */
 public class SafetyAlertIndexerJob
-    extends BasePersonIndexerJob<ReplicatedSafetyAlerts, EsSafetyAlert>
-    implements JobResultSetAware<EsSafetyAlert> {
+    extends InitialLoadJdbcRocket<ReplicatedSafetyAlerts, EsSafetyAlert>
+    implements NeutronRowMapper<EsSafetyAlert> {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SafetyAlertIndexerJob.class);
-
   /**
-   * Construct the object
+   * Constructor.
    * 
-   * @param clientDao DAO
+   * @param dao DAO
    * @param esDao ES SAO
-   * @param lastJobRunTimeFilename Last runtime file
+   * @param lastRunFile Last runtime file
    * @param mapper Object mapper
-   * @param sessionFactory Session factory
+   * @param flightPlan command line opts
    */
   @Inject
-  public SafetyAlertIndexerJob(ReplicatedSafetyAlertsDao clientDao, ElasticsearchDao esDao,
-      @LastRunFile String lastJobRunTimeFilename, ObjectMapper mapper,
-      @CmsSessionFactory SessionFactory sessionFactory) {
-    super(clientDao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  public SafetyAlertIndexerJob(ReplicatedSafetyAlertsDao dao, ElasticsearchDao esDao,
+      @LastRunFile String lastRunFile, ObjectMapper mapper,
+      FlightPlan flightPlan) {
+    super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
   @Override
@@ -75,40 +65,13 @@ public class SafetyAlertIndexerJob
     return "VW_LST_SAFETY_ALERT";
   }
 
-  @Override
-  public String getJdbcOrderBy() {
-    return " ORDER BY CLIENT_ID ";
-  }
-
-  @Override
-  public String getLegacySourceTable() {
-    return "SAF_ALRT";
-  }
-
-  @Override
-  public String getInitialLoadQuery(String dbSchemaName) {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("SELECT x.* FROM ");
-    buf.append(dbSchemaName);
-    buf.append(".");
-    buf.append(getInitialLoadViewName());
-    buf.append(" x ");
-
-    if (!getOpts().isLoadSealedAndSensitive()) {
-      buf.append(" WHERE x.CLIENT_SENSITIVITY_IND = 'N' ");
-    }
-
-    buf.append(getJdbcOrderBy()).append(" FOR READ ONLY WITH UR ");
-    return buf.toString();
-  }
-
   /**
    * If sealed or sensitive data must NOT be loaded then any records indexed with sealed or
    * sensitive flag must be deleted.
    */
   @Override
   public boolean mustDeleteLimitedAccessRecords() {
-    return !getOpts().isLoadSealedAndSensitive();
+    return !getFlightPlan().isLoadSealedAndSensitive();
   }
 
   @Override
@@ -122,34 +85,14 @@ public class SafetyAlertIndexerJob
   }
 
   @Override
-  protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp,
-      ReplicatedSafetyAlerts safetyAlerts) throws IOException {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("{\"safety_alerts\":[");
+  public String getOptionalElementName() {
+    return "safety_alerts";
+  }
 
-    final List<ElasticSearchSafetyAlert> esSafetyAlerts = safetyAlerts.getSafetyAlerts();
-    esp.setSafetyAlerts(esSafetyAlerts);
-
-    if (esSafetyAlerts != null && !esSafetyAlerts.isEmpty()) {
-      try {
-        buf.append(esSafetyAlerts.stream().map(ElasticTransformer::jsonify)
-            .sorted(String::compareTo).collect(Collectors.joining(",")));
-      } catch (Exception e) {
-        LOGGER.error("ERROR SERIALIZING SAFETY ALERTS", e);
-        throw new JobsException(e);
-      }
-    }
-
-    buf.append("]}");
-
-    final String updateJson = buf.toString();
-    final String insertJson = mapper.writeValueAsString(esp);
-
-    final String alias = esDao.getConfig().getElasticsearchAlias();
-    final String docType = esDao.getConfig().getElasticsearchDocType();
-
-    return new UpdateRequest(alias, docType, esp.getId()).doc(updateJson)
-        .upsert(new IndexRequest(alias, docType, esp.getId()).source(insertJson));
+  @Override
+  protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedSafetyAlerts p)
+      throws NeutronException {
+    return prepareUpdateRequest(esp, p, p.getSafetyAlerts(), true);
   }
 
   @Override
@@ -174,13 +117,24 @@ public class SafetyAlertIndexerJob
     return ret;
   }
 
+  @Override
+  public boolean isInitialLoadJdbc() {
+    return true;
+  }
+
+  @Override
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    return NeutronJdbcUtils.getCommonPartitionRanges16(this);
+  }
+
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception on launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(SafetyAlertIndexerJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(SafetyAlertIndexerJob.class, args);
   }
 
 }

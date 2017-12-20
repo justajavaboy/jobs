@@ -4,12 +4,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.ReplicatedPersonCasesDao;
@@ -18,7 +18,7 @@ import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
 
 public class ParentCaseHistoryIndexerJobTest
-    extends PersonJobTester<ReplicatedPersonCases, EsPersonCase> {
+    extends Goddard<ReplicatedPersonCases, EsPersonCase> {
 
   ReplicatedPersonCasesDao dao;
   ParentCaseHistoryIndexerJob target;
@@ -28,8 +28,8 @@ public class ParentCaseHistoryIndexerJobTest
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedPersonCasesDao(this.sessionFactory);
-    target =
-        new ParentCaseHistoryIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
+    target = new ParentCaseHistoryIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        flightPlan);
   }
 
   @Test
@@ -48,14 +48,10 @@ public class ParentCaseHistoryIndexerJobTest
     assertThat(actual, notNullValue());
   }
 
-  @Test
-  @Ignore
+  @Test(expected = SQLException.class)
   public void extract_Args__ResultSet_T__SQLException() throws Exception {
-    try {
-      target.extract(rs);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
+    when(rs.getString(any(String.class))).thenThrow(SQLException.class);
+    target.extract(rs);
   }
 
   @Test
@@ -77,6 +73,13 @@ public class ParentCaseHistoryIndexerJobTest
     String actual = target.getJdbcOrderBy();
     String expected = " ORDER BY PARENT_PERSON_ID, CASE_ID, PARENT_ID ";
     assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    ParentCaseHistoryIndexerJob.main(args);
   }
 
 }

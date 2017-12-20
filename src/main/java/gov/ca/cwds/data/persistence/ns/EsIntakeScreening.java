@@ -26,6 +26,7 @@ import gov.ca.cwds.data.es.ElasticSearchPersonPhone;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
  * Entity bean for PostgreSQL view, VW_SCREENING_HISTORY.
@@ -70,7 +71,8 @@ import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
         + "FOR READ ONLY",
     resultClass = EsIntakeScreening.class, readOnly = true)
 
-public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<IntakeParticipant> {
+public class EsIntakeScreening extends CommonScreening
+    implements PersistentObject, ApiGroupNormalizer<IntakeParticipant> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EsIntakeScreening.class);
 
@@ -120,36 +122,6 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
   @Column(name = "REFERRAL_ID")
   private String referralId;
 
-  @Column(name = "INCIDENT_DATE")
-  private String incidentDate;
-
-  @Column(name = "LOCATION_TYPE")
-  private String locationType;
-
-  @Column(name = "COMMUNICATION_METHOD")
-  private String communicationMethod;
-
-  @Column(name = "SCREENING_NAME")
-  private String screeningName;
-
-  @Column(name = "SCREENING_DECISION")
-  private String screeningDecision;
-
-  @Column(name = "INCIDENT_COUNTY")
-  private String incidentCounty;
-
-  @Column(name = "REPORT_NARRATIVE")
-  private String reportNarrative;
-
-  @Column(name = "ASSIGNEE")
-  private String assignee;
-
-  @Column(name = "ADDITIONAL_INFORMATION")
-  private String additionalInformation;
-
-  @Column(name = "SCREENING_DECISION_DETAIL")
-  private String screeningDecisionDetail;
-
   // ==============
   // PARTICIPANT:
   // ==============
@@ -158,6 +130,7 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
   @Column(name = "PARTICIPANT_ID")
   private String otherParticipantId;
 
+  @Id
   @Column(name = "PERSON_LEGACY_ID")
   private String otherLegacyId;
 
@@ -265,19 +238,11 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
     if (isOther) {
       ret.setId(otherParticipantId);
       ret.setLegacyId(otherLegacyId);
-      //
-      // TODO - update when legacy last updated and table name are available
-      //
-      // ret.setLegacyLastUpdated(otherLegacyLastUpdated);
-      // ret.setLegacyTable(otherLegacyTable);
+      // NOTE - update when legacy last updated and table name are available
     } else {
       ret.setId(thisParticipantId);
       ret.setLegacyId(thisLegacyId);
-      //
-      // TODO - update when legacy last updated and table name are available
-      //
-      // ret.setLegacyLastUpdated(thisLegacyLastUpdated);
-      // ret.setLegacyTable(thisLegacyTable);
+      // NOTE - update when legacy last updated and table name are available
     }
 
     return ret;
@@ -304,17 +269,17 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
 
     ret.setId(screeningId);
     ret.setReferralId(referralId);
-    ret.setAdditionalInformation(additionalInformation);
-    ret.setAssignee(assignee);
-    ret.setCommunicationMethod(communicationMethod);
-    ret.setIncidentCounty(incidentCounty);
-    ret.setIncidentDate(incidentDate);
-    ret.setLocationType(locationType);
+    ret.setAdditionalInformation(getAdditionalInformation());
+    ret.setAssignee(getAssignee());
+    ret.setCommunicationMethod(getCommunicationMethod());
+    ret.setIncidentCounty(getIncidentCounty());
+    ret.setIncidentDate(getIncidentDate());
+    ret.setLocationType(getLocationType());
     ret.setReference(reference);
-    ret.setReportNarrative(reportNarrative);
-    ret.setScreeningDecision(screeningDecision);
-    ret.setScreeningDecisionDetail(screeningDecisionDetail);
-    ret.setScreeningName(screeningName);
+    ret.setReportNarrative(getReportNarrative());
+    ret.setScreeningDecision(getScreeningDecision());
+    ret.setScreeningDecisionDetail(getScreeningDecisionDetail());
+    ret.setScreeningName(getScreeningName());
 
     if (endedAt != null) {
       ret.setEndedAt(new Date(endedAt.getTime()));
@@ -332,6 +297,86 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
    */
   protected IntakeScreening fillScreening() {
     return fillScreening(null);
+  }
+
+  protected void addParticipantRoles(IntakeScreening s, IntakeParticipant otherPartc) {
+    if (!ArrayUtils.isEmpty(roles)) {
+      for (String role : roles) {
+        s.addParticipantRole(otherPartc.getId(), role);
+      }
+    }
+  }
+
+  protected IntakeParticipant handleOtherParticipant(IntakeScreening s) {
+    IntakeParticipant otherPartc = null;
+    if (isNotBlank(otherParticipantId)) {
+      if (s.getParticipants().containsKey(otherParticipantId)) {
+        otherPartc = s.getParticipants().get(otherParticipantId);
+      } else {
+        otherPartc = fillParticipant(true);
+        s.addParticipant(otherPartc);
+        addParticipantRoles(s, otherPartc);
+      }
+    }
+
+    return otherPartc;
+  }
+
+  protected IntakeAllegation makeAllegation(IntakeScreening s) {
+    IntakeAllegation alg;
+    if (s.getAllegations().containsKey(allegationId)) {
+      alg = s.getAllegations().get(allegationId);
+    } else {
+      alg = new IntakeAllegation();
+      alg.setId(allegationId);
+      s.addAllegation(alg);
+    }
+
+    return alg;
+  }
+
+  protected void handleAllegations(String thisPartcId, IntakeScreening s,
+      IntakeParticipant otherPartc) {
+    final IntakeAllegation alg = makeAllegation(s);
+
+    if (isNotBlank(otherParticipantId)) {
+      if (flgPerpetrator) {
+        alg.setPerpetrator(otherPartc);
+      }
+
+      if (flgVictim) {
+        alg.setVictim(otherPartc);
+      }
+
+      if (flgReporter) {
+        fillParticipant(s.getReporter(), otherPartc.getId().equals(thisPartcId));
+      }
+
+      if (isNotBlank(addressId)) {
+        final ElasticSearchPersonAddress addr = new ElasticSearchPersonAddress();
+        addr.setId(addressId);
+        addr.setCity(city);
+        addr.setState(state);
+
+        // Synthetic, composite field, "state_name", not found in legacy.
+        addr.setStreetAddress(streetAddress);
+        // addr.setType(addressType);
+        addr.setZip(zip);
+        otherPartc.addAddress(addr);
+      }
+
+      if (isNotBlank(phoneNumberId)) {
+        final ElasticSearchPersonPhone ph = new ElasticSearchPersonPhone();
+        ph.setId(phoneNumberId);
+        ph.setPhoneNumber(phoneNumber);
+
+        if (isNotBlank(phoneType)) {
+          ph.setPhoneType(PhoneType.valueOf(phoneType));
+        }
+
+        otherPartc.addPhone(ph);
+      }
+    }
   }
 
   /**
@@ -361,77 +406,13 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
         mapScreenings.put(s.getId(), s); // iterate screenings for *this* participant.
 
         final IntakeParticipant worker = s.getSocialWorker();
-        worker.setLastName(assignee);
+        worker.setLastName(getAssignee());
       } else {
         s = mapScreenings.get(screeningId);
       }
 
-      // Other participant.
-      final boolean hasOtherPartc = isNotBlank(otherParticipantId);
-      IntakeParticipant otherPartc = null;
-
-      if (hasOtherPartc) {
-        if (s.getParticipants().containsKey(otherParticipantId)) {
-          otherPartc = s.getParticipants().get(otherParticipantId);
-        } else {
-          otherPartc = fillParticipant(true);
-          s.addParticipant(otherPartc);
-
-          if (!ArrayUtils.isEmpty(roles)) {
-            for (String role : roles) {
-              s.addParticipantRole(otherPartc.getId(), role);
-            }
-          }
-        }
-      }
-
-      IntakeAllegation alg;
-      if (s.getAllegations().containsKey(allegationId)) {
-        alg = s.getAllegations().get(allegationId);
-      } else {
-        alg = new IntakeAllegation();
-        alg.setId(allegationId);
-        s.addAllegation(alg);
-      }
-
-      if (hasOtherPartc) {
-        if (flgPerpetrator) {
-          alg.setPerpetrator(otherPartc);
-        }
-
-        if (flgVictim) {
-          alg.setVictim(otherPartc);
-        }
-
-        if (flgReporter) {
-          fillParticipant(s.getReporter(), otherPartc.getId().equals(thisPartcId));
-        }
-
-        if (isNotBlank(addressId)) {
-          final ElasticSearchPersonAddress addr = new ElasticSearchPersonAddress();
-          addr.setId(addressId);
-          addr.setCity(city);
-          addr.setState(state);
-
-          // Synthetic, composite field, "state_name", not found in legacy.
-          addr.setStreetAddress(streetAddress);
-          addr.setType(addressType);
-          addr.setZip(zip);
-          otherPartc.addAddress(addr);
-        }
-
-        if (isNotBlank(phoneNumberId)) {
-          final ElasticSearchPersonPhone ph = new ElasticSearchPersonPhone();
-          ph.setId(phoneNumberId);
-          ph.setPhoneNumber(phoneNumber);
-
-          if (isNotBlank(phoneType)) {
-            ph.setPhoneType(PhoneType.valueOf(phoneType));
-          }
-
-          otherPartc.addPhone(ph);
-        }
-      }
+      final IntakeParticipant otherPartc = handleOtherParticipant(s);
+      handleAllegations(thisPartcId, s, otherPartc);
     } catch (Exception e) {
       // Log the offending record.
       LOGGER.error("OOPS! {}", this);
@@ -485,7 +466,7 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
    * @return last change date
    */
   public Date getLastChange() {
-    return lastChange;
+    return NeutronDateUtils.freshDate(lastChange);
   }
 
   /**
@@ -495,28 +476,7 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
    * @param lastChange last change date
    */
   public void setLastChange(Date lastChange) {
-    this.lastChange = lastChange;
-  }
-
-  @Override
-  public String toString() {
-    return "EsIntakeScreening [lastChange=" + lastChange + ", thisParticipantId="
-        + thisParticipantId + ", thisLegacyId=" + thisLegacyId + ", screeningId=" + screeningId
-        + ", reference=" + reference + ", startedAt=" + startedAt + ", endedAt=" + endedAt
-        + ", incidentDate=" + incidentDate + ", locationType=" + locationType
-        + ", communicationMethod=" + communicationMethod + ", screeningName=" + screeningName
-        + ", screeningDecision=" + screeningDecision + ", incidentCounty=" + incidentCounty
-        + ", reportNarrative=" + reportNarrative + ", assignee=" + assignee
-        + ", additionalInformation=" + additionalInformation + ", screeningDecisionDetail="
-        + screeningDecisionDetail + ", otherParticipantId=" + otherParticipantId
-        + ", otherLegacyId=" + otherLegacyId + ", birthDt=" + birthDt + ", firstName=" + firstName
-        + ", lastName=" + lastName + ", gender=" + gender + ", ssn=" + ssn + ", roles="
-        + Arrays.toString(roles) + ", flgReporter=" + flgReporter + ", flgPerpetrator="
-        + flgPerpetrator + ", flgVictim=" + flgVictim + ", allegationId=" + allegationId
-        + ", allegationTypes=" + allegationTypes + ", addressId=" + addressId + ", addressType="
-        + addressType + ", streetAddress=" + streetAddress + ", city=" + city + ", state=" + state
-        + ", zip=" + zip + ", phoneNumberId=" + phoneNumberId + ", phoneNumber=" + phoneNumber
-        + ", phoneType=" + phoneType + "]";
+    this.lastChange = NeutronDateUtils.freshDate(lastChange);
   }
 
   public String getThisParticipantId() {
@@ -552,19 +512,19 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
   }
 
   public Date getStartedAt() {
-    return startedAt;
+    return NeutronDateUtils.freshDate(startedAt);
   }
 
   public void setStartedAt(Date startedAt) {
-    this.startedAt = startedAt;
+    this.startedAt = NeutronDateUtils.freshDate(startedAt);
   }
 
   public Date getEndedAt() {
-    return endedAt;
+    return NeutronDateUtils.freshDate(endedAt);
   }
 
   public void setEndedAt(Date endedAt) {
-    this.endedAt = endedAt;
+    this.endedAt = NeutronDateUtils.freshDate(endedAt);
   }
 
   public String getReferralId() {
@@ -573,86 +533,6 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
 
   public void setReferralId(String referralId) {
     this.referralId = referralId;
-  }
-
-  public String getIncidentDate() {
-    return incidentDate;
-  }
-
-  public void setIncidentDate(String incidentDate) {
-    this.incidentDate = incidentDate;
-  }
-
-  public String getLocationType() {
-    return locationType;
-  }
-
-  public void setLocationType(String locationType) {
-    this.locationType = locationType;
-  }
-
-  public String getCommunicationMethod() {
-    return communicationMethod;
-  }
-
-  public void setCommunicationMethod(String communicationMethod) {
-    this.communicationMethod = communicationMethod;
-  }
-
-  public String getScreeningName() {
-    return screeningName;
-  }
-
-  public void setScreeningName(String screeningName) {
-    this.screeningName = screeningName;
-  }
-
-  public String getScreeningDecision() {
-    return screeningDecision;
-  }
-
-  public void setScreeningDecision(String screeningDecision) {
-    this.screeningDecision = screeningDecision;
-  }
-
-  public String getIncidentCounty() {
-    return incidentCounty;
-  }
-
-  public void setIncidentCounty(String incidentCounty) {
-    this.incidentCounty = incidentCounty;
-  }
-
-  public String getReportNarrative() {
-    return reportNarrative;
-  }
-
-  public void setReportNarrative(String reportNarrative) {
-    this.reportNarrative = reportNarrative;
-  }
-
-  public String getAssignee() {
-    return assignee;
-  }
-
-  public void setAssignee(String assignee) {
-    this.assignee = assignee;
-  }
-
-  public String getAdditionalInformation() {
-    return additionalInformation;
-  }
-
-  public void setAdditionalInformation(String additionalInformation) {
-    this.additionalInformation = additionalInformation;
-  }
-
-  public String getScreeningDecisionDetail() {
-    return screeningDecisionDetail;
-  }
-
-  public void setScreeningDecisionDetail(String screeningDecisionDetail) {
-    this.screeningDecisionDetail = screeningDecisionDetail;
   }
 
   public String getOtherParticipantId() {
@@ -672,11 +552,11 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
   }
 
   public Date getBirthDt() {
-    return birthDt;
+    return NeutronDateUtils.freshDate(birthDt);
   }
 
   public void setBirthDt(Date birthDt) {
-    this.birthDt = birthDt;
+    this.birthDt = NeutronDateUtils.freshDate(birthDt);
   }
 
   public String getFirstName() {
@@ -712,11 +592,13 @@ public class EsIntakeScreening implements PersistentObject, ApiGroupNormalizer<I
   }
 
   public String[] getRoles() {
-    return roles;
+    return roles != null ? roles.clone() : new String[0];
   }
 
   public void setRoles(String[] roles) {
-    this.roles = roles;
+    if (roles != null) {
+      this.roles = Arrays.copyOf(roles, roles.length);
+    }
   }
 
   public boolean isFlgReporter() {

@@ -20,14 +20,17 @@ import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.launch.FlightRecorder;
 
-public class CaseHistoryIndexerJobTest extends PersonJobTester {
+public class CaseHistoryIndexerJobTest extends Goddard {
 
   private static class TestCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
 
     public TestCaseHistoryIndexerJob(ReplicatedPersonCasesDao dao, ElasticsearchDao esDao,
-        String lastJobRunTimeFilename, ObjectMapper mapper, SessionFactory sessionFactory) {
-      super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+        String lastJobRunTimeFilename, ObjectMapper mapper, SessionFactory sessionFactory,
+        FlightRecorder jobHistory, FlightPlan opts) {
+      super(dao, esDao, lastJobRunTimeFilename, mapper, opts);
     }
 
   }
@@ -40,9 +43,8 @@ public class CaseHistoryIndexerJobTest extends PersonJobTester {
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedPersonCasesDao(sessionFactory);
-    target =
-        new TestCaseHistoryIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
-    target.setOpts(opts);
+    target = new TestCaseHistoryIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        sessionFactory, flightRecorder, flightPlan);
   }
 
   @Test

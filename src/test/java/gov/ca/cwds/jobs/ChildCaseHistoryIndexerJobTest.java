@@ -4,12 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.sql.SQLException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.ReplicatedPersonCasesDao;
@@ -18,7 +14,7 @@ import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
 
 public class ChildCaseHistoryIndexerJobTest
-    extends PersonJobTester<ReplicatedPersonCases, EsPersonCase> {
+    extends Goddard<ReplicatedPersonCases, EsPersonCase> {
 
   ReplicatedPersonCasesDao dao;
   ChildCaseHistoryIndexerJob target;
@@ -28,8 +24,8 @@ public class ChildCaseHistoryIndexerJobTest
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedPersonCasesDao(this.sessionFactory);
-    target =
-        new ChildCaseHistoryIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
+    target = new ChildCaseHistoryIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        flightPlan);
   }
 
   @Test
@@ -46,16 +42,6 @@ public class ChildCaseHistoryIndexerJobTest
   public void extract_Args__ResultSet() throws Exception {
     EsChildPersonCase actual = target.extract(rs);
     assertThat(actual, notNullValue());
-  }
-
-  @Test
-  @Ignore
-  public void extract_Args__ResultSet_T__SQLException() throws Exception {
-    try {
-      target.extract(rs);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
   }
 
   @Test
@@ -80,9 +66,9 @@ public class ChildCaseHistoryIndexerJobTest
   }
 
   @Test
-  @Ignore
   public void main_Args__StringArray() throws Exception {
-    String[] args = new String[] {};
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
     ChildCaseHistoryIndexerJob.main(args);
   }
 

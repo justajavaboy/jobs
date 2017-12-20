@@ -1,27 +1,24 @@
 package gov.ca.cwds.jobs;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.ReplicatedCollateralIndividualDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual;
-import gov.ca.cwds.jobs.config.JobOptionsTest;
+import gov.ca.cwds.neutron.flight.FlightPlanTest;
 
 /**
  * @author CWDS API Team
  */
 @SuppressWarnings("javadoc")
 public class CollateralIndividualIndexerJobTest
-    extends PersonJobTester<ReplicatedCollateralIndividual, ReplicatedCollateralIndividual> {
+    extends Goddard<ReplicatedCollateralIndividual, ReplicatedCollateralIndividual> {
 
   ReplicatedCollateralIndividualDao dao;
   CollateralIndividualIndexerJob target;
@@ -32,9 +29,9 @@ public class CollateralIndividualIndexerJobTest
     super.setup();
 
     dao = new ReplicatedCollateralIndividualDao(sessionFactory);
-    target = new CollateralIndividualIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER,
-        sessionFactory);
-    target.setOpts(JobOptionsTest.makeGeneric());
+    target = new CollateralIndividualIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        flightPlan);
+    target.setFlightPlan(FlightPlanTest.makeGeneric());
   }
 
   @Test
@@ -72,27 +69,6 @@ public class CollateralIndividualIndexerJobTest
   }
 
   @Test
-  public void getJobTotalBuckets_Args__() throws Exception {
-    final int actual = target.getJobTotalBuckets();
-    final int expected = 12;
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  @Test
-  public void getLegacySourceTable_Args__() throws Exception {
-    final String actual = target.getLegacySourceTable();
-    String expected = "COLTRL_T";
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  @Test
-  @Ignore
-  public void main_Args__StringArray() throws Exception {
-    String[] args = new String[] {};
-    CollateralIndividualIndexerJob.main(args);
-  }
-
-  @Test
   public void getPartitionRanges_Args__() throws Exception {
     final List actual = target.getPartitionRanges();
     assertThat(target, notNullValue());
@@ -115,6 +91,13 @@ public class CollateralIndividualIndexerJobTest
 
     final List actual = target.getPartitionRanges();
     assertThat(target, notNullValue());
+  }
+
+  @Test
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    CollateralIndividualIndexerJob.main(args);
   }
 
 }

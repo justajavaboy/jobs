@@ -1,11 +1,10 @@
 package gov.ca.cwds.jobs;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+import static gov.ca.cwds.neutron.util.transform.JobTransformUtils.ifNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,37 +16,34 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsChildPersonCase;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 
 /**
- * Job to load case history from CMS into ElasticSearch for 'focus child' person.
+ * Rocket to load case history from CMS into ElasticSearch for 'focus child' person.
  * 
  * @author CWDS API Team
  */
 public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
   private static final Logger LOGGER = LoggerFactory.getLogger(ChildCaseHistoryIndexerJob.class);
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
-   * @param clientDao Case history view DAO
-   * @param elasticsearchDao ElasticSearch DAO
-   * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
+   * @param dao Case history view DAO
+   * @param esDao ElasticSearch DAO
+   * @param lastRunFile last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
-   * @param sessionFactory Hibernate session factory
+   * @param flightPlan command line options
    */
   @Inject
-  public ChildCaseHistoryIndexerJob(final ReplicatedPersonCasesDao clientDao,
-      final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
-      final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
-    super(clientDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  public ChildCaseHistoryIndexerJob(final ReplicatedPersonCasesDao dao,
+      final ElasticsearchDao esDao, @LastRunFile final String lastRunFile,
+      final ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
   @Override
@@ -56,7 +52,7 @@ public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
     String focusChildId = rs.getString("FOCUS_CHILD_ID");
 
     if (focusChildId == null) {
-      LOGGER.warn("FOCUS_CHILD_ID is null for CASE_ID: {}", caseId);
+      LOGGER.warn("FOCUS_CHILD_ID is null for CASE_ID: {}", caseId); // NOSONAR
       return null;
     }
 
@@ -95,10 +91,10 @@ public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
     //
     // Worker (staff):
     //
-    ret.setWorkerId(ifNull(rs.getString("WORKER_ID")));
-    ret.setWorkerFirstName(ifNull(rs.getString("WORKER_FIRST_NM")));
-    ret.setWorkerLastName(ifNull(rs.getString("WORKER_LAST_NM")));
-    ret.setWorkerLastUpdated(rs.getTimestamp("WORKER_LAST_UPDATED"));
+    ret.getWorker().setWorkerId(ifNull(rs.getString("WORKER_ID")));
+    ret.getWorker().setWorkerFirstName(ifNull(rs.getString("WORKER_FIRST_NM")));
+    ret.getWorker().setWorkerLastName(ifNull(rs.getString("WORKER_LAST_NM")));
+    ret.getWorker().setWorkerLastUpdated(rs.getTimestamp("WORKER_LAST_UPDATED"));
 
     //
     // Access Limitation:
@@ -126,11 +122,12 @@ public class ChildCaseHistoryIndexerJob extends CaseHistoryIndexerJob {
   }
 
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception unhandled launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(ChildCaseHistoryIndexerJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(ChildCaseHistoryIndexerJob.class, args);
   }
 }

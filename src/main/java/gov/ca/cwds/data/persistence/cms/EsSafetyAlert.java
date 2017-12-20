@@ -9,16 +9,17 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.NamedNativeQueries;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.NamedNativeQuery;
 import org.hibernate.annotations.Type;
 
-import gov.ca.cwds.data.es.ElasticSearchCounty;
 import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
+import gov.ca.cwds.data.es.ElasticSearchSystemCode;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.data.std.ApiObjectIdentity;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.DomainChef;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
@@ -30,32 +31,30 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  */
 @Entity
 @Table(name = "VW_LST_SAFETY_ALERT")
-@NamedNativeQueries({
-    @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsSafetyAlert.findAllUpdatedAfter",
-        query = "SELECT r.* FROM {h-schema}VW_LST_SAFETY_ALERT r WHERE r.CLIENT_ID IN ( "
-            + "SELECT r1.CLIENT_ID FROM {h-schema}VW_LST_SAFETY_ALERT r1 "
-            + "WHERE r1.LAST_CHANGED > :after "
-            + ") ORDER BY CLIENT_ID, ALERT_ID FOR READ ONLY WITH UR ",
-        resultClass = EsSafetyAlert.class, readOnly = true),
+@NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsSafetyAlert.findAllUpdatedAfter",
+    query = "SELECT r.* FROM {h-schema}VW_LST_SAFETY_ALERT r WHERE r.CLIENT_ID IN ( "
+        + "SELECT r1.CLIENT_ID FROM {h-schema}VW_LST_SAFETY_ALERT r1 "
+        + " WHERE r1.LAST_CHANGED > :after "
+        + ") ORDER BY CLIENT_ID, ALERT_ID FOR READ ONLY WITH UR ",
+    resultClass = EsSafetyAlert.class, readOnly = true)
 
-    @NamedNativeQuery(
-        name = "gov.ca.cwds.data.persistence.cms.EsSafetyAlert.findAllUpdatedAfterWithUnlimitedAccess",
-        query = "SELECT r.* FROM {h-schema}VW_LST_SAFETY_ALERT r WHERE r.CLIENT_ID IN ( "
-            + "SELECT r1.CLIENT_ID FROM {h-schema}VW_LST_SAFETY_ALERT r1 "
-            + "WHERE r1.LAST_CHANGED > :after "
-            + ") AND r.CLIENT_SENSITIVITY_IND = 'N' ORDER BY CLIENT_ID, ALERT_ID FOR READ ONLY WITH UR ",
-        resultClass = EsSafetyAlert.class, readOnly = true),
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.EsSafetyAlert.findAllUpdatedAfterWithUnlimitedAccess",
+    query = "SELECT r.* FROM {h-schema}VW_LST_SAFETY_ALERT r WHERE r.CLIENT_ID IN ( "
+        + "SELECT r1.CLIENT_ID FROM {h-schema}VW_LST_SAFETY_ALERT r1 "
+        + "WHERE r1.LAST_CHANGED > :after "
+        + ") AND r.CLIENT_SENSITIVITY_IND = 'N' ORDER BY CLIENT_ID, ALERT_ID FOR READ ONLY WITH UR ",
+    resultClass = EsSafetyAlert.class, readOnly = true)
 
-    @NamedNativeQuery(
-        name = "gov.ca.cwds.data.persistence.cms.EsSafetyAlert.findAllUpdatedAfterWithLimitedAccess",
-        query = "SELECT r.* FROM {h-schema}VW_LST_SAFETY_ALERT r WHERE r.CLIENT_ID IN ( "
-            + "SELECT r1.CLIENT_ID FROM {h-schema}VW_LST_SAFETY_ALERT r1 "
-            + "WHERE r1.LAST_CHANGED > :after "
-            + ") AND r.CLIENT_SENSITIVITY_IND != 'N' ORDER BY CLIENT_ID, ALERT_ID FOR READ ONLY WITH UR ",
-        resultClass = EsSafetyAlert.class, readOnly = true)})
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.EsSafetyAlert.findAllUpdatedAfterWithLimitedAccess",
+    query = "SELECT r.* FROM {h-schema}VW_LST_SAFETY_ALERT r WHERE r.CLIENT_ID IN ( "
+        + "SELECT r1.CLIENT_ID FROM {h-schema}VW_LST_SAFETY_ALERT r1 "
+        + "WHERE r1.LAST_CHANGED > :after "
+        + ") AND r.CLIENT_SENSITIVITY_IND != 'N' ORDER BY CLIENT_ID, ALERT_ID FOR READ ONLY WITH UR ",
+    resultClass = EsSafetyAlert.class, readOnly = true)
 
-public class EsSafetyAlert extends ApiObjectIdentity
-    implements PersistentObject, ApiGroupNormalizer<ReplicatedSafetyAlerts> {
+public class EsSafetyAlert implements PersistentObject, ApiGroupNormalizer<ReplicatedSafetyAlerts> {
 
   private static final long serialVersionUID = -4358337986243075067L;
 
@@ -142,10 +141,10 @@ public class EsSafetyAlert extends ApiObjectIdentity
     activation.setActivationReasonId(
         this.activationReasonCode != null ? this.activationReasonCode.toString() : null);
 
-    ElasticSearchCounty activationCounty = new ElasticSearchCounty();
+    ElasticSearchSystemCode activationCounty = new ElasticSearchSystemCode();
     activation.setActivationCounty(activationCounty);
-    activationCounty
-        .setName(SystemCodeCache.global().getSystemCodeShortDescription(this.activationCountyCode));
+    activationCounty.setDescription(
+        SystemCodeCache.global().getSystemCodeShortDescription(this.activationCountyCode));
     activationCounty
         .setId(this.activationCountyCode != null ? this.activationCountyCode.toString() : null);
 
@@ -157,10 +156,10 @@ public class EsSafetyAlert extends ApiObjectIdentity
         new ElasticSearchSafetyAlert.Deactivation();
     alert.setDeactivation(deactivation);
 
-    ElasticSearchCounty deactivationCounty = new ElasticSearchCounty();
+    ElasticSearchSystemCode deactivationCounty = new ElasticSearchSystemCode();
     deactivation.setDeactivationCounty(deactivationCounty);
 
-    deactivationCounty.setName(
+    deactivationCounty.setDescription(
         SystemCodeCache.global().getSystemCodeShortDescription(this.deactivationCountyCode));
     deactivationCounty
         .setId(this.deactivationCountyCode != null ? this.deactivationCountyCode.toString() : null);
@@ -192,7 +191,7 @@ public class EsSafetyAlert extends ApiObjectIdentity
    * @return last change date
    */
   public Date getLastChanged() {
-    return lastChanged;
+    return NeutronDateUtils.freshDate(lastChanged);
   }
 
   /**
@@ -202,7 +201,7 @@ public class EsSafetyAlert extends ApiObjectIdentity
    * @param lastChanged last change date
    */
   public void setLastChanged(Date lastChanged) {
-    this.lastChanged = lastChanged;
+    this.lastChanged = NeutronDateUtils.freshDate(lastChanged);
   }
 
   public String getClientId() {
@@ -230,11 +229,11 @@ public class EsSafetyAlert extends ApiObjectIdentity
   }
 
   public Date getActivationDate() {
-    return activationDate;
+    return NeutronDateUtils.freshDate(activationDate);
   }
 
   public void setActivationDate(Date activationDate) {
-    this.activationDate = activationDate;
+    this.activationDate = NeutronDateUtils.freshDate(activationDate);
   }
 
   public Integer getActivationCountyCode() {
@@ -254,11 +253,11 @@ public class EsSafetyAlert extends ApiObjectIdentity
   }
 
   public Date getDeactivationDate() {
-    return deactivationDate;
+    return NeutronDateUtils.freshDate(deactivationDate);
   }
 
   public void setDeactivationDate(Date deactivationDate) {
-    this.deactivationDate = deactivationDate;
+    this.deactivationDate = NeutronDateUtils.freshDate(deactivationDate);
   }
 
   public Integer getDeactivationCountyCode() {
@@ -286,11 +285,11 @@ public class EsSafetyAlert extends ApiObjectIdentity
   }
 
   public Date getLastUpdatedTimestamp() {
-    return lastUpdatedTimestamp;
+    return NeutronDateUtils.freshDate(lastUpdatedTimestamp);
   }
 
   public void setLastUpdatedTimestamp(Date lastUpdatedTimestamp) {
-    this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+    this.lastUpdatedTimestamp = NeutronDateUtils.freshDate(lastUpdatedTimestamp);
   }
 
   public String getLastUpdatedOperation() {
@@ -302,10 +301,21 @@ public class EsSafetyAlert extends ApiObjectIdentity
   }
 
   public Date getReplicationTimestamp() {
-    return replicationTimestamp;
+    return NeutronDateUtils.freshDate(replicationTimestamp);
   }
 
   public void setReplicationTimestamp(Date replicationTimestamp) {
-    this.replicationTimestamp = replicationTimestamp;
+    this.replicationTimestamp = NeutronDateUtils.freshDate(replicationTimestamp);
   }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
 }

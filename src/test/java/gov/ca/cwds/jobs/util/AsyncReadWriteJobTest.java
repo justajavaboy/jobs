@@ -1,5 +1,6 @@
 package gov.ca.cwds.jobs.util;
 
+import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -8,8 +9,10 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -34,6 +37,7 @@ public class AsyncReadWriteJobTest {
     public Integer getPrimaryKey() {
       return id;
     }
+
   }
 
   @Mock
@@ -45,6 +49,7 @@ public class AsyncReadWriteJobTest {
   @Mock
   JobWriter<Object> writer;
 
+  AsyncReadWriteJob target;
   private List<Integer> input = new ArrayList<>();
   private List<String> output = new ArrayList<>();
 
@@ -54,10 +59,10 @@ public class AsyncReadWriteJobTest {
     reader = mock(JobReader.class);
     processor = mock(JobProcessor.class);
     writer = mock(JobWriter.class);
-
     input.add(0);
     input.add(1);
     input.add(2);
+    target = new AsyncReadWriteJob(reader, processor, writer);
   }
 
   @After
@@ -72,14 +77,15 @@ public class AsyncReadWriteJobTest {
       if (!input.isEmpty()) {
         return input.remove(0);
       }
-      return null;
-    } , String::valueOf, output::addAll);
-    job.run();
 
+      return null;
+    }, String::valueOf, output::addAll);
+    job.run();
     Assert.assertEquals(3, output.size());
     for (int i = 0; i < output.size(); i++) {
       Assert.assertEquals(String.valueOf(i), output.get(i));
     }
+
   }
 
   @Test
@@ -88,20 +94,17 @@ public class AsyncReadWriteJobTest {
       if (input.size() == 3) {
         return input.remove(0);
       } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
+        await().atMost(2, TimeUnit.SECONDS).until(() -> input.remove(0));
         throw new RuntimeException("failed on second!");
       }
-    } , String::valueOf, output::addAll);
 
+    }, String::valueOf, output::addAll);
     job.run();
     Assert.assertEquals(1, output.size());
     for (int i = 0; i < output.size(); i++) {
       Assert.assertEquals(String.valueOf(i), output.get(i));
     }
+
   }
 
   @Test
@@ -111,7 +114,6 @@ public class AsyncReadWriteJobTest {
 
   @Test
   public void instantiate_1() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     assertThat(target, notNullValue());
   }
 
@@ -123,14 +125,12 @@ public class AsyncReadWriteJobTest {
 
   @Test
   public void setChunkSize_Args__int() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     int chunkSize = 0;
     target.setChunkSize(chunkSize);
   }
 
   @Test
   public void produce_Args__() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     Object actual = target.produce();
     Object expected = null;
     assertThat(actual, is(equalTo(expected)));
@@ -138,46 +138,39 @@ public class AsyncReadWriteJobTest {
 
   @Test
   public void consume_Args__Object() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
-    Object o = null;
+    Serializable o = null;
     target.consume(o);
   }
 
   @Test
   public void run_Args__() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     target.run();
   }
 
   @Test
   public void init_Args__() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     target.init();
   }
 
   @Test
   public void init_Args___T__Exception() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     doThrow(new JobsException("bozhe miy!")).when(reader).init();
-
     try {
       target.init();
       fail("Expected exception was not thrown!");
     } catch (Exception e) {
     }
+
   }
 
   @Test
   public void destroy_Args__() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     target.destroy();
   }
 
   @Test
   public void destroy_Args___T__Exception() throws Exception {
-    AsyncReadWriteJob target = new AsyncReadWriteJob(reader, processor, writer);
     doThrow(new JobsException("bozhe miy!")).when(reader).destroy();
-
     try {
       target.destroy();
       fail("Expected exception was not thrown!");
@@ -187,3 +180,4 @@ public class AsyncReadWriteJobTest {
   }
 
 }
+

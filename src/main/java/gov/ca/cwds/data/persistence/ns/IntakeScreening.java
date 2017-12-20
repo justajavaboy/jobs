@@ -24,6 +24,7 @@ import gov.ca.cwds.data.es.ElasticSearchPersonAny;
 import gov.ca.cwds.data.es.ElasticSearchPersonScreening;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiPersonAware;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
  * NS Persistence class for Intake Screenings.
@@ -31,17 +32,12 @@ import gov.ca.cwds.data.std.ApiPersonAware;
  * @author CWDS API Team
  */
 @SuppressWarnings("serial")
-// @Entity
-// @Table(name = "screenings")
-public class IntakeScreening
+public class IntakeScreening extends CommonScreening
     implements PersistentObject, ApiMultiplePersonAware, ApiScreeningAware {
 
   private static final Set<String> EMPTY_SET_STRING = new LinkedHashSet<>();
 
   @Id
-  // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "screenings_id_seq")
-  // @SequenceGenerator(name = "screenings_id_seq", sequenceName = "screenings_id_seq",
-  // allocationSize = 10)
   @Column(name = "SCREENING_ID")
   private String id;
 
@@ -52,42 +48,10 @@ public class IntakeScreening
   private String reference;
 
   @Column(name = "STARTED_AT")
-  // @Type(type = "timestamp")
   private Date startedAt;
 
   @Column(name = "ENDED_AT")
-  // @Type(type = "timestamp")
   private Date endedAt;
-
-  @Column(name = "INCIDENT_DATE")
-  private String incidentDate;
-
-  @Column(name = "LOCATION_TYPE")
-  private String locationType;
-
-  @Column(name = "COMMUNICATION_METHOD")
-  private String communicationMethod;
-
-  @Column(name = "SCREENING_NAME")
-  private String screeningName;
-
-  @Column(name = "SCREENING_DECISION")
-  private String screeningDecision;
-
-  @Column(name = "INCIDENT_COUNTY")
-  private String incidentCounty;
-
-  @Column(name = "REPORT_NARRATIVE")
-  private String reportNarrative;
-
-  @Column(name = "ASSIGNEE")
-  private String assignee;
-
-  @Column(name = "ADDITIONAL_INFORMATION")
-  private String additionalInformation;
-
-  @Column(name = "SCREENING_DECISION_DETAIL")
-  private String screeningDecisionDetail;
 
   @JsonIgnore
   private Map<String, IntakeParticipant> participants = new LinkedHashMap<>();
@@ -140,11 +104,11 @@ public class IntakeScreening
 
     ret.setId(id);
     ret.setReferralId(referralId);
-    ret.setCountyName(incidentCounty);
-    ret.setDecision(screeningDecision);
+    ret.setCountyName(getIncidentCounty());
+    ret.setDecision(getScreeningDecision());
     ret.setEndDate(endedAt);
     ret.setStartDate(startedAt);
-    ret.setResponseTime(screeningDecisionDetail); // Intake field name should change.
+    ret.setResponseTime(getScreeningDecisionDetail()); // Intake field name should change.
 
     ret.getReporter().setFirstName(getReporter().getFirstName());
     ret.getReporter().setLastName(getReporter().getLastName());
@@ -199,99 +163,19 @@ public class IntakeScreening
   }
 
   public Date getStartedAt() {
-    return startedAt;
+    return NeutronDateUtils.freshDate(startedAt);
   }
 
   public void setStartedAt(Date startedAt) {
-    this.startedAt = startedAt;
+    this.startedAt = NeutronDateUtils.freshDate(startedAt);
   }
 
   public Date getEndedAt() {
-    return endedAt;
+    return NeutronDateUtils.freshDate(endedAt);
   }
 
   public void setEndedAt(Date endedAt) {
-    this.endedAt = endedAt;
-  }
-
-  public String getIncidentDate() {
-    return incidentDate;
-  }
-
-  public void setIncidentDate(String incidentDate) {
-    this.incidentDate = incidentDate;
-  }
-
-  public String getLocationType() {
-    return locationType;
-  }
-
-  public void setLocationType(String locationType) {
-    this.locationType = locationType;
-  }
-
-  public String getCommunicationMethod() {
-    return communicationMethod;
-  }
-
-  public void setCommunicationMethod(String communicationMethod) {
-    this.communicationMethod = communicationMethod;
-  }
-
-  public String getScreeningName() {
-    return screeningName;
-  }
-
-  public void setScreeningName(String screeningName) {
-    this.screeningName = screeningName;
-  }
-
-  public String getScreeningDecision() {
-    return screeningDecision;
-  }
-
-  public void setScreeningDecision(String screeningDecision) {
-    this.screeningDecision = screeningDecision;
-  }
-
-  public String getIncidentCounty() {
-    return incidentCounty;
-  }
-
-  public void setIncidentCounty(String incidentCounty) {
-    this.incidentCounty = incidentCounty;
-  }
-
-  public String getReportNarrative() {
-    return reportNarrative;
-  }
-
-  public void setReportNarrative(String reportNarrative) {
-    this.reportNarrative = reportNarrative;
-  }
-
-  public String getAssignee() {
-    return assignee;
-  }
-
-  public void setAssignee(String assignee) {
-    this.assignee = assignee;
-  }
-
-  public String getAdditionalInformation() {
-    return additionalInformation;
-  }
-
-  public void setAdditionalInformation(String additionalInformation) {
-    this.additionalInformation = additionalInformation;
-  }
-
-  public String getScreeningDecisionDetail() {
-    return screeningDecisionDetail;
-  }
-
-  public void setScreeningDecisionDetail(String screeningDecisionDetail) {
-    this.screeningDecisionDetail = screeningDecisionDetail;
+    this.endedAt = NeutronDateUtils.freshDate(endedAt);
   }
 
   public IntakeParticipant getSocialWorker() {

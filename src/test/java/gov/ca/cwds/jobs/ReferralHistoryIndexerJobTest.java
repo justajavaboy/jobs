@@ -21,11 +21,10 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.hibernate.SessionFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.db2.jcc.DB2SystemMonitor;
 
@@ -35,13 +34,16 @@ import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
-import gov.ca.cwds.jobs.config.JobOptionsTest;
+import gov.ca.cwds.neutron.flight.FlightPlanTest;
 import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.util.jdbc.JobDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.JobJdbcUtils;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
+import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 
 public class ReferralHistoryIndexerJobTest
-    extends PersonJobTester<ReplicatedPersonReferrals, EsPersonReferral> {
+    extends Goddard<ReplicatedPersonReferrals, EsPersonReferral> {
 
   public static class TestReferralHistoryIndexerJob extends ReferralHistoryIndexerJob {
 
@@ -49,9 +51,8 @@ public class ReferralHistoryIndexerJobTest
     private boolean throwOnRanges = false;
 
     public TestReferralHistoryIndexerJob(ReplicatedPersonReferralsDao clientDao,
-        ElasticsearchDao esDao, String lastJobRunTimeFilename, ObjectMapper mapper,
-        SessionFactory sessionFactory) {
-      super(clientDao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+        ElasticsearchDao esDao, String lastRunFile, ObjectMapper mapper, FlightPlan flightPlan) {
+      super(clientDao, esDao, lastRunFile, mapper, flightPlan);
     }
 
     public static DB2SystemMonitor monitorStart(final Connection con) {
@@ -59,22 +60,37 @@ public class ReferralHistoryIndexerJobTest
     }
 
     @Override
-    protected int pullRange(Pair<String, String> p) {
-      return fakePull ? 0 : super.pullRange(p);
+    protected int pullNextRange(Pair<String, String> p) {
+      return fakePull ? 0 : super.pullNextRange(p);
     }
 
     @Override
-    protected List<Pair<String, String>> getPartitionRanges() {
+    public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
       if (throwOnRanges) {
-        throw new JobsException("test");
+        throw new NeutronException("test");
       }
+
       return super.getPartitionRanges();
+    }
+
+    @Override
+    public void cleanUpMemory(List<EsPersonReferral> listAllegations,
+        Map<String, EsPersonReferral> mapReferrals, List<MinClientReferral> listClientReferralKeys,
+        List<EsPersonReferral> listReadyToNorm) {
+      super.cleanUpMemory(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
+    }
+
+    @Override
+    public int mapReduce(List<EsPersonReferral> listAllegations,
+        Map<String, EsPersonReferral> mapReferrals, List<MinClientReferral> listClientReferralKeys,
+        List<EsPersonReferral> listReadyToNorm) {
+      return super.mapReduce(listAllegations, mapReferrals, listClientReferralKeys,
+          listReadyToNorm);
     }
 
   }
 
   public static final String DEFAULT_REFERRAL_ID = "ref1234567";
-
   public static final String DEFAULT_ALLEGATION_ID = "alg1234567";
 
   // ====================
@@ -88,10 +104,12 @@ public class ReferralHistoryIndexerJobTest
   @Before
   public void setup() throws Exception {
     super.setup();
+
     dao = new ReplicatedPersonReferralsDao(sessionFactory);
-    target = new TestReferralHistoryIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER,
-        sessionFactory);
-    target.setOpts(JobOptionsTest.makeGeneric());
+    target = new TestReferralHistoryIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        FlightPlanTest.makeGeneric());
+
+    when(rs.next()).thenReturn(true, true, false);
   }
 
   @Test
@@ -113,31 +131,26 @@ public class ReferralHistoryIndexerJobTest
 
   @Test
   public void getViewName_Args__() throws Exception {
-    String actual = target.getInitialLoadViewName();
-    String expected = "VW_MQT_REFRL_ONLY";
+    final String actual = target.getInitialLoadViewName();
+    final String expected = "VW_MQT_REFRL_ONLY";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getJdbcOrderBy_Args__() throws Exception {
-    String actual = target.getJdbcOrderBy().trim();
-    String expected = "";
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  @Test
-  public void getLegacySourceTable_Args__() throws Exception {
-    String actual = target.getLegacySourceTable();
-    String expected = "REFERL_T";
+    final String actual = target.getJdbcOrderBy().trim();
+    final String expected = "";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void normalizeSingle_Args__List() throws Exception {
     List<EsPersonReferral> recs = new ArrayList<EsPersonReferral>();
+
     EsPersonReferral addMe = new EsPersonReferral();
     addMe.setClientId("qz11234567");
     addMe.setReferralId("abc1234567");
+
     recs.add(addMe);
     ReplicatedPersonReferrals actual = target.normalizeSingle(recs);
     assertThat(actual, notNullValue());
@@ -155,13 +168,10 @@ public class ReferralHistoryIndexerJobTest
   public void prepareUpsertRequest_Args__ElasticSearchPerson__ReplicatedPersonReferrals()
       throws Exception {
     final ReplicatedPersonReferrals referrals = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
-
     final ElasticSearchPersonReferral ref = new ElasticSearchPersonReferral();
     ref.setId(DEFAULT_CLIENT_ID);
-
     final ElasticSearchPersonAllegation allegation = new ElasticSearchPersonAllegation();
     allegation.setId(DEFAULT_ALLEGATION_ID);
-
     referrals.addReferral(ref, allegation);
     UpdateRequest actual = target.prepareUpsertRequest(esp, referrals);
     assertThat(actual, notNullValue());
@@ -177,6 +187,21 @@ public class ReferralHistoryIndexerJobTest
       fail("Expected exception was not thrown!");
     } catch (Exception e) {
     }
+
+  }
+
+  @Test(expected = NeutronException.class)
+  public void prepareUpsertRequest_Args__boom() throws Exception {
+    final ReplicatedPersonReferrals referrals = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
+    final ElasticSearchPersonReferral ref = new ElasticSearchPersonReferral();
+    ref.setId(DEFAULT_CLIENT_ID);
+    final ElasticSearchPersonAllegation allegation = new ElasticSearchPersonAllegation();
+    allegation.setId(DEFAULT_ALLEGATION_ID);
+    referrals.addReferral(ref, allegation);
+    mapper = mock(ObjectMapper.class);
+    when(mapper.writeValueAsString(any(Object.class))).thenThrow(JsonProcessingException.class);
+    target.setMapper(mapper);
+    target.prepareUpsertRequest(esp, referrals);
   }
 
   @Test
@@ -185,34 +210,30 @@ public class ReferralHistoryIndexerJobTest
     assertThat(actual, notNullValue());
   }
 
-  @Test
+  @Test(expected = SQLException.class)
   public void extract_Args__ResultSet_T__SQLException() throws Exception {
     doThrow(new SQLException()).when(rs).getString(any());
-    try {
-      target.extract(rs);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
+    target.extract(rs);
   }
 
   @Test
   public void getInitialLoadViewName_Args__() throws Exception {
-    String actual = target.getInitialLoadViewName();
+    final String actual = target.getInitialLoadViewName();
     assertThat(actual, notNullValue());
   }
 
   @Test
   public void getInitialLoadQuery_Args__String() throws Exception {
     String dbSchemaName = "CWSRS1";
-    String actual = target.getInitialLoadQuery(dbSchemaName);
+    final String actual = target.getInitialLoadQuery(dbSchemaName);
     assertThat(actual, notNullValue());
   }
 
   @Test
   public void getInitialLoadQuery_Args__no_sealed() throws Exception {
     String dbSchemaName = "CWSRS1";
-    target.getOpts().setLoadSealedAndSensitive(false);
-    String actual = target.getInitialLoadQuery(dbSchemaName);
+    target.getFlightPlan().setLoadSealedAndSensitive(false);
+    final String actual = target.getInitialLoadQuery(dbSchemaName);
     assertThat(actual, notNullValue());
   }
 
@@ -222,14 +243,12 @@ public class ReferralHistoryIndexerJobTest
     final List<EsPersonReferral> listReadyToNorm = new ArrayList<>();
     final Map<String, List<MinClientReferral>> mapReferralByClient = new HashMap<>();
     final Map<String, List<EsPersonReferral>> mapAllegationByReferral = new HashMap<>();
-
     List<EsPersonReferral> allegations = new ArrayList<>();
     List<MinClientReferral> minClientReferrals = new ArrayList<>();
-
-    MinClientReferral minClRef = new MinClientReferral(DEFAULT_CLIENT_ID, DEFAULT_REFERRAL_ID, "N");
+    MinClientReferral minClRef =
+        new MinClientReferral(DEFAULT_CLIENT_ID, DEFAULT_REFERRAL_ID, "N", null);
     minClientReferrals.add(minClRef);
     mapReferralByClient.put(DEFAULT_CLIENT_ID, minClientReferrals);
-
     EsPersonReferral ref = new EsPersonReferral();
     ref.setClientId(DEFAULT_CLIENT_ID);
     ref.setReferralId(DEFAULT_REFERRAL_ID);
@@ -238,7 +257,6 @@ public class ReferralHistoryIndexerJobTest
     listReadyToNorm.add(ref);
     allegations.add(ref);
     mapReferrals.put(DEFAULT_REFERRAL_ID, ref);
-
     ref = new EsPersonReferral();
     ref.setClientId(DEFAULT_CLIENT_ID);
     ref.setReferralId(DEFAULT_REFERRAL_ID);
@@ -247,7 +265,6 @@ public class ReferralHistoryIndexerJobTest
     listReadyToNorm.add(ref);
     allegations.add(ref);
     mapAllegationByReferral.put(ref.getReferralId(), allegations);
-
     target.normalizeQueryResults(mapReferrals, listReadyToNorm, mapReferralByClient,
         mapAllegationByReferral);
   }
@@ -257,14 +274,11 @@ public class ReferralHistoryIndexerJobTest
     final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
     final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
     when(stmtSelClient.executeQuery()).thenReturn(rs);
-
     final List<MinClientReferral> listClientReferralKeys = new ArrayList<>();
-
     when(rs.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
     when(rs.getString("FKREFERL_T")).thenReturn(DEFAULT_REFERRAL_ID);
     when(rs.getString("SENSTV_IND")).thenReturn("N");
-
-    final Pair<String, String> p = Pair.of("aaaaaaaaaa", "9999999999");
+    final Pair<String, String> p = pair;
     target.readClients(stmtInsClient, stmtSelClient, listClientReferralKeys, p);
   }
 
@@ -273,26 +287,24 @@ public class ReferralHistoryIndexerJobTest
     final PreparedStatement stmtSelAllegation = mock(PreparedStatement.class);
     when(stmtSelAllegation.executeQuery()).thenReturn(rs);
     when(rs.next()).thenReturn(true).thenReturn(false);
-
     final List<EsPersonReferral> listAllegations = new ArrayList<>();
     target.readAllegations(stmtSelAllegation, listAllegations);
   }
 
   @Test
   public void testMonitorStopAndReport() throws Exception {
-    JobDB2Utils.monitorStopAndReport(new TestDB2SystemMonitor());
+    NeutronDB2Utils.monitorStopAndReport(new TestDB2SystemMonitor());
   }
 
   @Test
   public void testCalcThreads() throws Exception {
-    JobJdbcUtils.calcReaderThreads(target.getOpts());
+    NeutronThreadUtils.calcReaderThreads(target.getFlightPlan());
   }
 
   @Test
   public void testReadReferrals() throws Exception {
     final PreparedStatement stmtSelReferral = mock(PreparedStatement.class);
     when(stmtSelReferral.executeQuery()).thenReturn(rs);
-
     final Map<String, EsPersonReferral> mapReferrals = new HashMap<>();
     target.readReferrals(stmtSelReferral, mapReferrals);
   }
@@ -300,12 +312,10 @@ public class ReferralHistoryIndexerJobTest
   @Test
   public void pullRange_Args__Pair() throws Exception {
     final String schema = target.getDBSchemaName();
-
     final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
     final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
     final PreparedStatement stmtSelReferral = mock(PreparedStatement.class);
     final PreparedStatement stmtSelAllegation = mock(PreparedStatement.class);
-
     final ResultSet rsInsClient = mock(ResultSet.class);
     final ResultSet rsSelClient = mock(ResultSet.class);
     final ResultSet rsSelReferral = mock(ResultSet.class);
@@ -328,6 +338,46 @@ public class ReferralHistoryIndexerJobTest
     when(stmtSelClient.executeQuery()).thenReturn(rsSelClient);
     when(stmtSelReferral.executeQuery()).thenReturn(rsSelReferral);
     when(stmtSelAllegation.executeQuery()).thenReturn(rsSelAllegation);
+    when(rsInsClient.next()).thenReturn(true).thenReturn(false);
+    when(rsSelClient.next()).thenReturn(true).thenReturn(false);
+    when(rsSelReferral.next()).thenReturn(false);
+    when(rsSelAllegation.next()).thenReturn(false);
+
+    when(rsSelClient.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
+    when(rsSelClient.getString("FKREFERL_T")).thenReturn(DEFAULT_REFERRAL_ID);
+    when(rsSelClient.getString("SENSTV_IND")).thenReturn("N");
+
+    final Pair<String, String> p = pair;
+    target.fakePull = false;
+    target.pullRange(p);
+  }
+
+  @Test
+  public void pullNextRange_Args__Pair() throws Exception {
+    final String schema = target.getDBSchemaName();
+    final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelReferral = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelAllegation = mock(PreparedStatement.class);
+    final ResultSet rsInsClient = mock(ResultSet.class);
+    final ResultSet rsSelClient = mock(ResultSet.class);
+    final ResultSet rsSelReferral = mock(ResultSet.class);
+    final ResultSet rsSelAllegation = mock(ResultSet.class);
+
+    final String sqlInsClient = target.getClientSeedQuery();
+    final String sqlSelClient = target.SELECT_CLIENT;
+    final String sqlSelReferral = target.getInitialLoadQuery(schema);
+    final String selAllegation = target.SELECT_ALLEGATION;
+
+    when(con.prepareStatement(sqlInsClient)).thenReturn(stmtInsClient);
+    when(con.prepareStatement(sqlSelClient)).thenReturn(stmtSelClient);
+    when(con.prepareStatement(sqlSelReferral)).thenReturn(stmtSelReferral);
+    when(con.prepareStatement(selAllegation)).thenReturn(stmtSelAllegation);
+
+    when(stmtInsClient.executeQuery()).thenReturn(rsInsClient);
+    when(stmtSelClient.executeQuery()).thenReturn(rsSelClient);
+    when(stmtSelReferral.executeQuery()).thenReturn(rsSelReferral);
+    when(stmtSelAllegation.executeQuery()).thenReturn(rsSelAllegation);
 
     when(rsInsClient.next()).thenReturn(true).thenReturn(false);
     when(rsSelClient.next()).thenReturn(true).thenReturn(false);
@@ -338,17 +388,62 @@ public class ReferralHistoryIndexerJobTest
     when(rsSelClient.getString("FKREFERL_T")).thenReturn(DEFAULT_REFERRAL_ID);
     when(rsSelClient.getString("SENSTV_IND")).thenReturn("N");
 
-    final Pair<String, String> p = Pair.of("aaaaaaaaaa", "9999999999");
+    final Pair<String, String> p = pair;
     target.fakePull = false;
-    target.pullRange(p);
+    target.pullNextRange(p);
+  }
+
+  @Test(expected = JobsException.class)
+  public void pullNextRange_Args__Pair__boom() throws Exception {
+    final String schema = target.getDBSchemaName();
+    final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelReferral = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelAllegation = mock(PreparedStatement.class);
+    final ResultSet rsInsClient = mock(ResultSet.class);
+    final ResultSet rsSelClient = mock(ResultSet.class);
+    final ResultSet rsSelReferral = mock(ResultSet.class);
+    final ResultSet rsSelAllegation = mock(ResultSet.class);
+
+    final String sqlInsClient =
+        target.INSERT_CLIENT_FULL.replaceAll("#SCHEMA#", schema).replaceAll("\\s+", " ").trim();
+    final String sqlSelClient =
+        target.SELECT_CLIENT.replaceAll("#SCHEMA#", schema).replaceAll("\\s+", " ").trim();
+    final String sqlSelReferral = target.getInitialLoadQuery(schema).replaceAll("\\s+", " ").trim();
+    final String selAllegation =
+        target.SELECT_ALLEGATION.replaceAll("#SCHEMA#", schema).replaceAll("\\s+", " ").trim();
+
+    when(con.prepareStatement(sqlInsClient)).thenReturn(stmtInsClient);
+    when(con.prepareStatement(sqlSelClient)).thenReturn(stmtSelClient);
+    when(con.prepareStatement(sqlSelReferral)).thenReturn(stmtSelReferral);
+    when(con.prepareStatement(selAllegation)).thenReturn(stmtSelAllegation);
+    when(stmtInsClient.executeQuery()).thenReturn(rsInsClient);
+    when(stmtSelClient.executeQuery()).thenReturn(rsSelClient);
+    when(stmtSelReferral.executeQuery()).thenReturn(rsSelReferral);
+    when(stmtSelAllegation.executeQuery()).thenReturn(rsSelAllegation);
+    when(rsInsClient.next()).thenReturn(true).thenReturn(false);
+    when(rsSelClient.next()).thenReturn(true).thenReturn(false);
+    when(rsSelReferral.next()).thenReturn(false);
+    when(rsSelAllegation.next()).thenReturn(false);
+
+    when(rsSelClient.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
+    when(rsSelClient.getString("FKREFERL_T")).thenReturn(DEFAULT_REFERRAL_ID);
+    when(rsSelClient.getString("SENSTV_IND")).thenReturn("N");
+
+    when(con.prepareStatement(any(String.class))).thenThrow(SQLException.class);
+
+    final Pair<String, String> p = pair;
+    target.fakePull = false;
+    target.pullNextRange(p);
   }
 
   @Test(expected = JobsException.class)
   public void pullRange_Args__Pair_throw() throws Exception {
     final String schema = target.getDBSchemaName();
     when(con.prepareStatement(any())).thenThrow(JobsException.class);
-
-    final Pair<String, String> p = Pair.of("aaaaaaaaaa", "9999999999");
+    when(con.prepareStatement(any())).thenThrow(JobsException.class);
+    doThrow(SQLException.class).when(con).setAutoCommit(false);
+    final Pair<String, String> p = pair;
     target.fakePull = false;
     target.pullRange(p);
   }
@@ -386,65 +481,35 @@ public class ReferralHistoryIndexerJobTest
 
   @Test
   public void extractReferral_Args__ResultSet() throws Exception {
-    EsPersonReferral actual = target.extractReferral(rs);
-    assertThat(actual, notNullValue());
-  }
-
-  @Test
-  public void extractReferral_Args__ResultSet_T__SQLException() throws Exception {
-    when(rs.next()).thenThrow(new SQLException());
-    when(rs.getString(any(Integer.class))).thenThrow(new SQLException());
-    try {
-      target.extractReferral(rs);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
-  }
-
-  @Test
-  public void extractAllegation_Args__ResultSet() throws Exception {
-    EsPersonReferral actual = target.extractAllegation(rs);
+    final EsPersonReferral actual = target.extract(rs);
     assertThat(actual, notNullValue());
   }
 
   @Test(expected = SQLException.class)
-  public void extractAllegation_Args__ResultSet_T__SQLException() throws Exception {
+  public void extractReferral_Args__ResultSet_T__SQLException() throws Exception {
     when(rs.next()).thenThrow(new SQLException());
+    when(rs.getString(any(String.class))).thenThrow(new SQLException());
     when(rs.getString(any(Integer.class))).thenThrow(new SQLException());
-    target.extractAllegation(rs);
+    target.extract(rs);
   }
 
   @Test
   public void isRangeSelfManaging_Args__() throws Exception {
-    boolean actual = target.providesInitialKeyRanges();
-    boolean expected = true;
+    final boolean actual = target.isInitialLoadJdbc();
+    final boolean expected = true;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getConnection_Args__() throws Exception {
-    Connection actual = target.getConnection();
+    final Connection actual = target.getConnection();
     assertThat(actual, notNullValue());
   }
 
-  @Test
+  @Test(expected = SQLException.class)
   public void getConnection_Args___T__SQLException() throws Exception {
     when(cp.getConnection()).thenThrow(SQLException.class);
-    try {
-      target.getConnection();
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
-  }
-
-  @Test
-  public void getConnection_Args___T__InterruptedException() throws Exception {
-    when(cp.getConnection()).thenThrow(InterruptedException.class);
-    try {
-      target.getConnection();
-      fail("Expected exception was not thrown!");
-    } catch (InterruptedException e) {
-    }
+    target.getConnection();
   }
 
   @Test
@@ -453,16 +518,190 @@ public class ReferralHistoryIndexerJobTest
   }
 
   @Test
-  @Ignore
-  public void main_Args__StringArray() throws Exception {
-    String[] args = new String[] {};
-    ReferralHistoryIndexerJob.main(args);
+  public void getPrepLastChangeSQL_Args__() throws Exception {
+    final String actual = target.getPrepLastChangeSQL();
+    assertThat(actual, notNullValue());
   }
 
   @Test
-  public void getPrepLastChangeSQL_Args__() throws Exception {
-    String actual = target.getPrepLastChangeSQL();
-    assertThat(actual, notNullValue());
+  public void getOptionalElementName() throws Exception {
+    final String actual = target.getOptionalElementName();
+    final String expected = "referrals";
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/var/lib/jenkins/client_indexer_time.txt", "-S"};
+    TestReferralHistoryIndexerJob.main(args);
+  }
+
+  @Test
+  public void readClients_Args__PreparedStatement__PreparedStatement__List__Pair()
+      throws Exception {
+    PreparedStatement stmtInsClient = mock(PreparedStatement.class);
+    PreparedStatement stmtSelClient = mock(PreparedStatement.class);
+    List<MinClientReferral> listClientReferralKeys = new ArrayList<MinClientReferral>();
+    Pair<String, String> p = pair;
+    when(stmtSelClient.executeQuery()).thenReturn(rs);
+    target.readClients(stmtInsClient, stmtSelClient, listClientReferralKeys, p);
+  }
+
+  @Test
+  public void readReferrals_Args__PreparedStatement__Map_T() throws Exception {
+    when(rs.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
+    when(rs.getString("FKREFERL_T")).thenReturn(DEFAULT_REFERRAL_ID);
+    when(rs.getString("SENSTV_IND")).thenReturn("N");
+    when(rs.next()).thenReturn(true, false);
+
+    final PreparedStatement stmtSelReferral = mock(PreparedStatement.class);
+    when(stmtSelReferral.executeQuery()).thenReturn(rs);
+
+    Map<String, EsPersonReferral> mapReferrals = new HashMap<String, EsPersonReferral>();
+    target.readReferrals(stmtSelReferral, mapReferrals);
+  }
+
+  @Test
+  public void readAllegations_Args__PreparedStatement__List() throws Exception {
+    PreparedStatement stmtSelAllegation = mock(PreparedStatement.class);
+    when(stmtSelAllegation.executeQuery()).thenReturn(rs);
+    List<EsPersonReferral> listAllegations = new ArrayList<EsPersonReferral>();
+    target.readAllegations(stmtSelAllegation, listAllegations);
+  }
+
+  @Test
+  public void normalizeClientReferrals_Args__int__MinClientReferral__String__Map__List__Map()
+      throws Exception {
+    int cntr = 0;
+    MinClientReferral rc1 = mock(MinClientReferral.class);
+    String clientId = null;
+    Map<String, EsPersonReferral> mapReferrals = new HashMap<String, EsPersonReferral>();
+    List<EsPersonReferral> listReadyToNorm = new ArrayList<EsPersonReferral>();
+    final Map mapAllegationByReferral = new HashMap<>();
+    int actual = target.normalizeClientReferrals(cntr, rc1, clientId, mapReferrals, listReadyToNorm,
+        mapAllegationByReferral);
+    int expected = 1;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void normalizeQueryResults_Args__Map__List__Map__Map() throws Exception {
+    Map<String, EsPersonReferral> mapReferrals = new HashMap<String, EsPersonReferral>();
+    List<EsPersonReferral> listReadyToNorm = new ArrayList<EsPersonReferral>();
+    Map mapReferralByClient = new HashMap();
+    Map mapAllegationByReferral = new HashMap();
+    int actual = target.normalizeQueryResults(mapReferrals, listReadyToNorm, mapReferralByClient,
+        mapAllegationByReferral);
+    int expected = 0;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void cleanUpMemory_Args__List__Map__List__List() throws Exception {
+    List<EsPersonReferral> listAllegations = new ArrayList<EsPersonReferral>();
+    Map<String, EsPersonReferral> mapReferrals = new HashMap<String, EsPersonReferral>();
+    List<MinClientReferral> listClientReferralKeys = new ArrayList<MinClientReferral>();
+    List<EsPersonReferral> listReadyToNorm = new ArrayList<EsPersonReferral>();
+    target.cleanUpMemory(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
+  }
+
+  @Test
+  public void mapReduce_Args__List__Map__List__List() throws Exception {
+    List<EsPersonReferral> listAllegations = new ArrayList<EsPersonReferral>();
+    Map<String, EsPersonReferral> mapReferrals = new HashMap<String, EsPersonReferral>();
+    List<MinClientReferral> listClientReferralKeys = new ArrayList<MinClientReferral>();
+    List<EsPersonReferral> listReadyToNorm = new ArrayList<EsPersonReferral>();
+
+    EsPersonReferral addMe = new EsPersonReferral();
+    addMe.setClientId("qz11234567");
+    addMe.setReferralId("abc1234567");
+    listReadyToNorm.add(addMe);
+
+    addMe = new EsPersonReferral();
+    addMe.setClientId(DEFAULT_CLIENT_ID);
+    addMe.setReferralId("abc1234567");
+    listReadyToNorm.add(addMe);
+
+    int actual =
+        target.mapReduce(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
+    int expected = 0;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void threadRetrieveByJdbc_Args__() throws Exception {
+    target.threadRetrieveByJdbc();
+  }
+
+  @Test
+  public void isInitialLoadJdbc_Args__() throws Exception {
+    boolean actual = target.isInitialLoadJdbc();
+    boolean expected = true;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getOptionalElementName_Args__() throws Exception {
+    final String actual = target.getOptionalElementName();
+    final String expected = "referrals";
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void buildMonitor_Args__Connection() throws Exception {
+    Connection con = mock(Connection.class);
+    DB2SystemMonitor actual = target.buildMonitor(con);
+    DB2SystemMonitor expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void monitorStopAndReport_Args__DB2SystemMonitor() throws Exception {
+    DB2SystemMonitor monitor = mock(DB2SystemMonitor.class);
+    target.monitorStopAndReport(monitor);
+  }
+
+  @Test
+  public void monitorStopAndReport_Args__DB2SystemMonitor_T__SQLException() throws Exception {
+    DB2SystemMonitor monitor = mock(DB2SystemMonitor.class);
+    doThrow(SQLException.class).when(monitor).stop();
+    try {
+      target.monitorStopAndReport(monitor);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void getClientSeedQuery_Args__() throws Exception {
+    final String actual = target.getClientSeedQuery();
+    final String expected =
+        "INSERT INTO GT_REFR_CLT (FKREFERL_T, FKCLIENT_T, SENSTV_IND)\nSELECT rc.FKREFERL_T, rc.FKCLIENT_T, c.SENSTV_IND\nFROM REFR_CLT rc\nJOIN CLIENT_T c on c.IDENTIFIER = rc.FKCLIENT_T\nWHERE rc.FKCLIENT_T BETWEEN ? AND ?\nAND c.IBMSNAP_OPERATION IN ('I','U') ";
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void releaseLocalMemory_Args__List__Map__List__List() throws Exception {
+    List<EsPersonReferral> listAllegations = new ArrayList<EsPersonReferral>();
+    Map<String, EsPersonReferral> mapReferrals = new HashMap<String, EsPersonReferral>();
+    List<MinClientReferral> listClientReferralKeys = new ArrayList<MinClientReferral>();
+    List<EsPersonReferral> listReadyToNorm = new ArrayList<EsPersonReferral>();
+    target.releaseLocalMemory(listAllegations, mapReferrals, listClientReferralKeys,
+        listReadyToNorm);
+  }
+
+  @Test
+  public void isMonitorDb2_Args__() throws Exception {
+    boolean actual = target.isMonitorDb2();
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setMonitorDb2_Args__boolean() throws Exception {
+    boolean monitorDb2 = false;
+    target.setMonitorDb2(monitorDb2);
   }
 
 }

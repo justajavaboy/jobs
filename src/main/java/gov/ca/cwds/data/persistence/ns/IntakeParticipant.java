@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -27,10 +29,10 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiAddressAware;
 import gov.ca.cwds.data.std.ApiMultipleAddressesAware;
 import gov.ca.cwds.data.std.ApiMultiplePhonesAware;
-import gov.ca.cwds.data.std.ApiObjectIdentity;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.data.std.ApiPhoneAware;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
@@ -38,9 +40,8 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
  * 
  * @author CWDS API Team
  */
-public class IntakeParticipant extends ApiObjectIdentity
-    implements PersistentObject, ApiPersonAware, ApiMultipleAddressesAware, ApiMultiplePhonesAware,
-    ApiScreeningAware, ApiLegacyAware {
+public class IntakeParticipant implements PersistentObject, ApiPersonAware,
+    ApiMultipleAddressesAware, ApiMultiplePhonesAware, ApiScreeningAware, ApiLegacyAware {
 
   /**
    * Default serialization.
@@ -77,15 +78,6 @@ public class IntakeParticipant extends ApiObjectIdentity
   @JsonIgnore
   private Map<String, IntakeScreening> screenings = new LinkedHashMap<>();
 
-  /**
-   * Update section JSON is the participant's screenings.
-   * 
-   * @return JSON to update document only
-   */
-  public String buildUpdateJson() {
-    return "";
-  }
-
   @Override
   public Serializable getPrimaryKey() {
     return StringUtils.isNotBlank(legacyId) ? legacyId : id;
@@ -93,7 +85,7 @@ public class IntakeParticipant extends ApiObjectIdentity
 
   @Override
   public Date getBirthDate() {
-    return this.birthDate;
+    return NeutronDateUtils.freshDate(birthDate);
   }
 
   @Override
@@ -144,7 +136,7 @@ public class IntakeParticipant extends ApiObjectIdentity
   }
 
   public void setBirthDate(Date birthDate) {
-    this.birthDate = birthDate;
+    this.birthDate = NeutronDateUtils.freshDate(birthDate);
   }
 
   public void setGender(String gender) {
@@ -183,7 +175,6 @@ public class IntakeParticipant extends ApiObjectIdentity
   @Override
   public ElasticSearchPersonScreening[] getEsScreenings() {
     List<ElasticSearchPersonScreening> ret = new ArrayList<>();
-
     for (IntakeScreening ess : screenings.values()) {
       ret.add(ess.toEsScreening());
     }
@@ -268,11 +259,11 @@ public class IntakeParticipant extends ApiObjectIdentity
   }
 
   public Date getLegacyLastUpdated() {
-    return legacyLastUpdated;
+    return NeutronDateUtils.freshDate(legacyLastUpdated);
   }
 
   public void setLegacyLastUpdated(Date legacyLastUpdated) {
-    this.legacyLastUpdated = legacyLastUpdated;
+    this.legacyLastUpdated = NeutronDateUtils.freshDate(legacyLastUpdated);
   }
 
   public String getLegacyTable() {
@@ -282,4 +273,15 @@ public class IntakeParticipant extends ApiObjectIdentity
   public void setLegacyTable(String legacyTable) {
     this.legacyTable = legacyTable;
   }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
 }

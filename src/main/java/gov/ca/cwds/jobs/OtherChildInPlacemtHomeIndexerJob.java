@@ -1,6 +1,8 @@
 package gov.ca.cwds.jobs;
 
-import org.hibernate.SessionFactory;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -8,52 +10,52 @@ import com.google.inject.Inject;
 import gov.ca.cwds.dao.cms.ReplicatedOtherChildInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherChildInPlacemtHome;
-import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.rocket.BasePersonRocket;
+import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 
 /**
- * Job to load Other Child In Placement Home from CMS into ElasticSearch.
+ * Rocket to load Other Child In Placement Home from CMS into ElasticSearch.
  * 
  * @author CWDS API Team
  */
-public class OtherChildInPlacemtHomeIndexerJob extends
-    BasePersonIndexerJob<ReplicatedOtherChildInPlacemtHome, ReplicatedOtherChildInPlacemtHome> {
+public class OtherChildInPlacemtHomeIndexerJob
+    extends BasePersonRocket<ReplicatedOtherChildInPlacemtHome, ReplicatedOtherChildInPlacemtHome> {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
-   * @param mainDao OtherChildInPlacemtHomeDao DAO
-   * @param elasticsearchDao ElasticSearch DAO
-   * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
+   * @param dao OtherChildInPlacemtHomeDao DAO
+   * @param esDao ElasticSearch DAO
+   * @param lastRunFile last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
-   * @param sessionFactory Hibernate session factory
+   * @param flightPlan command line options
    */
   @Inject
-  public OtherChildInPlacemtHomeIndexerJob(final ReplicatedOtherChildInPlacemtHomeDao mainDao,
-      final ElasticsearchDao elasticsearchDao, @LastRunFile final String lastJobRunTimeFilename,
-      final ObjectMapper mapper, @CmsSessionFactory SessionFactory sessionFactory) {
-    super(mainDao, elasticsearchDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  public OtherChildInPlacemtHomeIndexerJob(final ReplicatedOtherChildInPlacemtHomeDao dao,
+      final ElasticsearchDao esDao, @LastRunFile final String lastRunFile,
+      final ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
   @Override
-  @Deprecated
-  public String getLegacySourceTable() {
-    return "OTH_KIDT";
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    return NeutronJdbcUtils.getCommonPartitionRanges4(this);
   }
 
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception on launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(OtherChildInPlacemtHomeIndexerJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(OtherChildInPlacemtHomeIndexerJob.class, args);
   }
 
 }

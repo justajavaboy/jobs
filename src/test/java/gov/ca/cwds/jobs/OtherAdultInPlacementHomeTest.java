@@ -1,12 +1,9 @@
 package gov.ca.cwds.jobs;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.hibernate.Query;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
@@ -18,7 +15,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
  */
 @SuppressWarnings("javadoc")
 public class OtherAdultInPlacementHomeTest
-    extends PersonJobTester<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
+    extends Goddard<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
 
   ReplicatedOtherAdultInPlacemtHomeDao dao;
   OtherAdultInPlacemtHomeIndexerJob target;
@@ -28,8 +25,8 @@ public class OtherAdultInPlacementHomeTest
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedOtherAdultInPlacemtHomeDao(this.sessionFactory);
-    target = new OtherAdultInPlacemtHomeIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER,
-        sessionFactory);
+    target = new OtherAdultInPlacemtHomeIndexerJob(dao, esDao, lastRunFile, MAPPER,
+        flightPlan);
   }
 
   @Test
@@ -43,11 +40,10 @@ public class OtherAdultInPlacementHomeTest
   }
 
   @Test
-  @Ignore
-  public void testfindAllUpdatedAfterNamedQueryExists() throws Exception {
-    Query query = session.getNamedQuery(
-        "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome.findAllUpdatedAfter");
-    assertThat(query, is(notNullValue()));
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    OtherAdultInPlacemtHomeIndexerJob.main(args);
   }
 
 }

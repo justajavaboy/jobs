@@ -2,31 +2,61 @@ package gov.ca.cwds.data.persistence.ns;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.ca.cwds.jobs.PersonJobTester;
+import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
+import gov.ca.cwds.jobs.Goddard;
 
-public class EsIntakeScreeningTest {
-
+public class EsIntakeScreeningTest extends Goddard {
   public static final String DEFAULT_SCREENING_ID = "scr1234567";
+
+  private static final class TestEsIntakeScreening extends EsIntakeScreening {
+    @Override
+    public void addParticipantRoles(IntakeScreening s, IntakeParticipant otherPartc) {
+      super.addParticipantRoles(s, otherPartc);
+    }
+
+    @Override
+    public IntakeParticipant handleOtherParticipant(IntakeScreening s) {
+      return super.handleOtherParticipant(s);
+    }
+
+    @Override
+    public IntakeAllegation makeAllegation(IntakeScreening s) {
+      return super.makeAllegation(s);
+    }
+
+    @Override
+    public void handleAllegations(String thisPartcId, IntakeScreening s,
+        IntakeParticipant otherPartc) {
+      super.handleAllegations(thisPartcId, s, otherPartc);
+    }
+
+  }
 
   EsIntakeScreening target;
 
+  @Override
   @Before
-  public void setup() {
-    target = new EsIntakeScreening();
-    target.setThisLegacyId(PersonJobTester.DEFAULT_CLIENT_ID);
+  public void setup() throws Exception {
+    super.setup();
+    target = new TestEsIntakeScreening();
+    target.setThisLegacyId(DEFAULT_CLIENT_ID);
     target.setThisParticipantId("1");
+    target.setScreeningId(DEFAULT_SCREENING_ID);
   }
 
   @Test
@@ -48,17 +78,14 @@ public class EsIntakeScreeningTest {
 
   @Test
   public void fillParticipant_Args__IntakeParticipant__boolean() throws Exception {
-    IntakeParticipant p = new IntakeParticipant();
+    final IntakeParticipant p = new IntakeParticipant();
     p.setId("1");
-    p.setLegacyId(PersonJobTester.DEFAULT_CLIENT_ID);
-
+    p.setLegacyId(Goddard.DEFAULT_CLIENT_ID);
     boolean isOther = false;
-    IntakeParticipant actual = target.fillParticipant(p, isOther);
-
-    IntakeParticipant expected = new IntakeParticipant();
+    final IntakeParticipant actual = target.fillParticipant(p, isOther);
+    final IntakeParticipant expected = new IntakeParticipant();
     expected.setId("1");
-    expected.setLegacyId(PersonJobTester.DEFAULT_CLIENT_ID);
-
+    expected.setLegacyId(Goddard.DEFAULT_CLIENT_ID);
     // assertThat(actual, is(equalTo(expected)));
     assertThat(actual, notNullValue());
   }
@@ -73,30 +100,61 @@ public class EsIntakeScreeningTest {
   @Test
   public void fillScreening_Args__IntakeScreening() throws Exception {
     IntakeScreening s = new IntakeScreening();
+    target.setStartedAt(new Date());
+    target.setEndedAt(new Date());
     IntakeScreening actual = target.fillScreening(s);
-    IntakeScreening expected = new IntakeScreening();
-    assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void fillScreening_Args__() throws Exception {
     IntakeScreening actual = target.fillScreening();
-    IntakeScreening expected = new IntakeScreening();
-    assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void normalize_Args__Map() throws Exception {
     Map<Object, IntakeParticipant> map = new HashMap<Object, IntakeParticipant>();
+    IntakeParticipant p = new IntakeParticipant();
+    p.setId(DEFAULT_CLIENT_ID);
+    p.setLegacyId(DEFAULT_CLIENT_ID);
+    map.put(DEFAULT_SCREENING_ID, p);
+    IntakeScreening s = new IntakeScreening();
+    s.setId(DEFAULT_SCREENING_ID);
+    s.setEndedAt(new Date());
+    s.setStartedAt(new Date());
+    p.addScreening(s);
+    IntakeAllegation alg = new IntakeAllegation();
+    alg.setId(DEFAULT_CLIENT_ID);
+    List<String> types = new ArrayList<>();
+    types.add("abuse");
+    types.add("neglect");
+    types.add("greed");
+    alg.setAllegationTypes(types);
+    s.addAllegation(alg);
+    target.setOtherParticipantId("xyz1234567");
+    target.setAllegationId(DEFAULT_SCREENING_ID);
+    target.setAddressId("2");
+    target.setAddressType("Home");
+    target.setZip("12345");
+    target.setCity("Nowhere");
+    target.setStreetAddress("1523 Main Street");
+    target.setPhoneNumberId("3");
+    target.setPhoneNumber("9164408791");
+    target.setPhoneType("Home");
+    target.setFirstName("Joseph");
+    target.setLastName("Muller");
+    target.setFlgPerpetrator(true);
+    target.setFlgVictim(true);
+    target.setFlgReporter(true);
     IntakeParticipant actual = target.normalize(map);
-    IntakeParticipant expected = null;
     assertThat(actual, notNullValue());
   }
 
   @Test
   public void getNormalizationGroupKey_Args__() throws Exception {
     Object actual = target.getNormalizationGroupKey();
-    Object expected = PersonJobTester.DEFAULT_CLIENT_ID;
+    Object expected = Goddard.DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -110,8 +168,7 @@ public class EsIntakeScreeningTest {
   @Test
   public void hashCode_Args__() throws Exception {
     int actual = target.hashCode();
-    int expected = 1148289955;
-    assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(not(0)));
   }
 
   @Test
@@ -157,7 +214,7 @@ public class EsIntakeScreeningTest {
   @Test
   public void getThisLegacyId_Args__() throws Exception {
     final String actual = target.getThisLegacyId();
-    final String expected = PersonJobTester.DEFAULT_CLIENT_ID;
+    final String expected = Goddard.DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -170,7 +227,7 @@ public class EsIntakeScreeningTest {
   @Test
   public void getScreeningId_Args__() throws Exception {
     final String actual = target.getScreeningId();
-    String expected = null;
+    String expected = DEFAULT_SCREENING_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -456,8 +513,7 @@ public class EsIntakeScreeningTest {
   @Test
   public void getRoles_Args__() throws Exception {
     final String[] actual = target.getRoles();
-    String[] expected = null;
-    assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
@@ -644,8 +700,82 @@ public class EsIntakeScreeningTest {
 
   @Test
   public void setPhoneType_Args__String() throws Exception {
-    String phoneType = null;
+    final String phoneType = PhoneType.Cell.name();
     target.setPhoneType(phoneType);
+  }
+
+  @Test
+  public void addParticipantRoles_Args__IntakeScreening__IntakeParticipant() throws Exception {
+    final IntakeScreening s = new IntakeScreening();
+    s.setId(DEFAULT_SCREENING_ID);
+
+    IntakeParticipant otherPartc = new IntakeParticipant();
+    otherPartc.setId(DEFAULT_CLIENT_ID);
+    otherPartc.addScreening(s);
+
+    final String[] roles = {"county supervisor", "social worker"};
+    target.setRoles(roles);
+    target.addParticipantRoles(s, otherPartc);
+  }
+
+  @Test
+  public void handleOtherParticipant_Args__IntakeScreening() throws Exception {
+    final IntakeScreening s = new IntakeScreening();
+    s.setId(DEFAULT_SCREENING_ID);
+
+    IntakeParticipant actual = target.handleOtherParticipant(s);
+    IntakeParticipant expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void handleOtherParticipant_Args__IntakeScreening__2() throws Exception {
+    final IntakeScreening s = new IntakeScreening();
+    s.setId("7xA1234567");
+
+    IntakeParticipant actual = target.handleOtherParticipant(s);
+    IntakeParticipant expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void makeAllegation_Args__IntakeScreening() throws Exception {
+    final IntakeScreening s = new IntakeScreening();
+    s.setId(DEFAULT_SCREENING_ID);
+
+    IntakeAllegation alg = new IntakeAllegation();
+    alg.setId("cyz1234567");
+    s.addAllegation(alg);
+
+    IntakeAllegation actual = target.makeAllegation(s);
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void makeAllegation_Args__IntakeScreening__2() throws Exception {
+    final IntakeScreening s = new IntakeScreening();
+    s.setId(DEFAULT_SCREENING_ID);
+
+    IntakeAllegation alg = new IntakeAllegation();
+    alg.setId("cyz1234567");
+    s.addAllegation(alg);
+
+    target.setAllegationId("cyz1234567");
+    IntakeAllegation actual = target.makeAllegation(s);
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void handleAllegations_Args__String__IntakeScreening__IntakeParticipant()
+      throws Exception {
+    String thisPartcId = DEFAULT_CLIENT_ID;
+    final IntakeScreening s = new IntakeScreening();
+
+    final IntakeParticipant otherPartc = new IntakeParticipant();
+    otherPartc.setId(DEFAULT_CLIENT_ID);
+    otherPartc.addScreening(s);
+
+    target.handleAllegations(thisPartcId, s, otherPartc);
   }
 
 }

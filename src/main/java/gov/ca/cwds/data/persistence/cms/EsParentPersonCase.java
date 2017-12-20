@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.NamedNativeQuery;
 
 /**
@@ -15,22 +17,18 @@ import org.hibernate.annotations.NamedNativeQuery;
 @Entity
 @Table(name = "VW_LST_PARENT_CASE_HIST")
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsParentPersonCase.findAllUpdatedAfter",
-    query = "SELECT c.* FROM {h-schema}VW_LST_PARENT_CASE_HIST c WHERE c.CASE_ID IN ("
-        + " SELECT c1.CASE_ID FROM {h-schema}VW_LST_PARENT_CASE_HIST c1 "
-        + "WHERE c1.LAST_CHG > :after "
-        + ") ORDER BY PARENT_PERSON_ID, CASE_ID, PARENT_ID FOR READ ONLY WITH UR ",
-    resultClass = EsParentPersonCase.class, readOnly = true)
-
-@NamedNativeQuery(
-    name = "gov.ca.cwds.data.persistence.cms.EsParentPersonCase.findAllUpdatedAfterWithUnlimitedAccess",
-    query = "SELECT c.* FROM {h-schema}VW_LST_PARENT_CASE_HIST c WHERE c.CASE_ID IN ("
-        + " SELECT c1.CASE_ID FROM {h-schema}VW_LST_PARENT_CASE_HIST c1 "
-        + "WHERE c1.LAST_CHG > :after "
-        + ") AND c.LIMITED_ACCESS_CODE = 'N' ORDER BY PARENT_PERSON_ID, CASE_ID, PARENT_ID FOR READ ONLY WITH UR ",
+    query = "SELECT c.* FROM {h-schema}VW_LST_PARENT_CASE_HIST c "
+        + " ORDER BY PARENT_PERSON_ID, CASE_ID, PARENT_ID FOR READ ONLY WITH UR ",
     resultClass = EsParentPersonCase.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsParentPersonCase.findAllUpdatedAfterWithLimitedAccess",
+    query = "SELECT c.* FROM {h-schema}VW_LST_PARENT_CASE_HIST c "
+        + " AND c.LIMITED_ACCESS_CODE = 'N' ORDER BY PARENT_PERSON_ID, CASE_ID, PARENT_ID FOR READ ONLY WITH UR ",
+    resultClass = EsParentPersonCase.class, readOnly = true)
+
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.EsParentPersonCase.findAllUpdatedAfterWithUnlimitedAccess",
     query = "SELECT c.* FROM {h-schema}VW_LST_PARENT_CASE_HIST c WHERE c.CASE_ID IN ("
         + " SELECT c1.CASE_ID FROM {h-schema}VW_LST_PARENT_CASE_HIST c1 "
         + "WHERE c1.LAST_CHG > :after "
@@ -64,6 +62,16 @@ public class EsParentPersonCase extends EsPersonCase {
   @Override
   public String getNormalizationGroupKey() {
     return this.parentPersonId;
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

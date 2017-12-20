@@ -22,7 +22,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider;
  */
 @SuppressWarnings("javadoc")
 public class ReporterIndexerJobTest
-    extends PersonJobTester<ReplicatedSubstituteCareProvider, ReplicatedSubstituteCareProvider> {
+    extends Goddard<ReplicatedSubstituteCareProvider, ReplicatedSubstituteCareProvider> {
 
   private ReplicatedReporterDao dao;
   private ReporterIndexerJob target;
@@ -32,8 +32,7 @@ public class ReporterIndexerJobTest
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedReporterDao(sessionFactory);
-    target = new ReporterIndexerJob(dao, esDao, lastJobRunTimeFilename, MAPPER, sessionFactory);
-    target.setOpts(opts);
+    target = new ReporterIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
   }
 
   @Test
@@ -64,13 +63,6 @@ public class ReporterIndexerJobTest
   }
 
   @Test
-  public void getLegacySourceTable_Args__() throws Exception {
-    final String actual = target.getLegacySourceTable();
-    String expected = "REPTR_T";
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  @Test
   public void getPartitionRanges_Args() throws Exception {
     final List actual = target.getPartitionRanges();
     final List expected = new ArrayList<>();
@@ -83,6 +75,13 @@ public class ReporterIndexerJobTest
     System.setProperty("DB_CMS_SCHEMA", "CWSRSQ");
     final List actual = target.getPartitionRanges();
     assertThat(actual.size(), is(equalTo(64)));
+  }
+
+  @Test
+  public void main_Args__StringArray() throws Exception {
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+    ReporterIndexerJob.main(args);
   }
 
 }

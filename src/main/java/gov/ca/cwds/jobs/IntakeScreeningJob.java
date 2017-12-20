@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.persistence.Table;
 
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,24 +22,21 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.ns.EsIntakeScreening;
 import gov.ca.cwds.data.persistence.ns.IntakeParticipant;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.inject.NsSessionFactory;
 import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
-import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
-import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.rocket.BasePersonRocket;
+import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
- * Job loads Intake Screenings from PostgreSQL into ElasticSearch.
+ * Rocket loads Intake Screenings from PostgreSQL into ElasticSearch.
  * 
  * @author CWDS API Team
  */
-public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, EsIntakeScreening>
-    implements JobResultSetAware<EsIntakeScreening> {
+public class IntakeScreeningJob extends BasePersonRocket<IntakeParticipant, EsIntakeScreening>
+    implements NeutronRowMapper<EsIntakeScreening> {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntakeScreeningJob.class);
@@ -51,28 +47,43 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
   private transient EsIntakeScreeningDao viewDao;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
-   * @param normalizedDao Intake Screening DAO
+   * @param dao Intake Screening DAO
    * @param viewDao view Dao
    * @param esDao ElasticSearch DAO
-   * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
-   * @param sessionFactory Hibernate session factory
+   * @param flightPlan command line options
    */
   @Inject
-  public IntakeScreeningJob(final IntakeParticipantDao normalizedDao,
-      final EsIntakeScreeningDao viewDao, final ElasticsearchDao esDao,
-      @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
-      @NsSessionFactory SessionFactory sessionFactory) {
-    super(normalizedDao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  public IntakeScreeningJob(final IntakeParticipantDao dao, final EsIntakeScreeningDao viewDao,
+      final ElasticsearchDao esDao, final ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
     this.viewDao = viewDao;
   }
 
   @Override
+  public String getInitialLoadViewName() {
+    return getDenormalizedClass().getDeclaredAnnotation(Table.class).name();
+  }
+
+  @Override
+  public String getInitialLoadQuery(String dbSchemaName) {
+    final StringBuilder buf = new StringBuilder();
+    buf.append("SELECT x.* FROM ").append(dbSchemaName).append('.').append(getInitialLoadViewName())
+        .append(" x FOR READ ONLY WITH UR ");
+    return buf.toString();
+  }
+
+  @Override
+  public boolean isInitialLoadJdbc() {
+    return true;
+  }
+
+  @Override
   protected void threadRetrieveByJdbc() {
-    Thread.currentThread().setName("extract");
-    LOGGER.info("BEGIN: Stage #1: NS View Reader");
+    nameThread("retrieval");
+    LOGGER.info("BEGIN: retrieval: NS View Reader");
 
     try {
       final List<EsIntakeScreening> results = this.viewDao.findAll();
@@ -81,23 +92,18 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
       }
 
     } catch (Exception e) {
-      markFailed();
+      fail();
       throw new JobsException("ERROR READING PG VIEW", e);
     } finally {
-      markRetrieveDone();
+      doneRetrieve();
     }
 
-    LOGGER.info("DONE: Stage #1: NS View Reader");
+    LOGGER.info("DONE: retrieval: NS View Reader");
   }
 
   @Override
   public Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
     return EsIntakeScreening.class;
-  }
-
-  @Override
-  public String getInitialLoadViewName() {
-    return getDenormalizedClass().getDeclaredAnnotation(Table.class).name();
   }
 
   /**
@@ -108,7 +114,7 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
    */
   @Override
   public ESOptionalCollection[] keepCollections() {
-    return KEEP_COLLECTIONS;
+    return KEEP_COLLECTIONS.clone();
   }
 
   @Override
@@ -131,10 +137,12 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
    * @param t normalized type
    * @return List of ES person elements
    */
+  @SuppressWarnings("unchecked")
   @Override
-  public List<? extends ApiTypedIdentifier<String>> getOptionalCollection(ElasticSearchPerson esp,
+  public List<ApiTypedIdentifier<String>> getOptionalCollection(ElasticSearchPerson esp,
       IntakeParticipant t) {
-    return esp.getScreenings();
+    return (List<ApiTypedIdentifier<String>>) (List<? extends ApiTypedIdentifier<String>>) esp
+        .getScreenings();
   }
 
   @Override
@@ -143,12 +151,13 @@ public class IntakeScreeningJob extends BasePersonIndexerJob<IntakeParticipant, 
   }
 
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception on launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(IntakeScreeningJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(IntakeScreeningJob.class, args);
   }
 
 }

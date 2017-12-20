@@ -6,10 +6,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.type.StringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,14 +61,14 @@ public class DocumentMetadataDaoImpl implements DocumentMetadataDao {
   @SuppressWarnings({"unchecked"})
   @Override
   public List<DocumentMetadata> findByLastJobRunTimeMinusOneMinute(Date lastJobRunTime) {
-    // TODO - abstract out transaction management.
-    // See story #134542407.
     final Session session = sessionFactory.getCurrentSession();
     Transaction txn = session.beginTransaction();
     try {
-      Query query = session.getNamedQuery("findByLastJobRunTimeMinusOneMinute")
-          .setString("lastJobRunTime", dateFormat.format(lastJobRunTime));
-      ImmutableList.Builder<DocumentMetadata> documentMetadatas = new ImmutableList.Builder<>();
+      final NativeQuery<DocumentMetadata> query =
+          session.getNamedNativeQuery("findByLastJobRunTimeMinusOneMinute").setParameter(
+              "lastJobRunTime", dateFormat.format(lastJobRunTime), StringType.INSTANCE);
+      final ImmutableList.Builder<DocumentMetadata> documentMetadatas =
+          new ImmutableList.Builder<>();
       documentMetadatas.addAll(query.list());
       txn.commit();
       return documentMetadatas.build();
@@ -77,6 +78,6 @@ public class DocumentMetadataDaoImpl implements DocumentMetadataDao {
     } finally {
       session.close();
     }
-
   }
+
 }

@@ -10,7 +10,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import gov.ca.cwds.data.es.ElasticSearchPersonAllegation;
 import gov.ca.cwds.data.es.ElasticSearchPersonNestedPerson;
 import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
@@ -20,9 +20,6 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
  */
 public class IntakeAllegation implements PersistentObject {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   private String id;
@@ -30,12 +27,12 @@ public class IntakeAllegation implements PersistentObject {
   private List<String> allegationTypes = new ArrayList<>();
 
   /**
-   * Not yet available from Intake PG.
+   * <strong>FUTURE:</strong> Not yet available from Intake PostgreSQL.
    */
   private String allegationDescription;
 
   /**
-   * Not yet available from Intake PG.
+   * <strong>FUTURE:</strong> Not yet available from Intake PostgreSQL.
    */
   private String dispositionDescription;
 

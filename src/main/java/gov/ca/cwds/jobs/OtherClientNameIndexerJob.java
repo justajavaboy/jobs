@@ -1,18 +1,13 @@
 package gov.ca.cwds.jobs;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.persistence.Table;
 
-import org.elasticsearch.action.index.IndexRequest;
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.hibernate.SessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -25,54 +20,47 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
-import gov.ca.cwds.jobs.util.JobLogs;
-import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
-import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.rocket.BasePersonRocket;
+import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
+import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
- * Job to load Other Client Name from CMS into ElasticSearch.
+ * Rocket to load Other Client Name from CMS into ElasticSearch.
  * 
  * @author CWDS API Team
  */
 public class OtherClientNameIndexerJob
-    extends BasePersonIndexerJob<ReplicatedAkas, ReplicatedOtherClientName>
-    implements JobResultSetAware<ReplicatedOtherClientName> {
+    extends BasePersonRocket<ReplicatedAkas, ReplicatedOtherClientName>
+    implements NeutronRowMapper<ReplicatedOtherClientName> {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OtherClientNameIndexerJob.class);
-
-  private static final String INSERT_CLIENT_LAST_CHG = "INSERT INTO #SCHEMA#.GT_ID (IDENTIFIER)\n"
-      + "SELECT CLT.IDENTIFIER AS CLIENT_ID\n" + "FROM #SCHEMA#.OCL_NM_T ONM\n"
-      + "JOIN #SCHEMA#.CLIENT_T CLT ON CLT.IDENTIFIER = ONM.FKCLIENT_T\n"
-      + "WHERE ONM.IBMSNAP_LOGMARKER > ##TIMESTAMP##\n" + "UNION ALL\n" + "SELECT CLT.IDENTIFIER\n"
-      + "FROM #SCHEMA#.CLIENT_T CLT WHERE CLT.IBMSNAP_LOGMARKER > ##TIMESTAMP##";
+  private static final String INSERT_CLIENT_LAST_CHG =
+      "INSERT INTO GT_ID (IDENTIFIER)\n" + "SELECT CLT.IDENTIFIER AS CLIENT_ID\n"
+          + "FROM OCL_NM_T ONM\n" + "JOIN CLIENT_T CLT ON CLT.IDENTIFIER = ONM.FKCLIENT_T\n"
+          + "WHERE ONM.IBMSNAP_LOGMARKER > ?\n" + "UNION ALL\n" + "SELECT CLT.IDENTIFIER\n"
+          + "FROM CLIENT_T CLT WHERE CLT.IBMSNAP_LOGMARKER > ?";
 
   private transient ReplicatedOtherClientNameDao denormDao;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
    * @param dao Relationship View DAO
    * @param denormDao de-normalized DAO
    * @param esDao ElasticSearch DAO
-   * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
-   * @param sessionFactory Hibernate session factory
+   * @param flightPlan command line options
    */
   @Inject
   public OtherClientNameIndexerJob(final ReplicatedAkaDao dao,
       final ReplicatedOtherClientNameDao denormDao, final ElasticsearchDao esDao,
-      @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
-      @CmsSessionFactory SessionFactory sessionFactory) {
-    super(dao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+      final ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
     this.denormDao = denormDao;
   }
 
@@ -113,46 +101,19 @@ public class OtherClientNameIndexerJob
   }
 
   @Override
+  public String getOptionalElementName() {
+    return "akas";
+  }
+
+  @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedAkas p)
-      throws IOException {
-
-    // If at first you don't succeed, cheat. :-)
-    StringBuilder buf = new StringBuilder();
-    buf.append("{\"akas\":[");
-
-    if (!p.getAkas().isEmpty()) {
-      try {
-        buf.append(p.getAkas().stream().map(ElasticTransformer::jsonify).sorted(String::compareTo)
-            .collect(Collectors.joining(",")));
-      } catch (Exception e) {
-        JobLogs.raiseError(LOGGER, e, "ERROR SERIALIZING OTHER CLIENT NAMES! {}", e.getMessage());
-      }
-    }
-
-    buf.append("]}");
-
-    final String insertJson = mapper.writeValueAsString(esp);
-    final String updateJson = buf.toString();
-
-    final String alias = esDao.getConfig().getElasticsearchAlias();
-    final String docType = esDao.getConfig().getElasticsearchDocType();
-
-    return new UpdateRequest(alias, docType, esp.getId()).doc(updateJson)
-        .upsert(new IndexRequest(alias, docType, esp.getId()).source(insertJson));
+      throws NeutronException {
+    return prepareUpdateRequest(esp, p, p.getAkas(), true);
   }
 
   @Override
   public String getInitialLoadViewName() {
     return "MQT_OTHER_CLIENT_NAME";
-  }
-
-  /**
-   * @deprecated delete after old legacy_source_table attribute is removed from ES
-   */
-  @Override
-  @Deprecated
-  public String getLegacySourceTable() {
-    return "OCL_NM_T";
   }
 
   /**
@@ -166,15 +127,22 @@ public class OtherClientNameIndexerJob
   }
 
   @Override
-  public String getInitialLoadQuery(String dbSchemaName) {
-    StringBuilder buf = new StringBuilder();
-    buf.append("SELECT x.* FROM ");
-    buf.append(dbSchemaName);
-    buf.append(".");
-    buf.append(getInitialLoadViewName());
-    buf.append(" x ");
+  public boolean isInitialLoadJdbc() {
+    return true;
+  }
 
-    if (!getOpts().isLoadSealedAndSensitive()) {
+  @Override
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    return NeutronJdbcUtils.getCommonPartitionRanges16(this);
+  }
+
+  @Override
+  public String getInitialLoadQuery(String dbSchemaName) {
+    final StringBuilder buf = new StringBuilder();
+    buf.append("SELECT x.* FROM ").append(dbSchemaName).append('.').append(getInitialLoadViewName())
+        .append(" x ");
+
+    if (!getFlightPlan().isLoadSealedAndSensitive()) {
       buf.append(" WHERE x.CLIENT_SENSITIVITY_IND = 'N' ");
     }
 
@@ -183,12 +151,13 @@ public class OtherClientNameIndexerJob
   }
 
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception on launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(OtherClientNameIndexerJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(OtherClientNameIndexerJob.class, args);
   }
 
 }

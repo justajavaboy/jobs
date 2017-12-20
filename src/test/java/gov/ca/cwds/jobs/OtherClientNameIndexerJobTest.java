@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,12 +14,10 @@ import java.util.List;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
-import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.query.NativeQuery;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.BatchBucket;
@@ -35,7 +33,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
  * @author CWDS API Team
  */
 @SuppressWarnings("javadoc")
-public class OtherClientNameIndexerJobTest extends PersonJobTester {
+public class OtherClientNameIndexerJobTest extends Goddard {
 
   ReplicatedAkaDao normDao;
   ReplicatedOtherClientNameDao denormDao;
@@ -47,9 +45,8 @@ public class OtherClientNameIndexerJobTest extends PersonJobTester {
     super.setup();
     normDao = new ReplicatedAkaDao(sessionFactory);
     denormDao = new ReplicatedOtherClientNameDao(sessionFactory);
-    target = new OtherClientNameIndexerJob(normDao, denormDao, esDao, lastJobRunTimeFilename,
-        MAPPER, sessionFactory);
-    target.setOpts(opts);
+    target = new OtherClientNameIndexerJob(normDao, denormDao, esDao, MAPPER,
+        flightPlan);
   }
 
   @Test
@@ -60,15 +57,6 @@ public class OtherClientNameIndexerJobTest extends PersonJobTester {
   @Test
   public void testInstantiation() throws Exception {
     assertThat(target, notNullValue());
-  }
-
-  @Test
-  @Ignore
-  public void testfindAllUpdatedAfterNamedQueryExists() throws Exception {
-    // NOTE: Add as an integration test. Doesn't work with mocks.
-    final Query query = session.getNamedQuery(
-        "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfter");
-    assertThat(query, is(notNullValue()));
   }
 
   @Test
@@ -98,7 +86,7 @@ public class OtherClientNameIndexerJobTest extends PersonJobTester {
     final NativeQuery<ReplicatedOtherClientName> qn = mock(NativeQuery.class);
     when(session.getNamedNativeQuery(any(String.class))).thenReturn(qn);
     when(qn.setString(any(String.class), any(String.class))).thenReturn(qn);
-    when(qn.setFlushMode(any(FlushMode.class))).thenReturn(qn);
+    when(qn.setHibernateFlushMode(any(FlushMode.class))).thenReturn(qn);
     when(qn.setReadOnly(any(Boolean.class))).thenReturn(qn);
     when(qn.setCacheMode(any(CacheMode.class))).thenReturn(qn);
     when(qn.setFetchSize(any(Integer.class))).thenReturn(qn);
@@ -114,13 +102,6 @@ public class OtherClientNameIndexerJobTest extends PersonJobTester {
 
     final List<?> actual = target.getPartitionRanges();
     assertThat(actual, notNullValue());
-  }
-
-  @Test
-  public void getLegacySourceTable_Args__() throws Exception {
-    final String actual = target.getLegacySourceTable();
-    final String expected = "OCL_NM_T";
-    assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
@@ -188,9 +169,9 @@ public class OtherClientNameIndexerJobTest extends PersonJobTester {
   }
 
   @Test
-  @Ignore
   public void main_Args__StringArray() throws Exception {
-    String[] args = new String[] {};
+    final String[] args = new String[] {"-c", "config/local.yaml", "-l",
+        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
     OtherClientNameIndexerJob.main(args);
   }
 

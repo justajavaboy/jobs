@@ -1,23 +1,20 @@
 package gov.ca.cwds.data.persistence.cms.rep;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
+import static gov.ca.cwds.neutron.util.transform.JobTransformUtils.ifNull;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.NamedNativeQueries;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.NamedNativeQuery;
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -29,7 +26,7 @@ import gov.ca.cwds.data.persistence.cms.BaseOtherClientName;
 import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.util.jdbc.RowMapper;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
@@ -38,20 +35,19 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  * 
  * @author CWDS API Team
  */
-@NamedNativeQueries({
-    @NamedNativeQuery(
-        name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfter",
-        query = "SELECT r.* FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r WHERE r.THIRD_ID IN ( "
-            + "SELECT r1.THIRD_ID FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r1 "
-            + "WHERE r1.LAST_CHG > :after " + ") ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
-        resultClass = ReplicatedOtherClientName.class),
-    @NamedNativeQuery(
-        name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfterWithUnlimitedAccess",
-        query = "SELECT r.* FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r WHERE r.THIRD_ID IN ( "
-            + "SELECT r1.THIRD_ID FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r1 "
-            + "WHERE r1.LAST_CHG > :after "
-            + ") AND r.CLIENT_SENSITIVITY_IND = 'N' ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
-        resultClass = ReplicatedOtherClientName.class)})
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfter",
+    query = "SELECT r.* FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r WHERE r.THIRD_ID IN ( "
+        + "SELECT r1.THIRD_ID FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r1 "
+        + "WHERE r1.LAST_CHG > :after " + ") ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
+    resultClass = ReplicatedOtherClientName.class)
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName.findAllUpdatedAfterWithUnlimitedAccess",
+    query = "SELECT r.* FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r WHERE r.THIRD_ID IN ( "
+        + "SELECT r1.THIRD_ID FROM {h-schema}VW_LST_OTHER_CLIENT_NAME r1 "
+        + "WHERE r1.LAST_CHG > :after "
+        + ") AND r.CLIENT_SENSITIVITY_IND = 'N' ORDER BY FKCLIENT_T FOR READ ONLY WITH UR ",
+    resultClass = ReplicatedOtherClientName.class)
 @Entity
 @Table(name = "VW_LST_OTHER_CLIENT_NAME")
 @JsonPropertyOrder(alphabetic = true)
@@ -64,25 +60,10 @@ public class ReplicatedOtherClientName extends BaseOtherClientName implements Cm
    */
   private static final long serialVersionUID = 1L;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "IBMSNAP_OPERATION", updatable = false)
-  private CmsReplicationOperation replicationOperation;
-
-  @Type(type = "timestamp")
-  @Column(name = "IBMSNAP_LOGMARKER", updatable = false)
-  private Date replicationDate;
-
   @Column(name = "CLIENT_SENSITIVITY_IND", updatable = false)
   private String clientSensitivityIndicator;
 
-  // =======================
-  // CmsReplicatedEntity:
-  // =======================
-
-  @Override
-  public CmsReplicationOperation getReplicationOperation() {
-    return replicationOperation;
-  }
+  private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
 
   /**
    * Build a ReplicatedOtherClientName from an incoming ResultSet.
@@ -111,23 +92,8 @@ public class ReplicatedOtherClientName extends BaseOtherClientName implements Cm
   }
 
   @Override
-  public ReplicatedOtherClientName mapRow(ResultSet rs) throws SQLException {
+  public ReplicatedOtherClientName mapRow(final ResultSet rs) throws SQLException {
     return ReplicatedOtherClientName.mapRowToBean(rs);
-  }
-
-  @Override
-  public void setReplicationOperation(CmsReplicationOperation replicationOperation) {
-    this.replicationOperation = replicationOperation;
-  }
-
-  @Override
-  public Date getReplicationDate() {
-    return replicationDate;
-  }
-
-  @Override
-  public void setReplicationDate(Date replicationDate) {
-    this.replicationDate = replicationDate;
   }
 
   // =======================
@@ -229,6 +195,29 @@ public class ReplicatedOtherClientName extends BaseOtherClientName implements Cm
 
   public void setSuffixTitleDescription(String suffixTitleDescription) {
     this.suffixTitleDescription = suffixTitleDescription;
+  }
+
+  public String getClientSensitivityIndicator() {
+    return clientSensitivityIndicator;
+  }
+
+  public void setClientSensitivityIndicator(String clientSensitivityIndicator) {
+    this.clientSensitivityIndicator = clientSensitivityIndicator;
+  }
+
+  @Override
+  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
+    return replicatedEntity;
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

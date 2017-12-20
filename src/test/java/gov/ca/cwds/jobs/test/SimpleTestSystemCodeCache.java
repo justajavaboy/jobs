@@ -5,6 +5,7 @@ import java.util.Set;
 
 import gov.ca.cwds.rest.api.domain.cms.SystemCode;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
+import gov.ca.cwds.rest.api.domain.cms.SystemCodeDescriptor;
 import gov.ca.cwds.rest.api.domain.cms.SystemMeta;
 
 @SuppressWarnings("serial")
@@ -60,6 +61,9 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
     if (196 == id.intValue()) {
       return new SystemCode(id.shortValue(), null, null, null, "Daughter/Mother (Birth)", null,
           null, "CLNTRELC", null);
+    } else if (241 == id.intValue()) {
+      return new SystemCode(id.shortValue(), null, null, null, "Guardian/Ward", null, null,
+          "CLNTRELC", null);
     }
 
     return null;
@@ -90,4 +94,9 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
     return false;
   }
 
+  @Override
+  public SystemCodeDescriptor getSystemCodeDescriptor(Number arg0) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

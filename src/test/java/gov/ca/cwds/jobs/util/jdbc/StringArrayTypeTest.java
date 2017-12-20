@@ -5,24 +5,30 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.sql.Array;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.junit.Before;
 import org.junit.Test;
 
-public class StringArrayTypeTest {
+import gov.ca.cwds.jobs.Goddard;
+
+public class StringArrayTypeTest extends Goddard {
 
   private StringArrayType target = new StringArrayType();
 
+  @Override
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    super.setup();
+
     target = new StringArrayType();
   }
 
@@ -91,41 +97,17 @@ public class StringArrayTypeTest {
   @Test
   public void nullSafeGet_Args__ResultSet__StringArray__SharedSessionContractImplementor__Object()
       throws Exception {
-    ResultSet rs = mock(ResultSet.class);
-    String[] names = new String[] {};
+    final String[] names = new String[] {"1", "2", "3"};
+    when(rs.next()).thenReturn(true, true, false);
+
+    final Array arr = mock(Array.class);
+    when(rs.getArray(any(String.class))).thenReturn(arr);
+
     SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
     Object owner = null;
     Object actual = target.nullSafeGet(rs, names, session, owner);
     Object expected = null;
     assertThat(actual, is(equalTo(expected)));
-  }
-
-  // @Test
-  public void nullSafeGet_Args__ResultSet__StringArray__SharedSessionContractImplementor__Object_T__HibernateException()
-      throws Exception {
-    ResultSet rs = mock(ResultSet.class);
-    String[] names = new String[] {};
-    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
-    Object owner = null;
-    try {
-      target.nullSafeGet(rs, names, session, owner);
-      fail("Expected exception was not thrown!");
-    } catch (HibernateException e) {
-    }
-  }
-
-  // @Test
-  public void nullSafeGet_Args__ResultSet__StringArray__SharedSessionContractImplementor__Object_T__SQLException()
-      throws Exception {
-    ResultSet rs = mock(ResultSet.class);
-    String[] names = new String[] {};
-    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
-    Object owner = null;
-    try {
-      target.nullSafeGet(rs, names, session, owner);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
   }
 
   @Test
@@ -138,32 +120,20 @@ public class StringArrayTypeTest {
     target.nullSafeSet(st, value, index, session);
   }
 
-  // @Test
-  public void nullSafeSet_Args__PreparedStatement__Object__int__SharedSessionContractImplementor_T__HibernateException()
-      throws Exception {
+  @Test
+  public void nullSafeSet_2() throws Exception {
     PreparedStatement st = mock(PreparedStatement.class);
-    Object value = null;
+    String[] whatever = {"well, isn't that special"};
+    Object value = whatever;
     int index = 0;
     SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
-    try {
-      target.nullSafeSet(st, value, index, session);
-      fail("Expected exception was not thrown!");
-    } catch (HibernateException e) {
-    }
-  }
+    java.sql.Connection con = mock(java.sql.Connection.class);
+    java.sql.Array arr = mock(java.sql.Array.class);
 
-  // @Test
-  public void nullSafeSet_Args__PreparedStatement__Object__int__SharedSessionContractImplementor_T__SQLException()
-      throws Exception {
-    PreparedStatement st = mock(PreparedStatement.class);
-    Object value = null;
-    int index = 0;
-    SharedSessionContractImplementor session = mock(SharedSessionContractImplementor.class);
-    try {
-      target.nullSafeSet(st, value, index, session);
-      fail("Expected exception was not thrown!");
-    } catch (SQLException e) {
-    }
+    when(session.connection()).thenReturn(con);
+    when(con.createArrayOf(any(String.class), any(String[].class))).thenReturn(arr);
+
+    target.nullSafeSet(st, value, index, session);
   }
 
   @Test
@@ -172,16 +142,6 @@ public class StringArrayTypeTest {
     Object actual = target.deepCopy(value);
     Object expected = null;
     assertThat(actual, is(equalTo(expected)));
-  }
-
-  // @Test
-  public void deepCopy_Args__Object_T__HibernateException() throws Exception {
-    Object value = null;
-    try {
-      target.deepCopy(value);
-      fail("Expected exception was not thrown!");
-    } catch (HibernateException e) {
-    }
   }
 
   @Test
@@ -199,37 +159,7 @@ public class StringArrayTypeTest {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  // @Test
-  public void disassemble_Args__Object_T__HibernateException() throws Exception {
-    Object value = null;
-    try {
-      target.disassemble(value);
-      fail("Expected exception was not thrown!");
-    } catch (HibernateException e) {
-    }
-  }
-
-  // @Test
-  public void assemble_Args__Serializable__Object() throws Exception {
-    Serializable cached = mock(Serializable.class);
-    Object owner = null;
-    Object actual = target.assemble(cached, owner);
-    Object expected = null;
-    assertThat(actual, is(equalTo(expected)));
-  }
-
-  // @Test
-  public void assemble_Args__Serializable__Object_T__HibernateException() throws Exception {
-    Serializable cached = mock(Serializable.class);
-    Object owner = null;
-    try {
-      target.assemble(cached, owner);
-      fail("Expected exception was not thrown!");
-    } catch (HibernateException e) {
-    }
-  }
-
-  // @Test
+  @Test
   public void replace_Args__Object__Object__Object() throws Exception {
     Object original = null;
     Object target_ = null;
@@ -239,16 +169,13 @@ public class StringArrayTypeTest {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  // @Test
-  public void replace_Args__Object__Object__Object_T__HibernateException() throws Exception {
-    Object original = null;
-    Object target_ = null;
+  @Test
+  public void assemble_Args__Serializable__Object() throws Exception {
+    StringArrayType target = new StringArrayType();
+    Serializable cached = "test";
     Object owner = null;
-    try {
-      target.replace(original, target_, owner);
-      fail("Expected exception was not thrown!");
-    } catch (HibernateException e) {
-    }
+    Object actual = target.assemble(cached, owner);
+    assertThat(actual, is(notNullValue()));
   }
 
 }

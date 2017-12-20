@@ -1,8 +1,5 @@
 package gov.ca.cwds.jobs;
 
-import static gov.ca.cwds.jobs.util.transform.JobTransformUtils.ifNull;
-
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,9 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.hibernate.SessionFactory;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,72 +26,103 @@ import com.ibm.db2.jcc.DB2SystemMonitor;
 
 import gov.ca.cwds.dao.cms.ReplicatedPersonReferralsDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
-import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.component.NeutronIntegerDefaults;
-import gov.ca.cwds.jobs.inject.JobRunner;
-import gov.ca.cwds.jobs.inject.LastRunFile;
-import gov.ca.cwds.jobs.util.JobLogs;
-import gov.ca.cwds.jobs.util.jdbc.JobDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.JobJdbcUtils;
-import gov.ca.cwds.jobs.util.jdbc.JobResultSetAware;
-import gov.ca.cwds.jobs.util.transform.ElasticTransformer;
-import gov.ca.cwds.jobs.util.transform.EntityNormalizer;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
+import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.rocket.BasePersonRocket;
+import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
+import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
+import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
- * Job to load person referrals from CMS into ElasticSearch.
- * 
- * <p>
- * Turn-around time for database objects is too long. Embed SQL in Java instead.
- * </p>
+ * Rocket to index person referrals from CMS into ElasticSearch.
  * 
  * @author CWDS API Team
  */
 public class ReferralHistoryIndexerJob
-    extends BasePersonIndexerJob<ReplicatedPersonReferrals, EsPersonReferral>
-    implements JobResultSetAware<EsPersonReferral> {
+    extends BasePersonRocket<ReplicatedPersonReferrals, EsPersonReferral>
+    implements NeutronRowMapper<EsPersonReferral> {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReferralHistoryIndexerJob.class);
 
+//@formatter:off
   protected static final String INSERT_CLIENT_FULL =
-      "INSERT INTO #SCHEMA#.GT_REFR_CLT (FKREFERL_T, FKCLIENT_T, SENSTV_IND)\n"
-          + "\nSELECT rc.FKREFERL_T, rc.FKCLIENT_T, c.SENSTV_IND\nFROM #SCHEMA#.REFR_CLT rc\n"
-          + "\nJOIN #SCHEMA#.CLIENT_T c on c.IDENTIFIER = rc.FKCLIENT_T\n"
-          + "\nWHERE rc.FKCLIENT_T > ? AND rc.FKCLIENT_T <= ?";
+      "INSERT INTO GT_REFR_CLT (FKREFERL_T, FKCLIENT_T, SENSTV_IND)"
+          + "\nSELECT rc.FKREFERL_T, rc.FKCLIENT_T, c.SENSTV_IND"
+          + "\nFROM REFR_CLT rc"
+          + "\nJOIN CLIENT_T c on c.IDENTIFIER = rc.FKCLIENT_T"
+          + "\nWHERE rc.FKCLIENT_T BETWEEN ? AND ?"
+          + "\nAND c.IBMSNAP_OPERATION IN ('I','U') " // don't update a deleted Client document
+          ;
+//@formatter:on
 
-  protected static final String INSERT_CLIENT_LAST_CHG = "INSERT INTO #SCHEMA#.GT_ID (IDENTIFIER)\n"
-      + "WITH step1 AS (\nSELECT ALG.FKREFERL_T AS REFERRAL_ID\n"
-      + " FROM #SCHEMA#.ALLGTN_T ALG  WHERE ALG.IBMSNAP_LOGMARKER > ##TIMESTAMP##), step2 AS (\n"
-      + " SELECT ALG.FKREFERL_T AS REFERRAL_ID FROM #SCHEMA#.CLIENT_T C \n"
-      + " JOIN #SCHEMA#.ALLGTN_T ALG ON (C.IDENTIFIER = ALG.FKCLIENT_0 OR C.IDENTIFIER = ALG.FKCLIENT_T)\n"
-      + " WHERE C.IBMSNAP_LOGMARKER > ##TIMESTAMP##), step3 AS (\n"
-      + " SELECT RCT.FKREFERL_T AS REFERRAL_ID FROM #SCHEMA#.REFR_CLT RCT \n"
-      + " WHERE RCT.IBMSNAP_LOGMARKER > ##TIMESTAMP##), step4 AS (\n"
-      + " SELECT RFL.IDENTIFIER AS REFERRAL_ID FROM #SCHEMA#.REFERL_T RFL \n"
-      + " WHERE RFL.IBMSNAP_LOGMARKER > ##TIMESTAMP##), step5 AS (\n"
-      + " SELECT RPT.FKREFERL_T AS REFERRAL_ID FROM #SCHEMA#.REPTR_T RPT \n"
-      + " WHERE RPT.IBMSNAP_LOGMARKER > ##TIMESTAMP##), hoard AS (\n"
-      + " SELECT s1.REFERRAL_ID FROM STEP1 s1 UNION ALL\n"
-      + " SELECT s2.REFERRAL_ID FROM STEP2 s2 UNION ALL\n"
-      + " SELECT s3.REFERRAL_ID FROM STEP3 s3 UNION ALL\n"
-      + " SELECT s4.REFERRAL_ID FROM STEP4 s4 UNION ALL\n"
-      + " SELECT s5.REFERRAL_ID FROM STEP5 s5 )\n" + "SELECT DISTINCT g.REFERRAL_ID from hoard g ";
+  /**
+   * Filter <strong>deleted</strong> Client, Referral, Referral/Client, Allegation.
+   */
+//@formatter:off
+  protected static final String INSERT_CLIENT_LAST_CHG = 
+      "INSERT INTO GT_ID (IDENTIFIER)\n"
+      + " WITH step1 AS (\n"
+      + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID\n"
+      + "     FROM ALLGTN_T ALG \n"
+      + "     WHERE ALG.IBMSNAP_LOGMARKER > ?\n"
+      + " ), "
+      + " step2 AS (\n"
+      + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID \n"
+      + "     FROM CLIENT_T C \n"
+      + "     JOIN ALLGTN_T ALG ON (C.IDENTIFIER = ALG.FKCLIENT_0 OR C.IDENTIFIER = ALG.FKCLIENT_T)\n"
+      + "     WHERE C.IBMSNAP_LOGMARKER > ?\n"
+      + " ),\n"
+      + " step3 AS (\n"
+      + "     SELECT RCT.FKREFERL_T AS REFERRAL_ID \n"
+      + "     FROM REFR_CLT RCT \n"
+      + "     WHERE RCT.IBMSNAP_LOGMARKER > ?\n"
+      + " ), \n"
+      + " step4 AS (\n"
+      + "     SELECT RFL.IDENTIFIER AS REFERRAL_ID \n"
+      + "     FROM REFERL_T RFL \n"
+      + "     WHERE RFL.IBMSNAP_LOGMARKER > ?\n"
+      + " ), "
+      + " step5 AS (\n"
+      + "     SELECT RPT.FKREFERL_T AS REFERRAL_ID \n"
+      + "     FROM REPTR_T RPT \n"
+      + "     WHERE RPT.IBMSNAP_LOGMARKER > ?\n"
+      + " ), \n"
+      + " hoard AS (\n"
+      + "     SELECT s1.REFERRAL_ID FROM STEP1 s1 UNION ALL\n"
+      + "     SELECT s2.REFERRAL_ID FROM STEP2 s2 UNION ALL\n"
+      + "     SELECT s3.REFERRAL_ID FROM STEP3 s3 UNION ALL\n"
+      + "     SELECT s4.REFERRAL_ID FROM STEP4 s4 UNION ALL\n"
+      + "     SELECT s5.REFERRAL_ID FROM STEP5 s5 \n"
+      + " ) \n"
+      + " SELECT DISTINCT g.REFERRAL_ID FROM hoard g \n";
+//@formatter:on
 
+//@formatter:off
   protected static final String SELECT_CLIENT =
-      "SELECT FKCLIENT_T, FKREFERL_T, SENSTV_IND FROM #SCHEMA#.GT_REFR_CLT RC";
+        "SELECT rc.FKCLIENT_T, rc.FKREFERL_T, rc.SENSTV_IND, c.IBMSNAP_OPERATION AS CLT_IBMSNAP_OPERATION \n" 
+      + "FROM GT_REFR_CLT RC \n"
+      + "JOIN CLIENT_T C ON C.IDENTIFIER = RC.FKCLIENT_T";
+//@formatter:on
 
+//@formatter:off
   protected static final String SELECT_ALLEGATION = "SELECT \n"
-      + " RC.FKREFERL_T         AS REFERRAL_ID," + " ALG.IDENTIFIER        AS ALLEGATION_ID,\n"
+      + " RC.FKREFERL_T         AS REFERRAL_ID,\n" 
+      + " ALG.IDENTIFIER        AS ALLEGATION_ID,\n"
       + " ALG.ALG_DSPC          AS ALLEGATION_DISPOSITION,\n"
       + " ALG.ALG_TPC           AS ALLEGATION_TYPE,\n"
       + " ALG.LST_UPD_TS        AS ALLEGATION_LAST_UPDATED,\n"
@@ -107,16 +133,23 @@ public class ReferralHistoryIndexerJob
       + " CLP.LST_UPD_TS        AS PERPETRATOR_LAST_UPDATED,\n"
       + " CLV.IDENTIFIER        AS VICTIM_ID,\n"
       + " CLV.SENSTV_IND        AS VICTIM_SENSITIVITY_IND,\n"
-      + " TRIM(CLV.COM_FST_NM)  AS VICTIM_FIRST_NM," + " TRIM(CLV.COM_LST_NM)  AS VICTIM_LAST_NM,\n"
-      + " CLV.LST_UPD_TS        AS VICTIM_LAST_UPDATED," + " CURRENT TIMESTAMP AS LAST_CHG \n"
-      + "FROM (SELECT DISTINCT rc1.FKREFERL_T FROM #SCHEMA#.GT_REFR_CLT rc1) RC \n"
-      + "JOIN #SCHEMA#.ALLGTN_T       ALG  ON ALG.FKREFERL_T = RC.FKREFERL_T \n"
-      + "JOIN #SCHEMA#.CLIENT_T       CLV  ON CLV.IDENTIFIER = ALG.FKCLIENT_T \n"
-      + "LEFT JOIN #SCHEMA#.CLIENT_T  CLP  ON CLP.IDENTIFIER = ALG.FKCLIENT_0 \n"
-      + " FOR READ ONLY WITH UR ";
+      + " TRIM(CLV.COM_FST_NM)  AS VICTIM_FIRST_NM,\n"
+      + " TRIM(CLV.COM_LST_NM)  AS VICTIM_LAST_NM,\n"
+      + " CLV.LST_UPD_TS        AS VICTIM_LAST_UPDATED,\n" 
+      + " CURRENT TIMESTAMP     AS LAST_CHG, \n"
+      + " ALG.IBMSNAP_OPERATION AS ALG_IBMSNAP_OPERATION \n"
+      + "FROM (SELECT DISTINCT rc1.FKREFERL_T FROM GT_REFR_CLT rc1) RC \n"
+      + "JOIN ALLGTN_T       ALG  ON ALG.FKREFERL_T = RC.FKREFERL_T \n"
+      + "JOIN CLIENT_T       CLV  ON CLV.IDENTIFIER = ALG.FKCLIENT_T \n"
+      + "LEFT JOIN CLIENT_T  CLP  ON CLP.IDENTIFIER = ALG.FKCLIENT_0 \n"
+      + "WITH UR ";
+//@formatter:on
 
-  protected static final String SELECT_REFERRAL = "SELECT RFL.IDENTIFIER        AS REFERRAL_ID,\n"
-      + " RFL.REF_RCV_DT        AS START_DATE," + " RFL.REFCLSR_DT        AS END_DATE,\n"
+//@formatter:off
+  protected static final String SELECT_REFERRAL = "SELECT "
+      + " RFL.IDENTIFIER        AS REFERRAL_ID,\n"
+      + " RFL.REF_RCV_DT        AS START_DATE,\n" 
+      + " RFL.REFCLSR_DT        AS END_DATE,\n"
       + " RFL.RFR_RSPC          AS REFERRAL_RESPONSE_TYPE,\n"
       + " RFL.LMT_ACSSCD        AS LIMITED_ACCESS_CODE,\n"
       + " RFL.LMT_ACS_DT        AS LIMITED_ACCESS_DATE,\n"
@@ -127,21 +160,26 @@ public class ReferralHistoryIndexerJob
       + " TRIM(RPT.RPTR_FSTNM)  AS REPORTER_FIRST_NM,\n"
       + " TRIM(RPT.RPTR_LSTNM)  AS REPORTER_LAST_NM,\n"
       + " RPT.LST_UPD_TS        AS REPORTER_LAST_UPDATED,\n"
-      + " STP.IDENTIFIER        AS WORKER_ID,\n" + " TRIM(STP.FIRST_NM)    AS WORKER_FIRST_NM,\n"
+      + " STP.IDENTIFIER        AS WORKER_ID,\n" 
+      + " TRIM(STP.FIRST_NM)    AS WORKER_FIRST_NM,\n"
       + " TRIM(STP.LAST_NM)     AS WORKER_LAST_NM,\n"
       + " STP.LST_UPD_TS        AS WORKER_LAST_UPDATED,\n"
-      + " RFL.GVR_ENTC          AS REFERRAL_COUNTY,\n" + " CURRENT TIMESTAMP     AS LAST_CHG \n"
-      + "FROM (SELECT DISTINCT rc1.FKREFERL_T FROM #SCHEMA#.GT_REFR_CLT rc1) RC \n"
-      + "JOIN #SCHEMA#.REFERL_T          RFL  ON RFL.IDENTIFIER = RC.FKREFERL_T \n"
-      + "LEFT JOIN #SCHEMA#.REPTR_T      RPT  ON RPT.FKREFERL_T = RFL.IDENTIFIER \n"
-      + "LEFT JOIN #SCHEMA#.STFPERST     STP  ON RFL.FKSTFPERST = STP.IDENTIFIER ";
+      + " RFL.GVR_ENTC          AS REFERRAL_COUNTY,\n" 
+      + " CURRENT TIMESTAMP     AS LAST_CHG, \n"
+      + " RFL.IBMSNAP_OPERATION AS RFL_IBMSNAP_OPERATION, \n"
+      + " RPT.IBMSNAP_OPERATION AS RPT_IBMSNAP_OPERATION \n"
+      + "FROM (SELECT DISTINCT rc1.FKREFERL_T FROM GT_REFR_CLT rc1) RC \n"
+      + "JOIN REFERL_T          RFL  ON RFL.IDENTIFIER = RC.FKREFERL_T \n"
+      + "LEFT JOIN REPTR_T      RPT  ON RPT.FKREFERL_T = RFL.IDENTIFIER \n"
+      + "LEFT JOIN STFPERST     STP  ON RFL.FKSTFPERST = STP.IDENTIFIER ";
+//@formatter:on
 
   /**
    * Allocate memory once for each thread and reuse per key range.
    * 
    * <p>
-   * Note: <strong>use thread local variables sparingly</strong> because they stick to the thread.
-   * This Neutron job reuses threads for performance, since thread creation is expensive.
+   * Use thread local variables <strong>sparingly</strong> because they stick to the thread. This
+   * Neutron rocket reuses threads for performance, since thread creation is expensive.
    * </p>
    */
   protected transient ThreadLocal<List<EsPersonReferral>> allocAllegations = new ThreadLocal<>();
@@ -154,31 +192,32 @@ public class ReferralHistoryIndexerJob
 
   protected transient ThreadLocal<List<EsPersonReferral>> allocReadyToNorm = new ThreadLocal<>();
 
-  private final AtomicInteger rowsReadReferrals = new AtomicInteger(0);
+  protected final AtomicInteger rowsReadReferrals = new AtomicInteger(0);
 
-  private final AtomicInteger rowsReadAllegations = new AtomicInteger(0);
+  protected final AtomicInteger rowsReadAllegations = new AtomicInteger(0);
 
-  private final AtomicInteger nextThreadNum = new AtomicInteger(0);
+  protected final AtomicInteger nextThreadNum = new AtomicInteger(0);
+
+  private boolean monitorDb2;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
-   * @param clientDao DAO for {@link ReplicatedPersonReferrals}
+   * @param dao DAO for {@link ReplicatedPersonReferrals}
    * @param esDao ElasticSearch DAO
-   * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
+   * @param lastRunFile last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
-   * @param sessionFactory Hibernate session factory
+   * @param flightPlan command line options
    */
   @Inject
-  public ReferralHistoryIndexerJob(ReplicatedPersonReferralsDao clientDao, ElasticsearchDao esDao,
-      @LastRunFile String lastJobRunTimeFilename, ObjectMapper mapper,
-      @CmsSessionFactory SessionFactory sessionFactory) {
-    super(clientDao, esDao, lastJobRunTimeFilename, mapper, sessionFactory);
+  public ReferralHistoryIndexerJob(ReplicatedPersonReferralsDao dao, ElasticsearchDao esDao,
+      @LastRunFile String lastRunFile, ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
   @Override
   public Class<? extends ApiGroupNormalizer<? extends PersistentObject>> getDenormalizedClass() {
-    EsPersonReferral.setOpts(getOpts()); // WARNING: change for continuous mode
+    EsPersonReferral.setOpts(getFlightPlan()); // WARNING: change for continuous mode
     return EsPersonReferral.class;
   }
 
@@ -193,27 +232,19 @@ public class ReferralHistoryIndexerJob
   }
 
   /**
-   * @deprecated soon to be removed
+   * Roll your own SQL.
    */
   @Override
-  @Deprecated
-  public String getLegacySourceTable() {
-    return "REFERL_T";
-  }
-
-  @Override
   public String getInitialLoadQuery(String dbSchemaName) {
-    // Roll your own SQL. Turn-around on DB2 objects from other teams takes too long.
-
     final StringBuilder buf = new StringBuilder();
-    buf.append(SELECT_REFERRAL.replaceAll("#SCHEMA#", dbSchemaName));
+    buf.append(SELECT_REFERRAL);
 
-    if (!getOpts().isLoadSealedAndSensitive()) {
+    if (!getFlightPlan().isLoadSealedAndSensitive()) {
       buf.append(" WHERE RFL.LMT_ACSSCD = 'N' ");
     }
 
     buf.append(getJdbcOrderBy()).append(" FOR READ ONLY WITH UR ");
-    final String ret = buf.toString().replaceAll("\\s+", " ");
+    final String ret = buf.toString().replaceAll("\\s+", " ").trim();
     LOGGER.info("REFERRAL SQL: {}", ret);
     return ret;
   }
@@ -223,15 +254,18 @@ public class ReferralHistoryIndexerJob
    * 
    * @return a connection
    * @throws SQLException on database error
-   * @throws InterruptedException on thread error
    */
-  protected synchronized Connection getConnection() throws SQLException, InterruptedException {
+  protected synchronized Connection getConnection() throws SQLException {
     return jobDao.getSessionFactory().getSessionFactoryOptions().getServiceRegistry()
         .getService(ConnectionProvider.class).getConnection();
   }
 
   /**
-   * Allocate memory once for this thread and reuse it per key range.
+   * Initial mode only. Allocate memory once per thread and reuse it.
+   * 
+   * <p>
+   * NEXT: calculate container sizes by bundle size.
+   * </p>
    */
   protected void allocateThreadMemory() {
     if (allocAllegations.get() == null) {
@@ -245,7 +279,6 @@ public class ReferralHistoryIndexerJob
   protected void readClients(final PreparedStatement stmtInsClient,
       final PreparedStatement stmtSelClient, final List<MinClientReferral> listClientReferralKeys,
       final Pair<String, String> p) throws SQLException {
-
     // Prepare client list.
     stmtInsClient.setMaxRows(0);
     stmtInsClient.setQueryTimeout(0);
@@ -258,7 +291,7 @@ public class ReferralHistoryIndexerJob
     // Prepare retrieval.
     stmtSelClient.setMaxRows(0);
     stmtSelClient.setQueryTimeout(0);
-    stmtSelClient.setFetchSize(NeutronIntegerDefaults.DEFAULT_FETCH_SIZE.getValue());
+    stmtSelClient.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
     LOGGER.info("pull client referral keys");
     final ResultSet rs = stmtSelClient.executeQuery(); // NOSONAR
@@ -271,31 +304,34 @@ public class ReferralHistoryIndexerJob
       final Map<String, EsPersonReferral> mapReferrals) throws SQLException {
     stmtSelReferral.setMaxRows(0);
     stmtSelReferral.setQueryTimeout(0);
-    stmtSelReferral.setFetchSize(NeutronIntegerDefaults.DEFAULT_FETCH_SIZE.getValue());
+    stmtSelReferral.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
     int cntr = 0;
     EsPersonReferral m;
     LOGGER.info("pull referrals");
     final ResultSet rs = stmtSelReferral.executeQuery(); // NOSONAR
-    while (!isFailed() && rs.next() && (m = extractReferral(rs)) != null) {
+    while (!isFailed() && rs.next() && (m = EsPersonReferral.extractReferral(rs)) != null) {
       JobLogs.logEvery(++cntr, "read", "bundle referral");
       JobLogs.logEvery(LOGGER, 10000, rowsReadReferrals.incrementAndGet(), "Total read",
           "referrals");
-      mapReferrals.put(m.getReferralId(), m);
+      if (m.getReferralClientReplicationOperation() != CmsReplicationOperation.D) {
+        mapReferrals.put(m.getReferralId(), m);
+      }
     }
   }
 
+  @SuppressWarnings("javadoc")
   protected void readAllegations(final PreparedStatement stmtSelAllegation,
       final List<EsPersonReferral> listAllegations) throws SQLException {
     stmtSelAllegation.setMaxRows(0);
     stmtSelAllegation.setQueryTimeout(0);
-    stmtSelAllegation.setFetchSize(NeutronIntegerDefaults.DEFAULT_FETCH_SIZE.getValue());
+    stmtSelAllegation.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
     int cntr = 0;
     EsPersonReferral m;
     LOGGER.info("pull allegations");
     final ResultSet rs = stmtSelAllegation.executeQuery(); // NOSONAR
-    while (!isFailed() && rs.next() && (m = extractAllegation(rs)) != null) {
+    while (!isFailed() && rs.next() && (m = EsPersonReferral.extractAllegation(rs)) != null) {
       JobLogs.logEvery(++cntr, "read", "bundle allegation");
       JobLogs.logEvery(LOGGER, 15000, rowsReadAllegations.incrementAndGet(), "Total read",
           "allegations");
@@ -303,181 +339,252 @@ public class ReferralHistoryIndexerJob
     }
   }
 
+  @Override
+  public List<ReplicatedPersonReferrals> normalize(List<EsPersonReferral> recs) {
+    return EntityNormalizer.<ReplicatedPersonReferrals, EsPersonReferral>normalizeList(recs);
+  }
+
+  @SuppressWarnings("javadoc")
+  protected int normalizeClientReferrals(int cntr, MinClientReferral rc1, final String clientId,
+      final Map<String, EsPersonReferral> mapReferrals,
+      final List<EsPersonReferral> listReadyToNorm,
+      final Map<String, List<EsPersonReferral>> mapAllegationByReferral) {
+    int ret = cntr;
+    final String referralId = rc1.getReferralId();
+    final EsPersonReferral denormReferral = mapReferrals.get(referralId);
+    final boolean goodToGo = denormReferral != null
+        && denormReferral.getReferralReplicationOperation() != CmsReplicationOperation.D;
+
+    // Sealed and sensitive may be excluded.
+    if (goodToGo) {
+      // Loop allegations for this referral:
+      if (mapAllegationByReferral.containsKey(referralId)) {
+        for (EsPersonReferral alg : mapAllegationByReferral.get(referralId)) {
+          alg.mergeClientReferralInfo(clientId, denormReferral);
+          listReadyToNorm.add(alg);
+        }
+      } else {
+        listReadyToNorm.add(denormReferral);
+      }
+    }
+
+    // #152932457: Overwrite deleted referrals.
+    final ReplicatedPersonReferrals repl =
+        goodToGo ? normalizeSingle(listReadyToNorm) : new ReplicatedPersonReferrals(clientId);
+    ++ret;
+    repl.setClientId(clientId);
+    addToIndexQueue(repl);
+
+    return ret;
+  }
+
+  @SuppressWarnings("javadoc")
   protected int normalizeQueryResults(final Map<String, EsPersonReferral> mapReferrals,
       final List<EsPersonReferral> listReadyToNorm,
       final Map<String, List<MinClientReferral>> mapReferralByClient,
       final Map<String, List<EsPersonReferral>> mapAllegationByReferral) {
-    LOGGER.info("Normalize all: START");
+    LOGGER.debug("Normalize all: START");
+    int countNormalized = 0;
 
-    int cntr = 0;
     for (Map.Entry<String, List<MinClientReferral>> rc : mapReferralByClient.entrySet()) {
-      // Loop referrals for this client:
       final String clientId = rc.getKey();
+      // Loop referrals for this client only.
       if (StringUtils.isNotBlank(clientId)) {
-        listReadyToNorm.clear();
+        listReadyToNorm.clear(); // next client id
         for (MinClientReferral rc1 : rc.getValue()) {
-          final String referralId = rc1.referralId;
-          final EsPersonReferral ref = mapReferrals.get(referralId);
-
-          // Sealed and sensitive may be excluded.
-          if (ref != null) {
-            // Loop allegations for this referral:
-            if (mapAllegationByReferral.containsKey(referralId)) {
-              for (EsPersonReferral alg : mapAllegationByReferral.get(referralId)) {
-                alg.mergeClientReferralInfo(clientId, ref);
-                listReadyToNorm.add(alg);
-              }
-            } else {
-              listReadyToNorm.add(ref);
-            }
-          }
-        }
-
-        final ReplicatedPersonReferrals repl = normalizeSingle(listReadyToNorm);
-        if (repl != null) {
-          ++cntr;
-          repl.setClientId(clientId);
-          addToIndexQueue(repl);
+          countNormalized = normalizeClientReferrals(countNormalized, rc1, clientId, mapReferrals,
+              listReadyToNorm, mapAllegationByReferral);
         }
       }
     }
 
-    LOGGER.info("Normalize all: END");
-    return cntr;
+    LOGGER.debug("Normalize all: END");
+    return countNormalized;
+  }
+
+  @SuppressWarnings("javadoc")
+  protected DB2SystemMonitor buildMonitor(final Connection con) {
+    DB2SystemMonitor ret = null;
+    if (monitorDb2) {
+      ret = NeutronDB2Utils.monitorStart(con);
+    }
+    return ret;
+  }
+
+  @SuppressWarnings("javadoc")
+  protected void monitorStopAndReport(DB2SystemMonitor monitor) throws SQLException {
+    if (monitor != null) {
+      NeutronDB2Utils.monitorStopAndReport(monitor);
+    }
   }
 
   /**
-   * Read records from a single partition. Then sort results on our own.
+   * Release heap objects early and often. Good time to <strong>request</strong> garbage collection,
+   * not demand it. Java GC runs in a dedicated thread anyway.
+   * <p>
+   * SonarQube disagrees.
+   * </p>
+   * The catch: when many threads run, parallel GC may not get sufficient CPU cycles, until heap
+   * memory is exhausted. Yes, this is a good place to drop a hint to GC that it
+   * <strong>might</strong> want to clean up memory.
+   * 
+   * @param listAllegations EsPersonReferral
+   * @param mapReferrals k=id, v=EsPersonReferral
+   * @param listClientReferralKeys client/referral id pairs
+   * @param listReadyToNorm EsPersonReferral
+   */
+  protected void cleanUpMemory(final List<EsPersonReferral> listAllegations,
+      Map<String, EsPersonReferral> mapReferrals, List<MinClientReferral> listClientReferralKeys,
+      List<EsPersonReferral> listReadyToNorm) {
+    releaseLocalMemory(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
+    System.gc(); // NOSONAR
+  }
+
+  /**
+   * Pour referrals, allegations, and client/referral keys into the caldron and brew into a
+   * referrals element per client.
+   * 
+   * @param listAllegations bundle allegations
+   * @param mapReferrals k=referral id, v=EsPersonReferral
+   * @param listClientReferralKeys client/referral key pairs
+   * @param listReadyToNorm denormalized records
+   * @return normalized record count
+   */
+  protected int mapReduce(final List<EsPersonReferral> listAllegations,
+      final Map<String, EsPersonReferral> mapReferrals,
+      final List<MinClientReferral> listClientReferralKeys,
+      final List<EsPersonReferral> listReadyToNorm) {
+    int countNormalized = 0;
+    try {
+      final Map<String, List<MinClientReferral>> mapReferralByClient = listClientReferralKeys
+          .stream().sorted((e1, e2) -> e1.getClientId().compareTo(e2.getClientId()))
+          .collect(Collectors.groupingBy(MinClientReferral::getClientId));
+      listClientReferralKeys.clear(); // release objects for gc
+
+      final Map<String, List<EsPersonReferral>> mapAllegationByReferral = listAllegations.stream()
+          .sorted((e1, e2) -> e1.getReferralId().compareTo(e2.getReferralId()))
+          .collect(Collectors.groupingBy(EsPersonReferral::getReferralId));
+      listAllegations.clear(); // release objects for gc
+
+      // For each client group:
+      countNormalized = normalizeQueryResults(mapReferrals, listReadyToNorm, mapReferralByClient,
+          mapAllegationByReferral);
+    } finally {
+      cleanUpMemory(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
+    }
+    return countNormalized;
+  }
+
+  @SuppressWarnings("javadoc")
+  protected String getClientSeedQuery() {
+    return INSERT_CLIENT_FULL;
+  }
+
+  /**
+   * Read all records from a single partition (key range) in buckets. Then sort results and
+   * normalize.
    * 
    * <p>
-   * Each call of this method may run in its own thread.
+   * Each call to this method should run in its own thread.
    * </p>
    * 
-   * @param p partition range to read
+   * @param p partition (key) range to read
    * @return number of client documents affected
    */
-  protected int pullRange(final Pair<String, String> p) {
-    final int i = nextThreadNum.incrementAndGet();
-    final String threadName = "extract_" + i + "_" + p.getLeft() + "_" + p.getRight();
-    Thread.currentThread().setName(threadName);
+  protected int pullNextRange(final Pair<String, String> p) {
+    final String threadName =
+        "extract_" + nextThreadNum.incrementAndGet() + "_" + p.getLeft() + "_" + p.getRight();
+    nameThread(threadName);
     LOGGER.info("BEGIN");
+    getFlightLog().markRangeStart(p);
 
-    allocateThreadMemory();
+    allocateThreadMemory(); // allocate thread local memory, if not done prior.
     final List<EsPersonReferral> listAllegations = allocAllegations.get();
     final Map<String, EsPersonReferral> mapReferrals = allocReferrals.get();
     final List<MinClientReferral> listClientReferralKeys = allocClientReferralKeys.get();
     final List<EsPersonReferral> listReadyToNorm = allocReadyToNorm.get();
 
-    // Clear collections, for safety.
+    // Clear collections, free memory before starting.
     releaseLocalMemory(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
 
     try (final Connection con = getConnection()) {
       con.setSchema(getDBSchemaName());
       con.setAutoCommit(false);
-      JobDB2Utils.enableParallelism(con);
+      NeutronDB2Utils.enableParallelism(con);
 
-      final DB2SystemMonitor monitor = JobDB2Utils.monitorStart(con);
+      final DB2SystemMonitor monitor = NeutronDB2Utils.monitorStart(con);
       final String schema = getDBSchemaName();
 
-      try (
-          final PreparedStatement stmtInsClient = con.prepareStatement(
-              INSERT_CLIENT_FULL.replaceAll("#SCHEMA#", schema).replaceAll("\\s+", " ").trim());
-          final PreparedStatement stmtSelClient = con.prepareStatement(
-              SELECT_CLIENT.replaceAll("#SCHEMA#", schema).replaceAll("\\s+", " ").trim());
+      try (final PreparedStatement stmtInsClient = con.prepareStatement(getClientSeedQuery());
+          final PreparedStatement stmtSelClient = con.prepareStatement(SELECT_CLIENT);
           final PreparedStatement stmtSelReferral =
-              con.prepareStatement(getInitialLoadQuery(schema).replaceAll("\\s+", " ").trim());
-          final PreparedStatement stmtSelAllegation = con.prepareStatement(
-              SELECT_ALLEGATION.replaceAll("#SCHEMA#", schema).replaceAll("\\s+", " ").trim())) {
-
+              con.prepareStatement(getInitialLoadQuery(schema));
+          final PreparedStatement stmtSelAllegation = con.prepareStatement(SELECT_ALLEGATION)) {
         readClients(stmtInsClient, stmtSelClient, listClientReferralKeys, p);
         readReferrals(stmtSelReferral, mapReferrals);
         readAllegations(stmtSelAllegation, listAllegations);
 
-        JobDB2Utils.monitorStopAndReport(monitor);
+        NeutronDB2Utils.monitorStopAndReport(monitor);
         con.commit();
-
-      } finally {
-        // The statements and result sets close automatically.
       }
-
     } catch (Exception e) {
-      markFailed();
-      JobLogs.raiseError(LOGGER, e, "ERROR HANDING RANGE {} - {}: {}", p.getLeft(), p.getRight(),
-          e.getMessage());
+      fail();
+      throw JobLogs.runtime(LOGGER, e, "ERROR HANDLING RANGE {} - {}: {}", p.getLeft(),
+          p.getRight(), e.getMessage());
     }
 
-    int cntr = 0;
-    try {
-      final Map<String, List<MinClientReferral>> mapReferralByClient = listClientReferralKeys
-          .stream().sorted((e1, e2) -> e1.getClientId().compareTo(e2.getClientId()))
-          .collect(Collectors.groupingBy(MinClientReferral::getClientId));
-      listClientReferralKeys.clear();
-
-      final Map<String, List<EsPersonReferral>> mapAllegationByReferral = listAllegations.stream()
-          .sorted((e1, e2) -> e1.getReferralId().compareTo(e2.getReferralId()))
-          .collect(Collectors.groupingBy(EsPersonReferral::getReferralId));
-      listAllegations.clear();
-
-      // For each client group:
-      cntr = normalizeQueryResults(mapReferrals, listReadyToNorm, mapReferralByClient,
-          mapAllegationByReferral);
-    } finally {
-      // Release heap objects early and often.
-      releaseLocalMemory(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
-
-      // Good time to *request* garbage collection, not *demand* it. GC runs in another thread.
-      // SonarQube disagrees.
-      // The catch: when many threads run, parallel GC may not get sufficient CPU cycles, until heap
-      // memory is exhausted. Yes, this is a good place to drop a hint to GC that it *might* want to
-      // clean up memory.
-      System.gc(); // NOSONAR
-    }
-
+    int cntr = mapReduce(listAllegations, mapReferrals, listClientReferralKeys, listReadyToNorm);
+    getFlightLog().markRangeComplete(p);
     LOGGER.info("DONE");
     return cntr;
   }
 
   /**
-   * The "extract" part of ETL. Parallel stream produces runs partition ranges in separate threads.
+   * Initial load only. The "extract" part of ETL. Runs partition/key ranges in separate threads.
+   * 
+   * <p>
+   * Note that this rocket normalizes <strong>without</strong> the transform thread.
+   * </p>
    */
   @Override
   protected void threadRetrieveByJdbc() {
-    Thread.currentThread().setName("read_main");
+    nameThread("read_main");
     LOGGER.info("BEGIN: main read thread");
-    EsPersonReferral.setOpts(getOpts()); // NOTE: ok for one-shot JVM but not ok in continuous mode
+
+    // WARNING: static setter is OK in *standalone* rocket but NOT wise in continuous mode.
+    EsPersonReferral.setOpts(getFlightPlan());
+    doneTransform(); // normalize in place **WITHOUT** the transform thread
 
     try {
-      // This job normalizes **without** the transform thread.
-      markTransformDone();
-
-      // Init task list.
       final List<Pair<String, String>> ranges = getPartitionRanges();
-      LOGGER.warn(">>>>>>>> # OF RANGES: {} <<<<<<<<", ranges);
+      LOGGER.info(">>>>>>>> # OF RANGES: {} <<<<<<<<", ranges);
       final List<ForkJoinTask<?>> tasks = new ArrayList<>(ranges.size());
-      final ForkJoinPool threadPool = new ForkJoinPool(JobJdbcUtils.calcReaderThreads(getOpts()));
+      final ForkJoinPool threadPool =
+          new ForkJoinPool(NeutronThreadUtils.calcReaderThreads(getFlightPlan()));
 
       // Queue execution.
       for (Pair<String, String> p : ranges) {
-        tasks.add(threadPool.submit(() -> pullRange(p)));
+        // Pull each range independently on the next available thread.
+        tasks.add(threadPool.submit(() -> pullNextRange(p)));
       }
 
       // Join threads. Don't return from method until they complete.
       for (ForkJoinTask<?> task : tasks) {
         task.get();
       }
-
-      LOGGER.info("read {} ES referral rows", this.rowsReadReferrals.get());
-
     } catch (Exception e) {
-      markFailed();
-      JobLogs.raiseError(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
+      fail();
+      throw JobLogs.runtime(LOGGER, e, "ERROR IN THREADED RETRIEVAL! {}", e.getMessage());
     } finally {
-      markRetrieveDone();
+      doneRetrieve();
     }
 
-    LOGGER.info("DONE: main read thread");
+    LOGGER.info("DONE: read {} ES referral rows", this.rowsReadReferrals.get());
   }
 
+  /**
+   * This rocket normalizes <strong>without</strong> the transform thread.
+   */
   @Override
   public boolean useTransformThread() {
     return false;
@@ -489,8 +596,19 @@ public class ReferralHistoryIndexerJob
   }
 
   @Override
-  public boolean providesInitialKeyRanges() {
+  public boolean isInitialLoadJdbc() {
     return true;
+  }
+
+  /**
+   * Referrals is an <strong>enormous</strong> task and fetches partition ranges from a file instead
+   * of bloating a Java class.
+   * 
+   * @see ReferralJobRanges
+   */
+  @Override
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    return new ReferralJobRanges().getPartitionRanges(this);
   }
 
   /**
@@ -499,111 +617,18 @@ public class ReferralHistoryIndexerJob
    */
   @Override
   public boolean mustDeleteLimitedAccessRecords() {
-    return !getOpts().isLoadSealedAndSensitive();
+    return !getFlightPlan().isLoadSealedAndSensitive();
   }
 
   @Override
-  public List<ReplicatedPersonReferrals> normalize(List<EsPersonReferral> recs) {
-    return EntityNormalizer.<ReplicatedPersonReferrals, EsPersonReferral>normalizeList(recs);
+  public String getOptionalElementName() {
+    return "referrals";
   }
 
   @Override
-  protected List<Pair<String, String>> getPartitionRanges() {
-    return new ReferralJobRanges().getPartitionRanges(this);
-  }
-
-  @Override
-  protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp,
-      ReplicatedPersonReferrals referrals) throws IOException {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("{\"referrals\":[");
-
-    final List<ElasticSearchPersonReferral> esPersonReferrals = referrals.getReferrals();
-    esp.setReferrals(esPersonReferrals);
-
-    if (esPersonReferrals != null && !esPersonReferrals.isEmpty()) {
-      buf.append(esPersonReferrals.stream().map(ElasticTransformer::jsonify)
-          .sorted(String::compareTo).collect(Collectors.joining(",")));
-    }
-
-    buf.append("]}");
-
-    final String updateJson = buf.toString();
-    final String insertJson = mapper.writeValueAsString(esp);
-
-    final String alias = esDao.getConfig().getElasticsearchAlias();
-    final String docType = esDao.getConfig().getElasticsearchDocType();
-
-    return new UpdateRequest(alias, docType, esp.getId()).doc(updateJson)
-        .upsert(new IndexRequest(alias, docType, esp.getId()).source(insertJson));
-  }
-
-  /**
-   * IBM strongly recommends retrieving column results by position, not by column name.
-   * 
-   * @param rs referral result set
-   * @return parent referral element
-   * @throws SQLException on DB error
-   */
-  protected EsPersonReferral extractReferral(final ResultSet rs) throws SQLException {
-    EsPersonReferral ret = new EsPersonReferral();
-
-    int columnIndex = 0;
-    ret.setReferralId(rs.getString(++columnIndex));
-    ret.setStartDate(rs.getDate(++columnIndex));
-    ret.setEndDate(rs.getDate(++columnIndex));
-    ret.setReferralResponseType(rs.getInt(++columnIndex));
-
-    ret.setLimitedAccessCode(ifNull(rs.getString(++columnIndex)));
-    ret.setLimitedAccessDate(rs.getDate(++columnIndex));
-    ret.setLimitedAccessDescription(ifNull(rs.getString(++columnIndex)));
-    ret.setLimitedAccessGovernmentEntityId(rs.getInt(++columnIndex));
-    ret.setReferralLastUpdated(rs.getTimestamp(++columnIndex));
-
-    ret.setReporterId(ifNull(rs.getString(++columnIndex)));
-    ret.setReporterFirstName(ifNull(rs.getString(++columnIndex)));
-    ret.setReporterLastName(ifNull(rs.getString(++columnIndex)));
-    ret.setReporterLastUpdated(rs.getTimestamp(++columnIndex));
-
-    ret.setWorkerId(ifNull(rs.getString(++columnIndex)));
-    ret.setWorkerFirstName(ifNull(rs.getString(++columnIndex)));
-    ret.setWorkerLastName(ifNull(rs.getString(++columnIndex)));
-    ret.setWorkerLastUpdated(rs.getTimestamp(++columnIndex));
-
-    ret.setCounty(rs.getInt(++columnIndex));
-    ret.setLastChange(rs.getDate(++columnIndex));
-
-    return ret;
-  }
-
-  /**
-   * @param rs allegation result set
-   * @return allegation side of referral
-   * @throws SQLException database error
-   */
-  protected EsPersonReferral extractAllegation(final ResultSet rs) throws SQLException {
-    EsPersonReferral ret = new EsPersonReferral();
-
-    int columnIndex = 0;
-    ret.setReferralId(ifNull(rs.getString(++columnIndex)));
-    ret.setAllegationId(ifNull(rs.getString(++columnIndex)));
-    ret.setAllegationDisposition(rs.getInt(++columnIndex));
-    ret.setAllegationType(rs.getInt(++columnIndex));
-    ret.setAllegationLastUpdated(rs.getTimestamp(++columnIndex));
-
-    ret.setPerpetratorId(ifNull(rs.getString(++columnIndex)));
-    ret.setPerpetratorSensitivityIndicator(rs.getString(++columnIndex));
-    ret.setPerpetratorFirstName(ifNull(rs.getString(++columnIndex)));
-    ret.setPerpetratorLastName(ifNull(rs.getString(++columnIndex)));
-    ret.setPerpetratorLastUpdated(rs.getTimestamp(++columnIndex));
-
-    ret.setVictimId(ifNull(rs.getString(++columnIndex)));
-    ret.setVictimSensitivityIndicator(rs.getString(++columnIndex));
-    ret.setVictimFirstName(ifNull(rs.getString(++columnIndex)));
-    ret.setVictimLastName(ifNull(rs.getString(++columnIndex)));
-    ret.setVictimLastUpdated(rs.getTimestamp(++columnIndex));
-
-    return ret;
+  protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedPersonReferrals p)
+      throws NeutronException {
+    return prepareUpdateRequest(esp, p, p.getReferrals(), true);
   }
 
   @Override
@@ -611,7 +636,8 @@ public class ReferralHistoryIndexerJob
     return new EsPersonReferral(rs);
   }
 
-  private void releaseLocalMemory(final List<EsPersonReferral> listAllegations,
+  @SuppressWarnings("javadoc")
+  protected void releaseLocalMemory(final List<EsPersonReferral> listAllegations,
       final Map<String, EsPersonReferral> mapReferrals,
       final List<MinClientReferral> listClientReferralKeys,
       final List<EsPersonReferral> listReadyToNorm) {
@@ -621,13 +647,24 @@ public class ReferralHistoryIndexerJob
     mapReferrals.clear();
   }
 
+  @SuppressWarnings("javadoc")
+  public boolean isMonitorDb2() {
+    return monitorDb2;
+  }
+
+  @SuppressWarnings("javadoc")
+  public void setMonitorDb2(boolean monitorDb2) {
+    this.monitorDb2 = monitorDb2;
+  }
+
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
+   * @throws Exception on launch error
    */
-  public static void main(String... args) {
-    JobRunner.runStandalone(ReferralHistoryIndexerJob.class, args);
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(ReferralHistoryIndexerJob.class, args);
   }
 
 }
