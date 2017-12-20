@@ -11,18 +11,14 @@
 		{
 			"city": "Perth",
 			"id": "2",
-			"state": "AL",
 			"street_address": "123 Fake St",
-			"zip": "11222",
-			"type": 32
+			"zip": "11222"
 		},
 		{
 			"city": "Melbourne",
 			"id": "3",
-			"state": "AK",
 			"street_address": "12 Camden St",
-			"zip": "22333",
-			"type": 32
+			"zip": "22333"
 		}
 	],
 	"phone_numbers": [

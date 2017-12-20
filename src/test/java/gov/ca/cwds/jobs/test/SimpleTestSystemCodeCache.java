@@ -94,10 +94,9 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
     return false;
   }
 
-@Override
-public SystemCodeDescriptor getSystemCodeDescriptor(Number arg0) {
-	// TODO Auto-generated method stub
-	return null;
-}
+  @Override
+  public SystemCodeDescriptor getSystemCodeDescriptor(Number arg0) {
+    return null;
+  }
 
 }
