@@ -1,6 +1,9 @@
 buildscript {
     repositories {
-         jcenter()
+        maven {
+            url "http://sonar.dev.cwds.io:8081/artifactory/repo"
+        }
+        jcenter()
     }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
@@ -8,7 +11,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.sonarqube' version '2.5'
+    id 'org.sonarqube' version '2.6'
     id 'com.github.jk1.dependency-license-report' version '0.3.14'
 }
 
@@ -20,17 +23,17 @@ apply plugin: 'jacoco'
 
 project.ext {
     log4jVersion = "2.8"
-    elasticsearchVersion = "5.5.1"
-    coreApiVersion = "3.6.458"
+    elasticsearchVersion = "5.5.0"
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
+    dropwizardVersion = "1.1.0"
 }
 
-version = 0.32
+version = 0.37
 
 repositories {
     mavenCentral()
     maven {
-        url "http://maven2.cwds.tabordasolutions.net"
+        url "http://sonar.dev.cwds.io:8081/artifactory/repo"
     }
     maven {
         url "https://artifacts.elastic.co/maven"
@@ -44,82 +47,94 @@ dependencies {
     compile ("org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion)
 
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
+    compile group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
 
-	compile group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
-	
-	// LOGGING:	
-	compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4jVersion
-  	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4jVersion
-	compile group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4jVersion
-	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
-	compile group: 'org.slf4j', name: 'slf4j-ext', version: '1.7.25'
+    // LOGGING:
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4jVersion
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4jVersion
+    compile group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4jVersion
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+    compile group: 'org.slf4j', name: 'slf4j-ext', version: '1.7.25'
 
-	compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
-	compile 'com.google.inject.extensions:guice-jmx:4.1.0'
+    compile group: 'com.google.inject', name: 'guice', version: '4.1.0'
+    compile 'com.google.inject.extensions:guice-jmx:4.1.0'
 
-	compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
-	compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
+    compile group: "org.postgresql", name: "postgresql", version: "9.4.1212"
+    compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.0.0-rc4"
     compile 'org.hibernate:hibernate-c3p0:5.2.10.Final'
 
-	// Exclude transitive dependencies.
-    compile ("gov.ca.cwds.api:api-core:" + coreApiVersion) {
-	    exclude group: 'org.glassfish.jersey.core'
+    // Exclude transitive dependencies.
+    compile ('gov.ca.cwds.api:api-core:3.6.516') {
+        exclude group: 'org.glassfish.jersey.core'
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'
-	}
+    }
 
     compile group: "org.glassfish.jersey.ext", name: "jersey-declarative-linking", version: "2.23.2"
-	compile group: "javax.el", name: "javax.el-api", version: "2.2.4"
-	compile group: "org.glassfish.web", name: "javax.el", version: "2.2.4"
-	compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
+    compile group: "javax.el", name: "javax.el-api", version: "2.2.4"
+    compile group: "org.glassfish.web", name: "javax.el", version: "2.2.4"
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
-	compile 'com.fasterxml.jackson.module:jackson-module-guice:2.8.2'
+    compile 'com.fasterxml.jackson.module:jackson-module-guice:2.8.2'
     compile group: 'org.json', name: 'json', version: '20090211'
-	compile 'io.reactivex.rxjava2:rxjavafx:2.2.0'
+    compile 'io.reactivex.rxjava2:rxjavafx:2.2.0'
+    compile group: 'org.weakref', name: 'jmxutils', version: '1.19'
+    compile 'org.quartz-scheduler:quartz:2.3.0'
+    compile 'com.google.code.gson:gson:2.8.2'
+
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+
+    // Maven certificate problem.
+    // compile 'io.earcam:io.earcam.unexceptional:0.3.0'
 
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
     testCompile group: 'junit', name: 'junit', version: '4.+'
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.195'
-	testCompile group: 'org.mockito', name: 'mockito-core', version: '2.10.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.10.0'
     testCompile group: 'org.hamcrest', name: 'hamcrest-junit', version: '2.0.0.0'
     testCompile('org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.23.2') {
         exclude group: 'javax.servlet', module: 'javax.servlet-api'
         exclude group: 'junit', module: 'junit'
     }
 
-    // https://mvnrepository.com/artifact/nl.jqno.equalsverifier/equalsverifier
+    testCompile group: "io.dropwizard", name: "dropwizard-testing", version: dropwizardVersion
     testCompile group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '2.1.6'
     testCompile 'org.ow2.asm:asm-all:5.2'
+    testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.7.0'
+    testCompile 'io.exemplary.guice:guice-behave:1.0.0'
+
+    testCompile 'com.github.tlrx:elasticsearch-test:1.2.1'
+    // testCompile group: 'org.elasticsearch.test', name: 'framework', version: 'elasticsearchVersion'
     // testCompile 'org.jacoco:jacoco:0.7.9'
 }
 
 shadowJar {
-  classifier = ''
-  baseName = (System.properties.getProperty('baseName') != null) ? System.properties.getProperty('baseName') : 'DocumentIndexerJob'
-  mergeServiceFiles()	
-  manifest {
-    attributes 'Main-Class': (System.properties.getProperty('mainClass') != null) ? System.properties.getProperty('mainClass') : 'gov.ca.cwds.jobs.DocumentIndexerJob'
-  }
-  version version + ((System.properties.getProperty('build') != null ) ? '.' + System.properties.getProperty('build') : '')
+    classifier = ''
+    baseName = (System.properties.getProperty('baseName') != null) ? System.properties.getProperty('baseName') : 'DocumentIndexerJob'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': (System.properties.getProperty('mainClass') != null) ? System.properties.getProperty('mainClass') : 'gov.ca.cwds.jobs.DocumentIndexerJob'
+    }
+    version version + ((System.properties.getProperty('build') != null ) ? '.' + System.properties.getProperty('build') : '')
 }
 
 publishing {
-  publications {
-    shadow(MavenPublication) {
-      from components.shadow
-      groupId 'gov.ca.cwds.jobs'
-      artifactId 'jobs'
-        version version + ((System.properties.getProperty('build') != null ) ? '.' + System.properties.getProperty('build') : '')
+    publications {
+        shadow(MavenPublication) {
+            from components.shadow
+            groupId 'gov.ca.cwds.jobs'
+            artifactId 'jobs'
+            version version + ((System.properties.getProperty('build') != null ) ? '.' + System.properties.getProperty('build') : '')
+        }
     }
-  }
-  repositories {
-    maven {
-      // OPTION: set to http url.
-      url "file:///usr/share/nginx/html/maven2"
+    repositories {
+        maven {
+            // OPTION: set to http url.
+            url "http://sonar.dev.cwds.io:8081/artifactory/libs-release"
+        }
     }
-  }
 }
 
 task printProps << {
@@ -150,18 +165,18 @@ task libLicenseReport(dependsOn:[generateLicenseReport, libLicenceFolders,
 }
 
 jacocoTestReport {
-  reports {
-      xml.enabled false
-      csv.enabled false
-      html.destination "${buildDir}/jacocoHtml"
-  }
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/jacocoHtml"
+    }
 }
 
 sonarqube {
-  properties {
-      property "sonar.jacoco.reportPath",   "${buildDir}/jacoco/test.exec"
-      property "sonar.jacoco.itReportPath", "${buildDir}/jacoco/integrationTest.exec"     
-  }
+    properties {
+        property "sonar.jacoco.reportPath",   "${buildDir}/jacoco/test.exec"
+        property "sonar.jacoco.itReportPath", "${buildDir}/jacoco/integrationTest.exec"
+    }
 }
 
 licenseReport {
@@ -191,16 +206,16 @@ public class CWDSReportRenderer implements ReportRenderer {
 }
 public class CWDSTextReportRenderer implements ReportRenderer {
 
-  private Project project
-  private LicenseReportPlugin.LicenseReportExtension config
-  private File output
-  private int counter
-  private String fileName
+    private Project project
+    private LicenseReportPlugin.LicenseReportExtension config
+    private File output
+    private int counter
+    private String fileName
 
-  CWDSTextReportRenderer(String filename = 'licenses.txt'){
-      this.fileName = filename
-  }
-  public void render(ProjectData data) {
+    CWDSTextReportRenderer(String filename = 'licenses.txt'){
+        this.fileName = filename
+    }
+    public void render(ProjectData data) {
         project = data.project
         config = project.licenseReport
         output = new File(config.outputDir, fileName)
@@ -210,7 +225,7 @@ public class CWDSTextReportRenderer implements ReportRenderer {
             project.version else ''}
 ================================================================
 """
-      output << "\n\n"
+        output << "\n\n"
         printDependencies(data)
         output << """
 This report was generated at ${new Date()}.
@@ -330,7 +345,7 @@ class CWDSHtmlReportRenderer implements ReportRenderer {
     private void printDependencies(ProjectData data) {
         output << "<table >"
         output << "<hr><th>name</th><th>project url</th><th>license</th>" +
-                       "<th>Embeded License</th></hr>"
+                "<th>Embeded License</th></hr>"
         data.allDependencies.sort().each {
             output << "<tr>"
             printDependency(it)

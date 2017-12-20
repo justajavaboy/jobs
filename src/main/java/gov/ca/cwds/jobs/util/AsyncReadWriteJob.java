@@ -1,26 +1,29 @@
 package gov.ca.cwds.jobs.util;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-import gov.ca.cwds.jobs.Job;
+import gov.ca.cwds.jobs.component.Rocket;
 import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.jobs.exception.NeutronException;
 
 /**
- * @author CWDS TPT-2
+ * @author CWDS Elasticsearch Team
+ * @param <I> output reader type
+ * @param <O> output writer type
  */
 @SuppressWarnings("unchecked")
-public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobComponent {
+public class AsyncReadWriteJob<I extends Serializable, O extends Serializable>
+    extends ProducerConsumer<I> implements Rocket, JobComponent {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
-  private transient JobReader reader;
-  private transient JobProcessor processor;
-  private transient JobWriter writer;
-  private transient List chunk = new LinkedList<>();
+  private transient JobReader<I> reader;
+  private transient JobProcessor<I, O> processor;
+  private transient JobWriter<O> writer;
+
+  private List<O> chunk = new LinkedList<>();
 
   private int chunkSize = 100;
 
@@ -28,11 +31,8 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
    * @param reader reader
    * @param processor processor
    * @param writer writer
-   * @param <I> output reader type
-   * @param <O> output writer type
    */
-  public <I, O> AsyncReadWriteJob(JobReader<I> reader, JobProcessor<I, O> processor,
-      JobWriter<O> writer) {
+  public AsyncReadWriteJob(JobReader<I> reader, JobProcessor<I, O> processor, JobWriter<O> writer) {
     this.reader = reader;
     this.processor = processor;
     this.writer = writer;
@@ -43,12 +43,10 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
    *
    * @param reader reader
    * @param writer writer
-   * 
-   * @param <I> output reader type
    */
-  public <I> AsyncReadWriteJob(JobReader<I> reader, JobWriter<I> writer) {
+  public AsyncReadWriteJob(JobReader<I> reader, JobWriter<O> writer) {
     this.reader = reader;
-    this.processor = item -> item;
+    this.processor = item -> (O) item;
     this.writer = writer;
   }
 
@@ -64,7 +62,7 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
   }
 
   @Override
-  public Object produce() {
+  public I produce() {
     try {
       return reader.read();
     } catch (Exception e) {
@@ -73,9 +71,9 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
   }
 
   @Override
-  public void consume(Object o) {
+  public void consume(I in) {
     try {
-      Object out = processor.process(o);
+      O out = processor.process(in);
       chunk.add(out);
       if (chunk.size() == chunkSize) {
         flush();
@@ -86,8 +84,8 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
     }
   }
 
-  private void flush() throws Exception { // NOSONAR
-    writer.write(chunk);
+  private void flush() {
+    writer.write(chunk); // NOSONAR
     chunk.clear();
   }
 
@@ -111,23 +109,15 @@ public class AsyncReadWriteJob extends ProducerConsumer implements Job, JobCompo
   }
 
   @Override
-  public void destroy() {
-    writer.destroy();
-  }
-
-  @Override
-  protected void producerInit() {
+  public void init() throws NeutronException {
     reader.init();
-  }
-
-  @Override
-  protected void consumerInit() {
     writer.init();
   }
 
   @Override
-  protected void producerDestroy() {
+  public void destroy() throws NeutronException {
     reader.destroy();
+    writer.destroy();
   }
 
 }
