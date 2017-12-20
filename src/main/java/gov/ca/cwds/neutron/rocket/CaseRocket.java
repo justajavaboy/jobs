@@ -78,37 +78,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CaseRocket.class);
 
-  /**
-   * Allocate memory once for each thread and reuse per key range.
-   * 
-   * <p>
-   * Use thread local variables <strong>sparingly</strong> because they stick to the thread. This
-   * Neutron rocket reuses threads for performance, since thread creation is expensive.
-   * </p>
-   */
-  // protected transient ThreadLocal<List<EsCaseRelatedPerson>> allocCases = new ThreadLocal<>();
-  //
-  // protected transient ThreadLocal<List<CaseClientRelative>> allocCaseClientRelative =
-  // new ThreadLocal<>();
-  //
-  // /**
-  // * k=case id, v=case
-  // */
-  // protected transient ThreadLocal<Map<String, EsCaseRelatedPerson>> allocMapCases =
-  // new ThreadLocal<>();
-  //
-  // /**
-  // * k=client id, v=cases
-  // */
-  // protected transient ThreadLocal<Map<String, Set<String>>> allocMapClientCases =
-  // new ThreadLocal<>();
-  //
-  // /**
-  // * k=client id, v=client
-  // */
-  // protected transient ThreadLocal<Map<String, ReplicatedClient>> allocMapClients =
-  // new ThreadLocal<>();
-
   private final AtomicInteger rowsReadCases = new AtomicInteger(0);
 
   private final AtomicInteger nextThreadNum = new AtomicInteger(0);
@@ -169,8 +138,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
-    // return NeutronJdbcUtils.getCommonPartitionRanges64(this);
-    return new ReferralJobRanges().getPartitionRanges(this);
+    return new ReferralJobRanges().getPartitionRanges(this); // Cases takes a long time ...
   }
 
   @Override
