@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.ca.cwds.cals.RecordChangeOperation;
 import gov.ca.cwds.cals.service.dto.changed.ChangedDTO;
+import gov.ca.cwds.dto.BaseDTO;
 import gov.ca.cwds.jobs.cals.jobgeneric.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.cals.util.elastic.ElasticJobWriter;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * @author CWDS TPT-2
  */
-public class CalsElasticJobWriter<T extends ChangedDTO<?>> extends ElasticJobWriter<T> {
+public class CalsElasticJobWriter<T extends ChangedDTO<? extends BaseDTO>> extends ElasticJobWriter<T> {
 
   private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalsElasticJobWriter.class);
 

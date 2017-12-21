@@ -20,10 +20,6 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'jacoco'
 
 project.ext {
-    calsApiVersion =  '0.4.4-SNAPSHOT'
-}
-
-project.ext {
     // assume that Windows users use the Docker Toolbox
     buildEnv = System.env.BUILD_ENV ?: (Os.isFamily(Os.FAMILY_WINDOWS) ? 'WIN_DEV' : 'JENKINS')
     devDockerHost = System.env.DEV_DOCKER_HOST ?: 'localhost'
@@ -32,8 +28,8 @@ project.ext {
     elasticPort = 9200
     log4jVersion = "2.8"
     elasticsearchVersion = "5.5.1"
-    calsApiVersion =  '3.6-SNAPSHOT'
-//    coreApiVersion = "3.6.458"
+    calsApiVersion = '0.5.3-SNAPSHOT'
+    coreApiVersion = "0.5.2_98"
 }
 
 sourceCompatibility = 1.8
@@ -50,17 +46,19 @@ repositories {
 
 dependencies {
     // Exclude transitive dependencies.
-    compile ("gov.ca.cwds.api:api-core:3.6.458") {
+    compile("gov.ca.cwds.api:api-core:" + coreApiVersion) {
         exclude group: 'org.glassfish.jersey.core'
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'
     }
 
+    compile("gov.ca.cwds.api:api-core-common:" + coreApiVersion)
+    compile("gov.ca.cwds.api:api-core-cms:" + coreApiVersion)
 
     // ES 5.x:
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: elasticsearchVersion
     compile group: 'org.elasticsearch.client', name: 'transport', version: elasticsearchVersion
-    compile ("org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion)
+    compile("org.elasticsearch.client:x-pack-transport:" + elasticsearchVersion)
 
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     compile group: 'javax.validation', name: 'validation-api', version: '1.1.0.Final'
@@ -79,13 +77,6 @@ dependencies {
     compile group: "io.dropwizard", name: "dropwizard-hibernate", version: "1.1.0"
     compile 'org.hibernate:hibernate-c3p0:5.2.10.Final'
 
-    // Exclude transitive dependencies.
-//    compile ("gov.ca.cwds.api:api-core:" + coreApiVersion) {
-//        exclude group: 'org.glassfish.jersey.core'
-//        exclude group: 'ch.qos.logback'
-//        exclude group: 'org.slf4j'
-//    }
-
     compile group: "org.glassfish.jersey.ext", name: "jersey-declarative-linking", version: "2.23.2"
     compile group: "javax.el", name: "javax.el-api", version: "2.2.4"
     compile group: "org.glassfish.web", name: "javax.el", version: "2.2.4"
@@ -101,9 +92,6 @@ dependencies {
 
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
 
-    // Maven certificate problem.
-    // compile 'io.earcam:io.earcam.unexceptional:0.3.0'
-
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
     testCompile group: "io.dropwizard", name: "dropwizard-testing", version: dropwizardVersion
@@ -113,8 +101,6 @@ dependencies {
     testCompile 'io.exemplary.guice:guice-behave:1.0.0'
 
     testCompile 'com.github.tlrx:elasticsearch-test:1.2.1'
-    // testCompile group: 'org.elasticsearch.test', name: 'framework', version: 'elasticsearchVersion'
-    // testCompile 'org.jacoco:jacoco:0.7.9'
 
 //    compile project(project.parent.path)
 
@@ -128,7 +114,7 @@ dependencies {
     }
 
     // CALS API for CALS Jobs
-    compile (group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion) {
+    compile(group: 'gov.ca.cwds.cals', name: 'cals-api', version: calsApiVersion) {
         exclude group: 'org.bouncycastle'
         exclude group: 'gov.ca.cwds.api', module: 'api-core'
         exclude group: 'org.liquibase', module: 'liquibase-core'
@@ -143,10 +129,10 @@ dependencies {
 import org.apache.tools.ant.taskdefs.condition.Os
 
 project.ext.dockerEnvVars = project.buildEnv != 'WIN_DEV' ? [:] : [
-        DOCKER_CERT_PATH: System.getProperty("user.home") + '/.docker/machine/machines/default',
-        DOCKER_HOST: "tcp://$project.devDockerHost:$project.devDockerPort",
-        DOCKER_MACHINE_NAME: 'default',
-        DOCKER_TLS_VERIFY: '1',
+        DOCKER_CERT_PATH             : System.getProperty("user.home") + '/.docker/machine/machines/default',
+        DOCKER_HOST                  : "tcp://$project.devDockerHost:$project.devDockerPort",
+        DOCKER_MACHINE_NAME          : 'default',
+        DOCKER_TLS_VERIFY            : '1',
         COMPOSE_CONVERT_WINDOWS_PATHS: 'true'
 ]
 
@@ -161,7 +147,7 @@ shadowJar {
     /*manifest {
         Attributes 'Main-Class': (System.properties.getProperty('mainClass') != null) ? System.properties.getProperty('mainClass') : 'gov.ca.cwds.jobs.cals.facility.FacilityIndexerJob'
     }*/
-    version version + ((System.properties.getProperty('build') != null ) ? '.' + System.properties.getProperty('build') : '')
+    version version + ((System.properties.getProperty('build') != null) ? '.' + System.properties.getProperty('build') : '')
 }
 
 
