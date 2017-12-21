@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.ca.cwds.cals.RecordChangeOperation;
 import gov.ca.cwds.cals.service.dto.changed.ChangedDTO;
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.generic.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.cals.util.elastic.ElasticJobWriter;
 import org.slf4j.LoggerFactory;
 

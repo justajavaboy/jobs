@@ -1,7 +1,7 @@
 package gov.ca.cwds.jobs.cals;
 
 import com.google.inject.Inject;
-import gov.ca.cwds.jobs.config.JobOptions;
+import gov.ca.cwds.generic.jobs.config.JobOptions;
 import gov.ca.cwds.rest.api.ApiException;
 import org.apache.commons.io.FilenameUtils;
 
