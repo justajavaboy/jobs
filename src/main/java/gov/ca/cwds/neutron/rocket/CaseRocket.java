@@ -719,7 +719,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR PULLING RANGE {} - {}: {}", keyRange.getLeft(),
+      throw JobLogs.checked(LOGGER, e, "ERROR PULLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     }
 
@@ -730,7 +730,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           new HashMap<>(LARGE_HASH));
     } catch (NeutronException e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE {} - {}: {}", keyRange.getLeft(),
+      throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     } finally {
       getFlightLog().markRangeComplete(keyRange);
