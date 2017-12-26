@@ -112,7 +112,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   // =====================
-  // FIXED SPECS:
+  // ROCKET SPECS:
   // =====================
 
   /**
