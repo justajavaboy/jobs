@@ -609,10 +609,10 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         collectCaseParents(mapCaseParents, mapFocusChildParents, ccr);
       }
 
-      // Add focus child details to cases:
+      // Add focus child details to cases.
       addFocusChildren(mapCases, mapClients);
 
-      // Boil down to JSON objects ready for Elasticsearch.
+      // Boil down to JSON objects for Elasticsearch.
       final Map<String, ReplicatedPersonCases> mapReadyClientCases =
           mapClientCases.entrySet().stream()
               .map(x -> reduceClientCases(x.getKey(), mapClients, mapCases, mapClientCases,
@@ -688,14 +688,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     LOGGER.info("BEGIN");
     getFlightLog().markRangeStart(keyRange);
 
-    // allocateThreadMemory();
-    // final List<CaseClientRelative> listCaseClientRelative = allocCaseClientRelative.get();
-    // final Map<String, ReplicatedClient> mapClients = allocMapClients.get();
-    // final Map<String, EsCaseRelatedPerson> mapCasesById = allocMapCases.get();
-
-    // allocCases.set(new ArrayList<>(205000));
-    // allocMapClients.set(new HashMap<>(69029)); // Prime
-
     final List<CaseClientRelative> listCaseClientRelative = new ArrayList<>(205000);
     final Map<String, ReplicatedClient> mapClients = new HashMap<>(99881); // Prime
     final Map<String, EsCaseRelatedPerson> mapCasesById = new HashMap<>(69029); // Prime
@@ -733,9 +725,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     // Process records.
     int recordsProcessed = 0;
     try {
-      recordsProcessed = assemblePieces(listCaseClientRelative, mapCasesById, mapClients,
-          // allocMapClientCases.get()
-          new HashMap<>(99881));
+      recordsProcessed =
+          assemblePieces(listCaseClientRelative, mapCasesById, mapClients, new HashMap<>(99881));
     } catch (NeutronException e) {
       fail();
       throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE {} - {}: {}", keyRange.getLeft(),

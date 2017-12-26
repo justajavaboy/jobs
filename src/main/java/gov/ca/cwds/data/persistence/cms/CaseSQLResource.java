@@ -67,7 +67,7 @@ public class CaseSQLResource implements ApiMarker {
 
   //@formatter:off
   public static final String SELECT_CLIENT_CASE =
-      "SELECT rc.FKCLIENT_T AS CLIENT_ID, rc.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT rc WITH UR ";
+      "SELECT DISTINCT rc.FKCLIENT_T AS CLIENT_ID, rc.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT rc WITH UR ";
   //@formatter:on
 
   //@formatter:off
