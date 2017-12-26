@@ -197,11 +197,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   // }
 
   @Test
-  public void allocateThreadMemory_Args__() throws Exception {
-    target.allocateThreadMemory();
-  }
-
-  @Test
   public void getClientDao_Args__() throws Exception {
     ReplicatedClientDao actual = target.getClientDao();
     ReplicatedClientDao expected = this.clientDao;

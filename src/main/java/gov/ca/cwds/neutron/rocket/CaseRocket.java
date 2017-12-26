@@ -78,6 +78,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CaseRocket.class);
 
+  private static final int LARGE_HASH = 99881;
+
   private final AtomicInteger rowsReadCases = new AtomicInteger(0);
 
   private final AtomicInteger nextThreadNum = new AtomicInteger(0);
@@ -596,10 +598,10 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           .sorted((e1, e2) -> e1.getCaseId().compareTo(e2.getCaseId()))
           .collect(Collectors.toList());
 
-      final Map<String, Set<String>> mapCaseClients = new HashMap<>(99881);
-      final Map<String, Map<String, CaseClientRelative>> mapCaseParents = new HashMap<>(99881);
+      final Map<String, Set<String>> mapCaseClients = new HashMap<>(LARGE_HASH);
+      final Map<String, Map<String, CaseClientRelative>> mapCaseParents = new HashMap<>(LARGE_HASH);
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents =
-          new HashMap<>(99881);
+          new HashMap<>(LARGE_HASH);
 
       // Collect maps:
       for (CaseClientRelative ccr : ccrs) {
@@ -635,7 +637,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       verify(mapReadyClientCases);
 
     } finally {
-      clearThreadContainers();
+      // C'mon Jacoco ... cover the code ...
     }
 
     return countNormalized;
@@ -689,7 +691,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     getFlightLog().markRangeStart(keyRange);
 
     final List<CaseClientRelative> listCaseClientRelative = new ArrayList<>(205000);
-    final Map<String, ReplicatedClient> mapClients = new HashMap<>(99881); // Prime
+    final Map<String, ReplicatedClient> mapClients = new HashMap<>(LARGE_HASH); // Prime
     final Map<String, EsCaseRelatedPerson> mapCasesById = new HashMap<>(69029); // Prime
 
     // Retrieve records.
@@ -717,7 +719,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     } catch (Exception e) {
       fail();
-      clearThreadContainers();
       throw JobLogs.checked(LOGGER, e, "ERROR PULLING RANGE {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     }
@@ -725,14 +726,13 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     // Process records.
     int recordsProcessed = 0;
     try {
-      recordsProcessed =
-          assemblePieces(listCaseClientRelative, mapCasesById, mapClients, new HashMap<>(99881));
+      recordsProcessed = assemblePieces(listCaseClientRelative, mapCasesById, mapClients,
+          new HashMap<>(LARGE_HASH));
     } catch (NeutronException e) {
       fail();
       throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     } finally {
-      clearThreadContainers();
       getFlightLog().markRangeComplete(keyRange);
     }
 
@@ -768,7 +768,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       throw JobLogs.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
-      deallocateThreadMemory();
     }
 
     LOGGER.info("DONE: read {} ES case rows", this.rowsReadCases.get());
@@ -786,7 +785,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       throw JobLogs.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
-      deallocateThreadMemory();
     }
     return new ArrayList<>(); // Work already done
   }
@@ -803,51 +801,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     runMultiThreadIndexing();
   }
 
-  // =====================
-  // THREAD MEMORY:
-  // =====================
-
-  private void clearThreadContainers() {
-    // final List<EsCaseRelatedPerson> cases = allocCases.get();
-    // if (cases != null) {
-    // cases.clear();
-    // this.allocCaseClientRelative.get().clear();
-    // this.allocMapClientCases.get().clear();
-    // this.allocMapClients.get().clear();
-    // this.allocMapCases.get().clear();
-    // System.gc(); // NOSONAR
-    // }
-  }
-
-  /**
-   * Initial mode only. Allocate memory once per thread and reuse it.
-   * 
-   * <p>
-   * NEXT: calculate container sizes by bundle size.
-   * </p>
-   */
-  protected void allocateThreadMemory() {
-    // if (allocCases.get() == null) {
-    // allocCases.set(new ArrayList<>(205000));
-    // allocCaseClientRelative.set(new ArrayList<>(205000));
-    // allocMapClientCases.set(new HashMap<>(99881)); // Prime
-    // allocMapCases.set(new HashMap<>(69029)); // Prime
-    // allocMapClients.set(new HashMap<>(69029)); // Prime
-    // clearThreadContainers();
-    // }
-  }
-
-  private void deallocateThreadMemory() {
-    // if (allocCases.get() != null) {
-    // allocCases.set(null);
-    // allocMapClientCases.set(null);
-    // allocMapCases.set(null);
-    // allocMapClients.set(null);
-    // allocCaseClientRelative.set(null);
-    // }
-  }
-
-  @SuppressWarnings("javadoc")
   public ReplicatedClientDao getClientDao() {
     return clientDao;
   }
