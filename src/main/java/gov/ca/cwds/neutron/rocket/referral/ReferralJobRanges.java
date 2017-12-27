@@ -65,7 +65,7 @@ public class ReferralJobRanges {
       throws NeutronException {
     List<Pair<String, String>> ret = new ArrayList<>();
 
-    if (true || rocket.isLargeDataSet()) {
+    if (rocket.isLargeDataSet()) {
       LOGGER.info("z/OS, LARGE data set, ORDER: a,z,A,Z,0,9");
 
       try (@SuppressWarnings("unchecked")
