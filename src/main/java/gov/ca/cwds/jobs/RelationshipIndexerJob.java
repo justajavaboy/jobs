@@ -24,6 +24,7 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsRelationship;
 import gov.ca.cwds.data.persistence.cms.ReplicatedRelationships;
+import gov.ca.cwds.data.persistence.cms.SonarQubeMemoryBloatComplaintCache;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
@@ -53,28 +54,22 @@ public class RelationshipIndexerJob
    * SQL to insert last changed client list into global temporary table for use in views,
    * VW_LST_BI_DIR_RELATION and VW_LST_REL_CLN_RELT_CLIENT.
    */
-//@formatter:off
-  static final String INSERT_CLIENT_LAST_CHG =
-      "INSERT INTO GT_ID (IDENTIFIER)\n"
-          + "SELECT clnr.IDENTIFIER\nFROM CLN_RELT CLNR\n"
-          + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
-       // + " AND clnr.IBMSNAP_OPERATION IN ('I','U')\n"
-       + "UNION ALL\n"
-          + "SELECT clnr.IDENTIFIER\n"
-          + "FROM CLN_RELT CLNR\n"
-          + "JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
-          + "WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
-       // + "AND clnr.IBMSNAP_OPERATION IN ('I','U')\n"
-       // + "AND clns.IBMSNAP_OPERATION IN ('I','U')\n"
-       + "UNION ALL\n"
-          + "SELECT clnr.IDENTIFIER\n"
-          + "FROM CLN_RELT CLNR\n"
-          + "JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
-          + "WHERE CLNP.IBMSNAP_LOGMARKER > ?"
-       // + "AND clnr.IBMSNAP_OPERATION IN ('I','U')\n"
-       // + "AND clnp.IBMSNAP_OPERATION IN ('I','U') "
-          ;
-//@formatter:on
+  // @formatter:off
+  static final String INSERT_CLIENT_LAST_CHG = "INSERT INTO GT_ID (IDENTIFIER)\n"
+      + "SELECT clnr.IDENTIFIER\nFROM CLN_RELT CLNR\n" + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
+      // + " AND clnr.IBMSNAP_OPERATION IN ('I','U')\n"
+      + "UNION ALL\n" + "SELECT clnr.IDENTIFIER\n" + "FROM CLN_RELT CLNR\n"
+      + "JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
+      + "WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
+      // + "AND clnr.IBMSNAP_OPERATION IN ('I','U')\n"
+      // + "AND clns.IBMSNAP_OPERATION IN ('I','U')\n"
+      + "UNION ALL\n" + "SELECT clnr.IDENTIFIER\n" + "FROM CLN_RELT CLNR\n"
+      + "JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
+      + "WHERE CLNP.IBMSNAP_LOGMARKER > ?"
+  // + "AND clnr.IBMSNAP_OPERATION IN ('I','U')\n"
+  // + "AND clnp.IBMSNAP_OPERATION IN ('I','U') "
+  ;
+  // @formatter:on
 
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
 
@@ -91,7 +86,7 @@ public class RelationshipIndexerJob
   public RelationshipIndexerJob(final ReplicatedRelationshipsDao dao, final ElasticsearchDao esDao,
       @LastRunFile String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
-    EsRelationship.SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+    SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
   }
 
   @Override
@@ -185,7 +180,7 @@ public class RelationshipIndexerJob
     LOGGER.info("BEGIN: main extract thread");
     doneTransform(); // No transform thread
 
-    EsRelationship.SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+    SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
     try {
       final List<Pair<String, String>> ranges = getPartitionRanges();
       LOGGER.info(">>>>>>>> # OF RANGES: {} <<<<<<<<", ranges);
@@ -205,10 +200,10 @@ public class RelationshipIndexerJob
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
+      throw JobLogs.runtime(LOGGER, e, "RELATIONSHBATCH ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
-      EsRelationship.SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+      SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
     }
 
     LOGGER.info("DONE: relationship extract thread");
@@ -252,7 +247,7 @@ public class RelationshipIndexerJob
 
   @Override
   public synchronized void close() throws IOException {
-    EsRelationship.SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+    SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
     super.close();
   }
 

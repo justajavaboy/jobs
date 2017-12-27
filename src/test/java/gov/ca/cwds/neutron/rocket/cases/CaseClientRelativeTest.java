@@ -27,7 +27,7 @@ public class CaseClientRelativeTest extends Goddard {
     String focusClientId = DEFAULT_CLIENT_ID;
     String clientId = "x051982732";
     short relationCode = (short) 203;
-    target = new CaseClientRelative(caseId, focusClientId, clientId, relationCode);
+    target = new CaseClientRelative(caseId, focusClientId, clientId, relationCode, false);
   }
 
   @Test
@@ -49,7 +49,7 @@ public class CaseClientRelativeTest extends Goddard {
 
     CaseClientRelative actual = CaseClientRelative.extract(rs);
     CaseClientRelative expected =
-        new CaseClientRelative(DEFAULT_CASE_ID, DEFAULT_CLIENT_ID, "x051982732", (short) 203);
+        new CaseClientRelative(DEFAULT_CASE_ID, DEFAULT_CLIENT_ID, "x051982732", (short) 203, false);
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -144,7 +144,7 @@ public class CaseClientRelativeTest extends Goddard {
   public void hashCode_Args__() throws Exception {
     int actual = target.hashCode();
     int expected =
-        new CaseClientRelative(DEFAULT_CASE_ID, "r2d2abcdef", DEFAULT_CLIENT_ID, (short) 187)
+        new CaseClientRelative(DEFAULT_CASE_ID, "r2d2abcdef", DEFAULT_CLIENT_ID, (short) 187, false)
             .hashCode();
     assertThat(actual, is(not(expected)));
   }

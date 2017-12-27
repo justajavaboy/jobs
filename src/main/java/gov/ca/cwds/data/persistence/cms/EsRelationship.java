@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,7 +26,6 @@ import gov.ca.cwds.data.es.ElasticSearchPersonRelationship;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
@@ -82,36 +80,6 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 public class EsRelationship
     implements PersistentObject, ApiGroupNormalizer<ReplicatedRelationships>,
     Comparable<EsRelationship>, Comparator<EsRelationship> {
-
-  /**
-   * Instead of repeatedly parsing relationship components, just parse once and lookup, as needed.
-   */
-  public static final class SonarQubeMemoryBloatComplaintCache implements ApiMarker {
-
-    private static final long serialVersionUID = 1L;
-
-    private final Map<Short, CmsRelationship> mapRelationCodes = new ConcurrentHashMap<>();
-
-    private static final SonarQubeMemoryBloatComplaintCache instance =
-        new SonarQubeMemoryBloatComplaintCache();
-
-    private SonarQubeMemoryBloatComplaintCache() {
-      // whatever
-    }
-
-    public static SonarQubeMemoryBloatComplaintCache getInstance() {
-      return instance;
-    }
-
-    public void clearCache() {
-      mapRelationCodes.clear();
-    }
-
-    public Map<Short, CmsRelationship> getMapRelationCodes() {
-      return mapRelationCodes;
-    }
-
-  }
 
   private static final long serialVersionUID = 1L;
 

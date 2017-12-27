@@ -78,7 +78,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CaseRocket.class);
 
-  private static final int LARGE_HASH = 99881;
+  private static final int HASH_SIZE_LARGE = 99881;
 
   private final AtomicInteger rowsReadCases = new AtomicInteger(0);
 
@@ -598,10 +598,10 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           .sorted((e1, e2) -> e1.getCaseId().compareTo(e2.getCaseId()))
           .collect(Collectors.toList());
 
-      final Map<String, Set<String>> mapCaseClients = new HashMap<>(LARGE_HASH);
-      final Map<String, Map<String, CaseClientRelative>> mapCaseParents = new HashMap<>(LARGE_HASH);
+      final Map<String, Set<String>> mapCaseClients = new HashMap<>(HASH_SIZE_LARGE);
+      final Map<String, Map<String, CaseClientRelative>> mapCaseParents = new HashMap<>(HASH_SIZE_LARGE);
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents =
-          new HashMap<>(LARGE_HASH);
+          new HashMap<>(HASH_SIZE_LARGE);
 
       // Collect maps:
       for (CaseClientRelative ccr : ccrs) {
@@ -633,7 +633,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       // Index into Elasticsearch!
       mapReadyClientCases.values().stream().forEach(this::addToIndexQueue);
 
-      // TEST DATA ONLY!
+      // Verify test data. Ignored in Perf/Prod.
       verify(mapReadyClientCases);
 
     } finally {
@@ -691,7 +691,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     getFlightLog().markRangeStart(keyRange);
 
     final List<CaseClientRelative> listCaseClientRelative = new ArrayList<>(205000);
-    final Map<String, ReplicatedClient> mapClients = new HashMap<>(LARGE_HASH); // Prime
+    final Map<String, ReplicatedClient> mapClients = new HashMap<>(HASH_SIZE_LARGE); // Prime
     final Map<String, EsCaseRelatedPerson> mapCasesById = new HashMap<>(69029); // Prime
 
     // Retrieve records.
@@ -727,7 +727,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     int recordsProcessed = 0;
     try {
       recordsProcessed = assemblePieces(listCaseClientRelative, mapCasesById, mapClients,
-          new HashMap<>(LARGE_HASH));
+          new HashMap<>(HASH_SIZE_LARGE));
     } catch (NeutronException e) {
       fail();
       throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),

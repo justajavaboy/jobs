@@ -29,6 +29,7 @@ public class CaseClientRelative implements ApiMarker {
   private String relatedClientId;
   private String caseId;
   private short relationCode;
+  private boolean leftSideFocusChild;
 
   private static final Set<Short> setParentCodes = ConcurrentHashMap.newKeySet();
 
@@ -44,16 +45,19 @@ public class CaseClientRelative implements ApiMarker {
   }
 
   public CaseClientRelative(String caseId, String focusClientId, String thisClientId,
-      short relationCode) {
+      short relationCode, boolean leftSideFocusChild) {
     this.relatedClientId = thisClientId;
     this.caseId = caseId;
     this.focusClientId = focusClientId;
     this.relationCode = relationCode;
+    this.leftSideFocusChild = leftSideFocusChild;
   }
 
   public static CaseClientRelative extract(final ResultSet rs) throws SQLException {
+    final String leftCode = rs.getString("CASE_ID");
+    final boolean leftSideFocusChild = "Y".equalsIgnoreCase(leftCode);
     return new CaseClientRelative(rs.getString("CASE_ID"), rs.getString("FOCUS_CHILD_ID"),
-        rs.getString("THIS_CLIENT_ID"), rs.getShort("RELATION"));
+        rs.getString("THIS_CLIENT_ID"), rs.getShort("RELATION"), leftSideFocusChild);
   }
 
   private static void addCodes(int begin, int end) {
@@ -132,6 +136,14 @@ public class CaseClientRelative implements ApiMarker {
   @Override
   public boolean equals(Object obj) {
     return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
+  public boolean isLeftSideFocusChild() {
+    return leftSideFocusChild;
+  }
+
+  public void setLeftSideFocusChild(boolean leftSideFocusChild) {
+    this.leftSideFocusChild = leftSideFocusChild;
   }
 
 }
