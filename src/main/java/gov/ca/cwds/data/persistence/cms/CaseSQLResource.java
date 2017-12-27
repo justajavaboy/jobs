@@ -32,7 +32,7 @@ public class CaseSQLResource implements ApiMarker {
 
   //@formatter:off
   public static final String INSERT_CLIENT_CASE =
-        "INSERT INTO GT_REFR_CLT (FKCLIENT_T, FKREFERL_T, SENSTV_IND) \n"
+        "INSERT INTO GT_REFR_CLT (FKREFERL_T, FKCLIENT_T, SENSTV_IND) \n"
         + "WITH DRIVER AS ( \n"
           + " SELECT CAS1.IDENTIFIER    AS CASE_ID,  \n"
           + "        CAS1.FKCHLD_CLT    AS THIS_CLIENT_ID,  \n"
