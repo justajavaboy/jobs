@@ -133,7 +133,8 @@ public class CaseClientRelative implements ApiMarker {
   public String translateRelationshipToString() {
     SystemCode sc = SystemCodeCache.global().getSystemCode(this.relationCode);
     if (!isLeftSideFocusChild()) {
-      LOGGER.info("RIGHT SIDE: {}", sc.getLongDescription());
+      LOGGER.debug("RIGHT SIDE: {}", sc.getLongDescription());
+      sc = SystemCodeCache.global().getSystemCode(this.relationCode);
     }
     return sc != null ? sc.getShortDescription() : null;
   }
