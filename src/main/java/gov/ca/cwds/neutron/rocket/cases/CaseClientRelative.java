@@ -113,6 +113,14 @@ public class CaseClientRelative implements ApiMarker {
     this.relationCode = relationCode;
   }
 
+  public boolean isLeftSideFocusChild() {
+    return leftSideFocusChild;
+  }
+
+  public void setLeftSideFocusChild(boolean leftSideFocusChild) {
+    this.leftSideFocusChild = leftSideFocusChild;
+  }
+
   public SystemCode translateRelationship() {
     return SystemCodeCache.global().getSystemCode(this.relationCode);
   }
@@ -135,14 +143,6 @@ public class CaseClientRelative implements ApiMarker {
   @Override
   public boolean equals(Object obj) {
     return EqualsBuilder.reflectionEquals(this, obj, false);
-  }
-
-  public boolean isLeftSideFocusChild() {
-    return leftSideFocusChild;
-  }
-
-  public void setLeftSideFocusChild(boolean leftSideFocusChild) {
-    this.leftSideFocusChild = leftSideFocusChild;
   }
 
 }
