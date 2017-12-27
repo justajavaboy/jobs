@@ -44,6 +44,15 @@ public class CaseClientRelative implements ApiMarker {
     addCodes(272, 273, 5620, 6360, 6361);
   }
 
+  private static void addCodes(int begin, int end) {
+    IntStream.rangeClosed(begin, end).boxed().map(i -> (short) i.intValue())
+        .forEach(setParentCodes::add);
+  }
+
+  private static void addCodes(int... x) {
+    IntStream.of(x).boxed().map(i -> (short) i.intValue()).forEach(setParentCodes::add);
+  }
+
   public CaseClientRelative(String caseId, String focusClientId, String thisClientId,
       short relationCode, boolean leftSideFocusChild) {
     this.relatedClientId = thisClientId;
@@ -54,19 +63,9 @@ public class CaseClientRelative implements ApiMarker {
   }
 
   public static CaseClientRelative extract(final ResultSet rs) throws SQLException {
-    final String leftCode = rs.getString("CASE_ID");
-    final boolean leftSideFocusChild = "Y".equalsIgnoreCase(leftCode);
     return new CaseClientRelative(rs.getString("CASE_ID"), rs.getString("FOCUS_CHILD_ID"),
-        rs.getString("THIS_CLIENT_ID"), rs.getShort("RELATION"), leftSideFocusChild);
-  }
-
-  private static void addCodes(int begin, int end) {
-    IntStream.rangeClosed(begin, end).boxed().map(i -> (short) i.intValue())
-        .forEach(setParentCodes::add);
-  }
-
-  private static void addCodes(int... x) {
-    IntStream.of(x).boxed().map(i -> (short) i.intValue()).forEach(setParentCodes::add);
+        rs.getString("THIS_CLIENT_ID"), rs.getShort("RELATION"),
+        "Y".equalsIgnoreCase(rs.getString("LEFT_IS_FOCUS")));
   }
 
   public boolean isParentRelation() {
