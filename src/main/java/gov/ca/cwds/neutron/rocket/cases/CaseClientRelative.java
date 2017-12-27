@@ -11,8 +11,11 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.ca.cwds.data.std.ApiMarker;
+import gov.ca.cwds.neutron.rocket.CaseRocket;
 import gov.ca.cwds.rest.api.domain.cms.SystemCode;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
@@ -25,13 +28,15 @@ public class CaseClientRelative implements ApiMarker {
 
   private static final long serialVersionUID = 1L;
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CaseRocket.class);
+
+  private static final Set<Short> setParentCodes = ConcurrentHashMap.newKeySet();
+
   private String focusClientId;
   private String relatedClientId;
   private String caseId;
   private short relationCode;
   private boolean leftSideFocusChild;
-
-  private static final Set<Short> setParentCodes = ConcurrentHashMap.newKeySet();
 
   /**
    * SonarQube complains about code ranges in conditional checks, so we stuff all the parent code
@@ -126,7 +131,10 @@ public class CaseClientRelative implements ApiMarker {
   }
 
   public String translateRelationshipToString() {
-    final SystemCode sc = SystemCodeCache.global().getSystemCode(this.relationCode);
+    SystemCode sc = SystemCodeCache.global().getSystemCode(this.relationCode);
+    if (!isLeftSideFocusChild()) {
+      LOGGER.info("RIGHT SIDE: {}", sc.getLongDescription());
+    }
     return sc != null ? sc.getShortDescription() : null;
   }
 
