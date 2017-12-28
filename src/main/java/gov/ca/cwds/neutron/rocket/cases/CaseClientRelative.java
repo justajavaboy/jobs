@@ -11,11 +11,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.ca.cwds.data.std.ApiMarker;
-import gov.ca.cwds.neutron.rocket.CaseRocket;
 import gov.ca.cwds.rest.api.domain.cms.SystemCode;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
@@ -27,8 +24,6 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 public class CaseClientRelative implements ApiMarker {
 
   private static final long serialVersionUID = 1L;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CaseRocket.class);
 
   private static final Set<Short> setParentCodes = ConcurrentHashMap.newKeySet();
 
