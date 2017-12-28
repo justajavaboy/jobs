@@ -123,7 +123,7 @@ public class CaseClientRelative implements ApiMarker {
 
   public SystemCode translateRelationship() {
     SystemCode sc = SystemCodeCache.global().getSystemCode(this.relationCode);
-    if (!isLeftSideFocusChild()) {
+    if (sc != null && !isLeftSideFocusChild() && StringUtils.isNotBlank(sc.getLongDescription())) {
       sc = SystemCodeCache.global().getSystemCode(Integer.valueOf(sc.getLongDescription()));
     }
     return sc;

@@ -76,6 +76,7 @@ import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
+import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
 /**
  * <a href="http://jimmyneutron.wikia.com/wiki/Goddard">Goddard</a> is Jimmy's mechanical dog. He is
@@ -101,6 +102,7 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
   public static void setupClass() {
     LaunchCommand.setTestMode(true);
     SimpleTestSystemCodeCache.init();
+    SystemCodeCache.global().getAllSystemCodes();
     ElasticTransformer.setMapper(MAPPER);
   }
 
