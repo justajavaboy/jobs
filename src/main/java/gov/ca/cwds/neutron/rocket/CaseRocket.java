@@ -211,7 +211,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   // JDBC:
   // =====================
 
-  private void prepAffectedClients(final PreparedStatement stmtInsClient,
+  protected void prepAffectedClients(final PreparedStatement stmtInsClient,
       final PreparedStatement stmtInsClientCase, final Pair<String, String> p) throws SQLException {
     LOGGER.info("prepAffectedClients: range: {} - {}", p.getLeft(), p.getRight());
     stmtInsClient.setMaxRows(0);
@@ -237,7 +237,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     LOGGER.info("affected client/cases: {}", countInsClientCases);
   }
 
-  private void readClientCaseRelationship(final PreparedStatement stmtSelClientCaseRelation,
+  protected void readClientCaseRelationship(final PreparedStatement stmtSelClientCaseRelation,
       final List<CaseClientRelative> listCaseClientRelation) throws SQLException {
     LOGGER.info("readClientCaseRelationship");
     stmtSelClientCaseRelation.setMaxRows(0);
@@ -256,7 +256,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
-  private void readCases(final PreparedStatement stmtSelCase,
+  protected void readCases(final PreparedStatement stmtSelCase,
       final Map<String, EsCaseRelatedPerson> mapCases) throws SQLException {
     LOGGER.info("readCases");
     stmtSelCase.setMaxRows(0);
@@ -300,7 +300,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return null;
   }
 
-  private ReplicatedClient extractClient(ResultSet rs) throws SQLException {
+  protected ReplicatedClient extractClient(ResultSet rs) throws SQLException {
     final ReplicatedClient ret = new ReplicatedClient();
 
     ret.setId(rs.getString("CLIENT_ID"));
@@ -314,7 +314,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return ret;
   }
 
-  private EsCaseRelatedPerson extractCase(ResultSet rs) throws SQLException {
+  protected EsCaseRelatedPerson extractCase(ResultSet rs) throws SQLException {
     final EsCaseRelatedPerson ret = new EsCaseRelatedPerson();
 
     ret.setCaseId(rs.getString("CASE_ID"));
@@ -377,7 +377,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   // ASSEMBLY:
   // =====================
 
-  private void collectCaseClients(final Map<String, Set<String>> mapCaseClients,
+  protected void collectCaseClients(final Map<String, Set<String>> mapCaseClients,
       final CaseClientRelative ccr) {
     // case => clients
     final String caseId = ccr.getCaseId();
@@ -395,7 +395,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
-  private void collectThisClientCase(final Map<String, Set<String>> mapClientCases, String caseId,
+  protected void collectThisClientCase(final Map<String, Set<String>> mapClientCases, String caseId,
       String clientId) {
     Set<String> clientCases = mapClientCases.get(clientId);
     if (clientCases == null) {
@@ -406,7 +406,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     clientCases.add(caseId);
   }
 
-  private void collectClientCases(final Map<String, Set<String>> mapClientCases,
+  protected void collectClientCases(final Map<String, Set<String>> mapClientCases,
       final CaseClientRelative ccr) {
     // client => cases
     final String caseId = ccr.getCaseId();
@@ -419,7 +419,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
-  private void collectFocusChildParents(
+  protected void collectFocusChildParents(
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents,
       final CaseClientRelative ccr) {
     // focus child => parents
@@ -434,7 +434,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
-  private void collectCaseParents(final Map<String, Map<String, CaseClientRelative>> mapCaseParents,
+  protected void collectCaseParents(
+      final Map<String, Map<String, CaseClientRelative>> mapCaseParents,
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents,
       final CaseClientRelative ccr) {
     // case => parents
@@ -451,7 +452,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
-  private void addFocusChildren(final Map<String, EsCaseRelatedPerson> mapCases,
+  protected void addFocusChildren(final Map<String, EsCaseRelatedPerson> mapCases,
       final Map<String, ReplicatedClient> mapClients) {
     // Focus child:
     for (EsCaseRelatedPerson theCase : mapCases.values()) {
@@ -471,7 +472,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   // REDUCE:
   // =====================
 
-  private void reduceCase(final ReplicatedPersonCases cases, EsCaseRelatedPerson rawCase,
+  protected void reduceCase(final ReplicatedPersonCases cases, EsCaseRelatedPerson rawCase,
       final Map<String, ReplicatedClient> mapClients,
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents) {
     if (rawCase != null) {
@@ -574,7 +575,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
-  private ReplicatedPersonCases reduceClientCases(final String clientId,
+  protected ReplicatedPersonCases reduceClientCases(final String clientId,
       final Map<String, ReplicatedClient> mapClients,
       final Map<String, EsCaseRelatedPerson> mapCases,
       final Map<String, Set<String>> mapClientCases,
@@ -585,7 +586,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return ret;
   }
 
-  private int assemblePieces(final List<CaseClientRelative> listCaseClientRelation,
+  protected int assemblePieces(final List<CaseClientRelative> listCaseClientRelation,
       final Map<String, EsCaseRelatedPerson> mapCases,
       final Map<String, ReplicatedClient> mapClients, final Map<String, Set<String>> mapClientCases)
       throws NeutronException {
@@ -599,7 +600,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           .collect(Collectors.toList());
 
       final Map<String, Set<String>> mapCaseClients = new HashMap<>(HASH_SIZE_LARGE);
-      final Map<String, Map<String, CaseClientRelative>> mapCaseParents = new HashMap<>(HASH_SIZE_LARGE);
+      final Map<String, Map<String, CaseClientRelative>> mapCaseParents =
+          new HashMap<>(HASH_SIZE_LARGE);
       final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents =
           new HashMap<>(HASH_SIZE_LARGE);
 
@@ -643,7 +645,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return countNormalized;
   }
 
-  private boolean verify(final Map<String, ReplicatedPersonCases> mapReadyClientCases)
+  protected boolean verify(final Map<String, ReplicatedPersonCases> mapReadyClientCases)
       throws NeutronException {
     if (!isLargeDataSet()) {
       LOGGER.info("Validate test data ...");
@@ -684,8 +686,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * @throws NeutronException on general error
    */
   protected int pullNextRange(final Pair<String, String> keyRange) throws NeutronException {
-    final String threadName = "extract_" + nextThreadNum.incrementAndGet() + "_"
-        + keyRange.getLeft() + "_" + keyRange.getRight();
+    final String threadName = "case_" + nextThreadNum.incrementAndGet() + "_" + keyRange.getLeft()
+        + "_" + keyRange.getRight();
     nameThread(threadName);
     LOGGER.info("BEGIN");
     getFlightLog().markRangeStart(keyRange);
@@ -740,8 +742,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return recordsProcessed;
   }
 
-  private void runMultiThreadIndexing() {
-    nameThread("main");
+  protected void runMultiThreadIndexing() {
+    nameThread("case_master");
     LOGGER.info("BEGIN: main read thread");
     doneTransform(); // normalize in place **WITHOUT** the transform thread
 
