@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -48,8 +49,8 @@ public class CaseClientRelativeTest extends Goddard {
     when(rs.getShort("RELATION")).thenReturn((short) 203);
 
     CaseClientRelative actual = CaseClientRelative.extract(rs);
-    CaseClientRelative expected =
-        new CaseClientRelative(DEFAULT_CASE_ID, DEFAULT_CLIENT_ID, "x051982732", (short) 203, false);
+    CaseClientRelative expected = new CaseClientRelative(DEFAULT_CASE_ID, DEFAULT_CLIENT_ID,
+        "x051982732", (short) 203, false);
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -155,6 +156,61 @@ public class CaseClientRelativeTest extends Goddard {
     boolean actual = target.equals(obj);
     boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
+  }
+
+  public void test_extract_A$ResultSet() throws Exception {
+    CaseClientRelative actual = CaseClientRelative.extract(rs);
+    CaseClientRelative expected = null;
+    assertEquals(expected, actual);
+  }
+
+  public void test_isParentRelation_A$() throws Exception {
+    boolean actual = target.isParentRelation();
+    boolean expected = false;
+    assertEquals(expected, actual);
+  }
+
+  public void test_hasRelation_A$() throws Exception {
+    boolean actual = target.hasRelation();
+    boolean expected = false;
+    assertEquals(expected, actual);
+  }
+
+  public void test_hasNoRelation_A$() throws Exception {
+    boolean actual = target.hasNoRelation();
+    boolean expected = false;
+    assertEquals(expected, actual);
+  }
+
+  public void test_translateRelationship_A$() throws Exception {
+    SystemCode actual = target.translateRelationship();
+    SystemCode expected = null;
+    assertEquals(expected, actual);
+  }
+
+  public void test_translateRelationshipToString_A$() throws Exception {
+    String actual = target.translateRelationshipToString();
+    String expected = null;
+    assertEquals(expected, actual);
+  }
+
+  public void test_toString_A$() throws Exception {
+    String actual = target.toString();
+    String expected = null;
+    assertEquals(expected, actual);
+  }
+
+  public void test_hashCode_A$() throws Exception {
+    int actual = target.hashCode();
+    int expected = 0;
+    assertEquals(expected, actual);
+  }
+
+  public void test_equals_A$Object() throws Exception {
+    Object obj = null;
+    boolean actual = target.equals(obj);
+    boolean expected = false;
+    assertEquals(expected, actual);
   }
 
 }
