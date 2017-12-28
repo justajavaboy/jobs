@@ -168,6 +168,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
       throw JobLogs.runtime(getLogger(), e, "FAILED TO PULL RANGE! {}-{} : {}", p.getLeft(),
           p.getRight(), e.getMessage());
     } finally {
+      getFlightLog().markRangeComplete(p);
       nameThread(RandomStringUtils.random(10, "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890"));
     }
   }
