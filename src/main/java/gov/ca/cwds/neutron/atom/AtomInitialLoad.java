@@ -11,6 +11,7 @@ import java.util.concurrent.ForkJoinTask;
 
 import javax.persistence.ParameterMode;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.Session;
@@ -160,10 +161,14 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
         initialLoadProcessRangeResults(rs);
         con.commit();
       }
+
+      getLogger().info("RANGE COMPLETED SUCCESSFULLY! {}-{}", p.getLeft(), p.getRight());
     } catch (Exception e) {
       fail();
       throw JobLogs.runtime(getLogger(), e, "FAILED TO PULL RANGE! {}-{} : {}", p.getLeft(),
           p.getRight(), e.getMessage());
+    } finally {
+      nameThread(RandomStringUtils.random(10, "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890"));
     }
   }
 
