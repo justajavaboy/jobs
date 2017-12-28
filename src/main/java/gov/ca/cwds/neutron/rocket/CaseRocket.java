@@ -349,7 +349,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return ret;
   }
 
-  private Map<String, ReplicatedClient> readClients(final PreparedStatement stmtSelClient,
+  protected Map<String, ReplicatedClient> readClients(final PreparedStatement stmtSelClient,
       final Map<String, ReplicatedClient> mapClients) throws NeutronException {
     try {
       stmtSelClient.setMaxRows(0);
@@ -448,7 +448,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         caseParents = new HashMap<>();
         mapCaseParents.put(caseId, caseParents);
       }
-      // caseParents.put(caseId, focusChildParents.); // confused ...
     }
   }
 
@@ -462,8 +461,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         theCase.setFocusChildLastName(focusChild.getLastName());
         theCase.setFocusChildSensitivityIndicator(focusChild.getSensitivityIndicator());
         theCase.setFocusChildLastUpdated(focusChild.getLastUpdatedTime());
-      } else {
-        LOGGER.error("FOCUS CHILD NOT FOUND!! client id: {}", theCase.getFocusChildId());
       }
     }
   }
@@ -548,25 +545,26 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       esPersonCase.setAccessLimitation(accessLimit);
 
       //
-      // A Case may have more than one parents:
+      // A focus child may have more than one parent:
       //
       final Map<String, CaseClientRelative> parents = mapFocusChildParents.get(focusChildId);
       if (parents != null && !parents.isEmpty()) {
-        parents.values().stream().forEach(p -> {
+        parents.values().stream().forEach(ccr -> {
           final ElasticSearchPersonParent parent = new ElasticSearchPersonParent();
-          final ReplicatedClient parentClient = mapClients.get(p.getRelatedClientId());
+          final ReplicatedClient parentClient = mapClients.get(ccr.getRelatedClientId());
 
           parent.setId(parentClient.getId());
           parent.setLegacyClientId(parentClient.getId());
+          parent.setFirstName(parentClient.getFirstName());
+          parent.setLastName(parentClient.getLastName());
+          parent.setSensitivityIndicator(parentClient.getSensitivityIndicator());
+
           parent.setLegacyLastUpdated(
               DomainChef.cookStrictTimestamp(parentClient.getLastUpdatedTime()));
           parent.setLegacySourceTable(LegacyTable.CLIENT.getName());
-          parent.setFirstName(parentClient.getFirstName());
-          parent.setLastName(parentClient.getLastName());
-          parent.setRelationship(p.translateRelationshipToString());
+          parent.setRelationship(ccr.translateRelationshipToString());
           parent.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(parentClient.getId(),
               parentClient.getLastUpdatedTime(), LegacyTable.CLIENT));
-          parent.setSensitivityIndicator(parentClient.getSensitivityIndicator());
           cases.addCase(esPersonCase, parent);
         });
       } else {
