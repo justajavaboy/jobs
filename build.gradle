@@ -28,7 +28,7 @@ project.ext {
     dropwizardVersion = "1.1.0"
 }
 
-version = 0.38
+version = 0.39
 
 repositories {
     mavenCentral()
