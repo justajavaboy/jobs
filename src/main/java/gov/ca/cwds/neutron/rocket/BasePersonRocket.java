@@ -585,7 +585,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
   protected void sizeQueues(final Date lastRun) {
     // Configure queue sizes for last run or initial load.
-    if (determineFlightMode(lastRun)) {
+    if (determineInitialLoad(lastRun)) {
       queueNormalize = new LinkedBlockingDeque<>(2000);
       queueIndex = new LinkedBlockingDeque<>(5000);
     } else {
@@ -594,7 +594,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     }
   }
 
-  protected boolean determineFlightMode(final Date lastRun) {
+  protected boolean determineInitialLoad(final Date lastRun) {
     return this.getFlightPlan().determineInitialLoad(lastRun);
   }
 
@@ -626,7 +626,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       final Date lastRun = calcLastRunDate(lastSuccessfulRunTime);
 
       sizeQueues(lastRun);
-      if (determineFlightMode(lastRun)) {
+      if (determineInitialLoad(lastRun)) {
         flightLog.setInitialLoad(true);
         refreshMQT();
         if (isInitialLoadJdbc()) {

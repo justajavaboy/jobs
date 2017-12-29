@@ -98,6 +98,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
         new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat());
     final Date now = new DateTime().minusHours(initialMode ? 876000 : hoursInPast).toDate();
 
+    // OPTION: soft-code rockets to launch.
     for (StandardFlightSchedule sched : StandardFlightSchedule.values()) {
       final FlightPlan opts = new FlightPlan(commonFlightPlan);
 
