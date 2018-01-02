@@ -256,6 +256,23 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     }
   }
 
+  protected void readFocusChildParents(final PreparedStatement stmt,
+      final List<CaseClientRelative> list) throws SQLException {
+    LOGGER.info("readFocusChildParents");
+    stmt.setMaxRows(0);
+    stmt.setQueryTimeout(0);
+    stmt.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
+
+    int cntr = 0;
+    CaseClientRelative m;
+    LOGGER.info("pull cases");
+    final ResultSet rs = stmt.executeQuery();
+    while (!isFailed() && rs.next() && (m = CaseClientRelative.extract(rs)) != null) {
+      JobLogs.logEvery(++cntr, "read", "case bundle");
+      list.add(m);
+    }
+  }
+
   protected void readCases(final PreparedStatement stmtSelCase,
       final Map<String, EsCaseRelatedPerson> mapCases) throws SQLException {
     LOGGER.info("readCases");
