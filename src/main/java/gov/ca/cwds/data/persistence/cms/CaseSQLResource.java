@@ -111,6 +111,22 @@ public class CaseSQLResource implements ApiMarker {
   //@formatter:on
 
   //@formatter:off
+  public static final String SELECT_FOCUS_CHILD_PARENTS = 
+      "SELECT DISTINCT cas.FKCHLD_CLT AS FOCUS_CHILD_ID, \n"
+        + "ccc.IDENTIFIER AS L_CLIENT_ID, ccc.COM_FST_NM AS L_FIRST, ccc.COM_MID_NM AS L_MIDDLE, ccc.COM_LST_NM AS L_LAST, ccc.BIRTH_DT AS L_BIRTH, ccc.GENDER_CD AS L_GENDER, \n"
+        + "rel.CLNTRELC, sc.SHORT_DSC, \n"
+        + "cc0.IDENTIFIER AS R_CLIENT_ID, cc0.COM_FST_NM AS R_FIRST, cc0.COM_MID_NM AS R_MIDDLE, cc0.COM_LST_NM AS R_LAST, cc0.BIRTH_DT AS R_BIRTH, cc0.GENDER_CD AS R_GENDER \n"
+        + "FROM (SELECT DISTINCT gt.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT gt) x \n"
+        + "JOIN CASE_T cas   ON cas.IDENTIFIER = x.CASE_ID \n"
+        + "JOIN CLN_RELT rel ON rel.FKCLIENT_T = cas.FKCHLD_CLT \n"
+        + "JOIN CLIENT_T cc0 ON cc0.identifier = rel.FKCLIENT_0 \n"
+        + "JOIN CLIENT_T ccc ON ccc.identifier = rel.FKCLIENT_T \n"
+        + "JOIN SYS_CD_C SC  ON SC.SYS_ID      = rel.CLNTRELC \n"
+        + "WHERE ((REL.CLNTRELC BETWEEN 187 and 214) OR (REL.CLNTRELC BETWEEN 245 and 254) OR (REL.CLNTRELC BETWEEN 282 and 294) OR (REL.CLNTRELC IN (272, 273, 5620, 6360, 6361))) \n"
+        + "FOR READ ONLY WITH UR";  
+  //@formatter:on
+
+  //@formatter:off
   public static final String SELECT_CLIENT_CASE_RELATIONSHIP = 
       "WITH DRIVER AS (\n"
       + " SELECT DISTINCT rc.FKCLIENT_T AS CLIENT_ID, rc.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT rc \n"

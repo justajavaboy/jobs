@@ -588,7 +588,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       final Map<String, EsCaseRelatedPerson> mapCases,
       final Map<String, ReplicatedClient> mapClients, final Map<String, Set<String>> mapClientCases)
       throws NeutronException {
-    LOGGER.info("assemblePieces");
+    LOGGER.info("assemble pieces");
     int countNormalized = 0;
 
     try {
