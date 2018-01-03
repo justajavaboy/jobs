@@ -601,13 +601,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
                   mapFocusChildParents))
               .collect(Collectors.toMap(ReplicatedPersonCases::getGroupId, r -> r));
 
-      // DEBUGGING:
-      final ReplicatedClient cli = mapClients.get("H2NRB2Y0AB");
-      LOGGER.info("MISSING CASES? cli: {}", cli);
-
-      final ReplicatedPersonCases jsonPerson = mapReadyClientCases.get("H2NRB2Y0AB");
-      LOGGER.info("MISSING CASES? jsonPerson: {}", jsonPerson);
-
       // Sanity check: show map sizes.
       LOGGER.info("listCaseClientRelation.size(): {}", listFocusChildParents.size());
       LOGGER.info("mapCaseClients.size(): {}", mapCaseClients.size());
