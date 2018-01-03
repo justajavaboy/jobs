@@ -601,15 +601,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
                   mapFocusChildParents))
               .collect(Collectors.toMap(ReplicatedPersonCases::getGroupId, r -> r));
 
-      // Sanity check: show map sizes.
-      LOGGER.info("listCaseClientRelation.size(): {}", listFocusChildParents.size());
-      LOGGER.info("mapCaseClients.size(): {}", mapCaseClients.size());
-      LOGGER.info("mapCaseParents.size(): {}", mapCaseParents.size());
-      LOGGER.info("mapCases.size(): {}", mapCases.size());
-      LOGGER.info("mapClientCases.size(): {}", mapClientCases.size());
-      LOGGER.info("mapClients.size(): {}", mapClients.size());
-      LOGGER.info("mapFocusChildParents.size(): {}", mapFocusChildParents.size());
-
       // Index into Elasticsearch!
       mapReadyClientCases.values().stream().forEach(this::addToIndexQueue);
 
