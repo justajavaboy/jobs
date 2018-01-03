@@ -238,33 +238,13 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     LOGGER.info("affected client/cases: {}", countInsClientCases);
   }
 
-  protected void readClientCaseRelationship(final PreparedStatement stmtSelClientCaseRelation,
-      final List<CaseClientRelative> listCaseClientRelation) throws SQLException {
-    LOGGER.info("readClientCaseRelationship");
-    stmtSelClientCaseRelation.setMaxRows(0);
-    stmtSelClientCaseRelation.setQueryTimeout(0);
-    stmtSelClientCaseRelation.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
-
-    int cntr = 0;
-    CaseClientRelative m;
-    LOGGER.info("pull focus child parents");
-    final ResultSet rs = stmtSelClientCaseRelation.executeQuery(); // NOSONAR
-    while (!isFailed() && rs.next() && (m = CaseClientRelative.extract(rs)) != null) {
-      JobLogs.logEvery(++cntr, "read", "case bundle");
-      JobLogs.logEvery(LOGGER, 10000, rowsReadCases.incrementAndGet(), "Total read",
-          "case/client/relation");
-      listCaseClientRelation.add(m);
-    }
-  }
-
   protected void readCaseClients(final PreparedStatement stmt,
       final List<Pair<String, String>> list) throws SQLException {
-    LOGGER.info("readCaseClients");
+    LOGGER.info("read Case Clients");
     stmt.setMaxRows(0);
     stmt.setQueryTimeout(0);
     stmt.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
-    LOGGER.info("pull cases");
     final ResultSet rs = stmt.executeQuery();
     while (!isFailed() && rs.next()) {
       list.add(Pair.of(rs.getString("CLIENT_ID"), rs.getString("CASE_ID")));
@@ -273,14 +253,13 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   protected void readFocusChildParents(final PreparedStatement stmt,
       final List<FocusChildParent> list) throws SQLException {
-    LOGGER.info("readFocusChildParents");
+    LOGGER.info("read Focus Child Parents");
     stmt.setMaxRows(0);
     stmt.setQueryTimeout(0);
     stmt.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
     int cntr = 0;
     FocusChildParent m;
-    LOGGER.info("pull focus child parents");
     final ResultSet rs = stmt.executeQuery();
     while (!isFailed() && rs.next() && (m = FocusChildParent.extract(rs)) != null) {
       JobLogs.logEvery(++cntr, "read", "focus child parent");
@@ -290,14 +269,13 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   protected void readCases(final PreparedStatement stmtSelCase,
       final Map<String, EsCaseRelatedPerson> mapCases) throws SQLException {
-    LOGGER.info("readCases");
+    LOGGER.info("read Cases");
     stmtSelCase.setMaxRows(0);
     stmtSelCase.setQueryTimeout(0);
     stmtSelCase.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
     int cntr = 0;
     EsCaseRelatedPerson m;
-    LOGGER.info("pull cases");
     final ResultSet rs = stmtSelCase.executeQuery(); // NOSONAR
     while (!isFailed() && rs.next()) {
       m = extractCase(rs);
@@ -388,7 +366,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       stmtSelClient.setQueryTimeout(0);
       stmtSelClient.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
-      LOGGER.info("pull client/case keys");
+      LOGGER.info("read client/case keys");
       final ResultSet rs = stmtSelClient.executeQuery(); // NOSONAR
 
       ReplicatedClient rc;
@@ -437,9 +415,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   protected void collectClientCases(final Map<String, Set<String>> mapClientCases,
       final Pair<String, String> p) {
     // client => cases
-    final String caseId = p.getRight();
-    String clientId = p.getLeft();
-    collectThisClientCase(mapClientCases, caseId, clientId);
+    collectThisClientCase(mapClientCases, p.getRight(), p.getLeft());
   }
 
   protected void collectFocusChildParents(
@@ -453,23 +429,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       mapFocusChildParents.put(focusChildId, clientParents);
     }
     clientParents.put(rel.getParentClientId(), rel);
-  }
-
-  protected void collectCaseParents(
-      final Map<String, Map<String, CaseClientRelative>> mapCaseParents,
-      final Map<String, Map<String, CaseClientRelative>> mapFocusChildParents,
-      final CaseClientRelative ccr) {
-    // case => parents
-    final String caseId = ccr.getCaseId();
-    final Map<String, CaseClientRelative> focusChildParents =
-        mapFocusChildParents.get(ccr.getFocusClientId());
-    if (focusChildParents != null && !focusChildParents.isEmpty()) {
-      Map<String, CaseClientRelative> caseParents = mapCaseParents.get(caseId);
-      if (caseParents == null) {
-        caseParents = new HashMap<>();
-        mapCaseParents.put(caseId, caseParents);
-      }
-    }
   }
 
   protected void addFocusChildren(final Map<String, EsCaseRelatedPerson> mapCases,
@@ -623,9 +582,9 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           new HashMap<>(HASH_SIZE_LARGE);
 
       // Collect maps:
-      for (Pair<String, String> ccr : listCaseClients) {
-        collectCaseClients(mapCaseClients, ccr);
-        collectClientCases(mapClientCases, ccr);
+      for (Pair<String, String> p : listCaseClients) {
+        collectCaseClients(mapCaseClients, p);
+        collectClientCases(mapClientCases, p);
       }
 
       for (FocusChildParent ccr : focusChildParents) {
@@ -641,6 +600,13 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
               .map(x -> reduceClientCases(x.getKey(), mapClients, mapCases, mapClientCases,
                   mapFocusChildParents))
               .collect(Collectors.toMap(ReplicatedPersonCases::getGroupId, r -> r));
+
+      // DEBUGGING:
+      final ReplicatedClient cli = mapClients.get("H2NRB2Y0AB");
+      LOGGER.info("MISSING CASES? cli: {}", cli);
+
+      final ReplicatedPersonCases jsonPerson = mapReadyClientCases.get("H2NRB2Y0AB");
+      LOGGER.info("MISSING CASES? jsonPerson: {}", jsonPerson);
 
       // Sanity check: show map sizes.
       LOGGER.info("listCaseClientRelation.size(): {}", listFocusChildParents.size());
@@ -672,6 +638,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       tests.add(Pair.of("Amber", "TMZGOO205B"));
       tests.add(Pair.of("Nina", "TBCF40g0D8"));
       tests.add(Pair.of("Lucy", "ASUREPK0Bu"));
+      tests.add(Pair.of("Consuelo", "H2NRB2Y0AB"));
 
       try {
         catchYourBreath(); // Let bulk processor finish
