@@ -326,7 +326,8 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
         t.join();
       }
 
-      Thread.sleep(NeutronIntegerDefaults.SLEEP_MILLIS.getValue()); // WARN: threading practices
+      // WARN: threading practices. Prefer condition check or timed lock.
+      Thread.sleep(NeutronIntegerDefaults.SLEEP_MILLIS.getValue());
       LOGGER.info("PROGRESS TRACK: {}", () -> this.getFlightLog().toString());
     } catch (Exception e) {
       fail();
@@ -620,8 +621,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     try {
       // If index name is provided, use it, else take alias from ES config.
       final String indexNameOverride = getFlightPlan().getIndexName();
-      final String effectiveIndexName = StringUtils.isBlank(indexNameOverride)
-          ? esDao.getConfig().getElasticsearchAlias() : indexNameOverride;
+      final String effectiveIndexName =
+          StringUtils.isBlank(indexNameOverride) ? esDao.getConfig().getElasticsearchAlias()
+              : indexNameOverride;
       getFlightPlan().setIndexName(effectiveIndexName); // WARNING: probably a bad idea.
       final Date lastRun = calcLastRunDate(lastSuccessfulRunTime);
 
@@ -955,9 +957,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
   }
 
   /**
-   * Only used for testing.
+   * Mainly used for testing.
    * 
-   * @return impl index queue
+   * @return index queue implementation
    */
   protected LinkedBlockingDeque<T> getQueueIndex() {
     return queueIndex;
@@ -973,7 +975,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
   }
 
   /**
-   * Only used for testing.
+   * Mostly used for testing.
    * 
    * @param track progress tracker
    */
