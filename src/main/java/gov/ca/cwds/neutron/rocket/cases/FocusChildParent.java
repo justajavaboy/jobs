@@ -26,25 +26,20 @@ public class FocusChildParent implements ApiMarker {
   private short relationCode;
   private String parentFirstName;
   private String parentLastName;
+  private String parentSensitivity = "N";
 
   public FocusChildParent(String focusClientId, String parentClientId, short relationCode,
       String parentFirstName, String parentLastName) {
     this.parentClientId = parentClientId;
     this.focusClientId = focusClientId;
     this.relationCode = relationCode;
+    this.parentFirstName = parentFirstName;
+    this.parentLastName = parentLastName;
   }
 
   public static FocusChildParent extract(final ResultSet rs) throws SQLException {
     return new FocusChildParent(rs.getString("FOCUS_CHILD_ID"), rs.getString("R_CLIENT_ID"),
         rs.getShort("CLNTRELC"), rs.getString("R_FIRST"), rs.getString("R_LAST"));
-  }
-
-  public String getRelatedClientId() {
-    return parentClientId;
-  }
-
-  public void setRelatedClientId(String clientId) {
-    this.parentClientId = clientId;
   }
 
   public String getFocusClientId() {
@@ -109,6 +104,14 @@ public class FocusChildParent implements ApiMarker {
   @Override
   public boolean equals(Object obj) {
     return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
+  public String getParentSensitivity() {
+    return parentSensitivity;
+  }
+
+  public void setParentSensitivity(String parentSensitivity) {
+    this.parentSensitivity = parentSensitivity;
   }
 
 }
