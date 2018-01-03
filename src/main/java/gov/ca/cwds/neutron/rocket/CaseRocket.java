@@ -612,8 +612,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     int countNormalized = 0;
 
     try {
-      // CCR = Case/Client/Relation
-      final List<FocusChildParent> ccrs = listFocusChildParents.stream()
+      final List<FocusChildParent> focusChildParents = listFocusChildParents.stream()
           .sorted((e1, e2) -> e1.getFocusClientId().compareTo(e2.getFocusClientId()))
           .collect(Collectors.toList());
 
@@ -629,7 +628,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         collectClientCases(mapClientCases, ccr);
       }
 
-      for (FocusChildParent ccr : ccrs) {
+      for (FocusChildParent ccr : focusChildParents) {
         collectFocusChildParents(mapFocusChildParents, ccr);
       }
 
