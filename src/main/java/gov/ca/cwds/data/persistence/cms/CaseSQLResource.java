@@ -27,7 +27,18 @@ public class CaseSQLResource implements ApiMarker {
           + "SELECT DISTINCT REL3.FKCLIENT_T  AS CLIENT_ID \n"
           + "FROM DRIVER d3 \n"
           + "JOIN CLN_RELT REL3 ON REL3.FKCLIENT_0 = d3.IDENTIFIER \n"
-          + "JOIN CASE_T   CAS3 ON CAS3.FKCHLD_CLT = REL3.FKCLIENT_T  \n";  
+          + "JOIN CASE_T   CAS3 ON CAS3.FKCHLD_CLT = REL3.FKCLIENT_T  \n"
+          + "UNION \n"
+          + "SELECT DISTINCT REL4.FKCLIENT_T  AS CLIENT_ID \n"
+          + "FROM DRIVER d2 \n"
+          + "JOIN CLN_RELT REL4 ON REL4.FKCLIENT_T = d2.IDENTIFIER \n"
+          + "JOIN CASE_T   CAS4 ON CAS4.FKCHLD_CLT = REL4.FKCLIENT_0 \n"
+          + "UNION \n"
+          + "SELECT DISTINCT REL5.FKCLIENT_0  AS CLIENT_ID \n"
+          + "FROM DRIVER d3 \n"
+          + "JOIN CLN_RELT REL5 ON REL5.FKCLIENT_0 = d3.IDENTIFIER \n"
+          + "JOIN CASE_T   CAS5 ON CAS5.FKCHLD_CLT = REL5.FKCLIENT_T "
+          ;  
   //@formatter:on
 
   //@formatter:off
@@ -112,9 +123,7 @@ public class CaseSQLResource implements ApiMarker {
 
   //@formatter:off
   public static final String SELECT_FOCUS_CHILD_PARENTS = 
-      "SELECT DISTINCT cas.FKCHLD_CLT AS FOCUS_CHILD_ID, \n"
-        + "ccc.IDENTIFIER AS L_CLIENT_ID, \n"
-        + "rel.CLNTRELC, \n"
+      "SELECT DISTINCT 1 AS STANZA, cas.FKCHLD_CLT AS FOCUS_CHILD_ID, ccc.IDENTIFIER AS L_CLIENT_ID, rel.CLNTRELC, \n"
         + "cc0.IDENTIFIER AS R_CLIENT_ID, TRIM(cc0.COM_FST_NM) AS R_FIRST, TRIM(cc0.COM_LST_NM) AS R_LAST, cc0.SENSTV_IND\n"
         + "FROM (SELECT DISTINCT gt.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT gt) x \n"
         + "JOIN CASE_T cas   ON cas.IDENTIFIER = x.CASE_ID \n"
@@ -123,47 +132,6 @@ public class CaseSQLResource implements ApiMarker {
         + "JOIN CLIENT_T ccc ON ccc.identifier = rel.FKCLIENT_T \n"
         + "WHERE REL.CLNTRELC IN (188,189,190,191,192,193,194,195,196,197,198,199,283,284,285,286,287,288,289,290,291,292,293,242,243,301,6360) \n"
         + "FOR READ ONLY WITH UR";  
-  //@formatter:on
-
-  //@formatter:off
-  public static final String SELECT_CLIENT_CASE_RELATIONSHIP = 
-      "WITH DRIVER AS (\n"
-      + " SELECT DISTINCT rc.FKCLIENT_T AS CLIENT_ID, rc.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT rc \n"
-      + ")\n"
-          + " SELECT DISTINCT \n"
-          + " CAS1.IDENTIFIER      AS CASE_ID, \n"
-          + " CAS1.FKCHLD_CLT      AS FOCUS_CHILD_ID, \n"
-          + " DRV1.CLIENT_ID       AS THIS_CLIENT_ID, \n"
-          + " 0                    AS RELATION, \n"
-          + " 'Y'                  AS LEFT_IS_FOCUS \n"
-          + "FROM DRIVER DRV1 \n"
-          + "JOIN CASE_T CAS1 ON CAS1.IDENTIFIER = DRV1.CASE_ID \n"
-          + "WHERE CAS1.IBMSNAP_OPERATION IN ('I','U') \n"
-     + "UNION ALL   \n"
-          + " SELECT DISTINCT \n"
-          + " CAS2.IDENTIFIER      AS CASE_ID, \n"
-          + " CAS2.FKCHLD_CLT      AS FOCUS_CHILD_ID, \n"
-          + " DRV2.CLIENT_ID       AS THIS_CLIENT_ID, \n"
-          + " REL2.CLNTRELC        AS RELATION, \n"
-          + " 'N'                  AS LEFT_IS_FOCUS \n"
-          + "FROM DRIVER DRV2 \n"
-          + "JOIN CLN_RELT REL2 ON REL2.FKCLIENT_T = DRV2.CLIENT_ID \n"
-          + "JOIN CASE_T   CAS2 ON CAS2.FKCHLD_CLT = REL2.FKCLIENT_0 \n"
-          + "WHERE CAS2.IBMSNAP_OPERATION IN ('I','U') \n"
-          + "  AND REL2.IBMSNAP_OPERATION IN ('I','U') \n"
-    + "UNION ALL\n"
-          + " SELECT DISTINCT \n"
-          + " CAS3.IDENTIFIER      AS CASE_ID, \n"
-          + " CAS3.FKCHLD_CLT      AS FOCUS_CHILD_ID, \n"
-          + " DRV3.CLIENT_ID       AS THIS_CLIENT_ID, \n"
-          + " REL3.CLNTRELC        AS RELATION, \n"
-          + " 'Y'                  AS LEFT_IS_FOCUS \n"
-          + "FROM DRIVER DRV3, CLN_RELT REL3, CASE_T CAS3 \n"
-          + "WHERE CAS3.FKCHLD_CLT = REL3.FKCLIENT_T \n"
-          + "  AND REL3.FKCLIENT_0 = DRV3.CLIENT_ID \n"
-          + "  AND CAS3.IBMSNAP_OPERATION IN ('I','U') \n"
-          + "  AND REL3.IBMSNAP_OPERATION IN ('I','U') \n"
-     + " FOR READ ONLY WITH UR ";
   //@formatter:on
 
   /**
