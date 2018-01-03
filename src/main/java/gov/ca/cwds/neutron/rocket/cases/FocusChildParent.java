@@ -3,6 +3,7 @@ package gov.ca.cwds.neutron.rocket.cases;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -29,17 +30,25 @@ public class FocusChildParent implements ApiMarker {
   private String parentSensitivity = "N";
 
   public FocusChildParent(String focusClientId, String parentClientId, short relationCode,
-      String parentFirstName, String parentLastName) {
+      String parentFirstName, String parentLastName, String parentSensitivity) {
     this.parentClientId = parentClientId;
     this.focusClientId = focusClientId;
-    this.relationCode = relationCode;
     this.parentFirstName = parentFirstName;
     this.parentLastName = parentLastName;
+    this.parentSensitivity = parentSensitivity;
+    this.relationCode = relationCode;
+
+    SystemCode sc = SystemCodeCache.global().getSystemCode(this.relationCode);
+    if (sc != null && StringUtils.isNotBlank(sc.getLongDescription())) {
+      sc = SystemCodeCache.global().getSystemCode(Integer.valueOf(sc.getLongDescription()));
+      this.relationCode = sc.getSystemId();
+    }
   }
 
   public static FocusChildParent extract(final ResultSet rs) throws SQLException {
     return new FocusChildParent(rs.getString("FOCUS_CHILD_ID"), rs.getString("R_CLIENT_ID"),
-        rs.getShort("CLNTRELC"), rs.getString("R_FIRST"), rs.getString("R_LAST"));
+        rs.getShort("CLNTRELC"), rs.getString("R_FIRST"), rs.getString("R_LAST"),
+        rs.getString("SENSTV_IND"));
   }
 
   public String getFocusClientId() {

@@ -115,7 +115,7 @@ public class CaseSQLResource implements ApiMarker {
       "SELECT DISTINCT cas.FKCHLD_CLT AS FOCUS_CHILD_ID, \n"
         + "ccc.IDENTIFIER AS L_CLIENT_ID, \n"
         + "rel.CLNTRELC, \n"
-        + "cc0.IDENTIFIER AS R_CLIENT_ID, TRIM(cc0.COM_FST_NM) AS R_FIRST, TRIM(cc0.COM_LST_NM) AS R_LAST \n"
+        + "cc0.IDENTIFIER AS R_CLIENT_ID, TRIM(cc0.COM_FST_NM) AS R_FIRST, TRIM(cc0.COM_LST_NM) AS R_LAST, cc0.SENSTV_IND\n"
         + "FROM (SELECT DISTINCT gt.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT gt) x \n"
         + "JOIN CASE_T cas   ON cas.IDENTIFIER = x.CASE_ID \n"
         + "JOIN CLN_RELT rel ON rel.FKCLIENT_T = cas.FKCHLD_CLT \n"

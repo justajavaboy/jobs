@@ -17,9 +17,10 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCode;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
 /**
- * Convenient carrier bean for client/case/relative combinations.
+ * Obsolete carrier bean for client/case/relative combinations. All-in-one approach is too complex.
  * 
  * @author CWDS API Team
+ * @see FocusChildParent
  */
 public class CaseClientRelative implements ApiMarker {
 
