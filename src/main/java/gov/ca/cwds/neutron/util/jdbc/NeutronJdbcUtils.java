@@ -40,7 +40,7 @@ public final class NeutronJdbcUtils {
   private static final String Z_OS_START = "aaaaaaaaaa";
   private static final String Z_OS_END = "9999999999";
 
-  private static final String[] BASE_PARTITIONS = {Z_OS_START, "A6y48OH3Ut", "BzaK4AmDfS",
+  private static final String[] BASE_PARTITIONS = {"ACZAVXC2PZ", "A6y48OH3Ut", "BzaK4AmDfS",
       "B26CwOn9qX", "CvIYhuyCJt", "CY8r2uwEBI", "DsNAQ1W4l6", "DWQGOmFAzi", "EpKrO9a9xb",
       "ESH4wdQ02u", "Fmy2cMI0kW", "FN4JbQ0BFV", "GjekFiPEuJ", "GMSl4aH4wm", "HfvKXzA7rJ",
       "HJtGK9J07S", "IbMKNtL5Dk", "IEwHjr9FXO", "I6RlOno3qC", "JBHjcBU74E", "J5p3IOTEaC",
