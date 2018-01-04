@@ -51,7 +51,8 @@ public class FocusChildParent implements ApiMarker {
 
   public static FocusChildParent extract(final ResultSet rs) throws SQLException {
     return new FocusChildParent(1, rs.getString("FOCUS_CHILD_ID"), rs.getString("R_CLIENT_ID"),
-        rs.getShort("REL_CODE"), rs.getString("R_FIRST"), rs.getString("R_LAST"), "N");
+        rs.getShort("REL_CODE"), rs.getString("R_FIRST"), rs.getString("R_LAST"),
+        rs.getString("R_SENSTV_IND"));
   }
 
   public String getFocusClientId() {
