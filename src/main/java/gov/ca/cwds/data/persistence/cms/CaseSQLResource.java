@@ -131,7 +131,7 @@ public class CaseSQLResource implements ApiMarker {
           + "JOIN CLN_RELT rel ON rel.FKCLIENT_T  = cas.FKCHLD_CLT \n"
           + "JOIN CLIENT_T cc0 ON cc0.identifier  = rel.FKCLIENT_0 \n"
           + "JOIN CLIENT_T ccc ON ccc.identifier  = rel.FKCLIENT_T \n"
-          + "JOIN SYS_CD_C SC  ON SC.SYS_ID       = rel.CLNTRELC \n"
+          + "JOIN SYS_CD_C SC  ON SC.SYS_ID       = rel.CLNTRELC AND SC.FKS_META_T = 'CLNTRELC'\n"
           + "JOIN SYS_CD_C SC2 ON SC2.SYS_ID      = CAST(SC.LONG_DSC AS SMALLINT) \n"
           + "WHERE SC.SYS_ID  IN (188,189,190,191,192,193,194,195,196,197,198,199,283,284,285,286,287,288,289,290,291,292,293,242,243,301,6360) \n"
      + "UNION \n"
@@ -144,7 +144,7 @@ public class CaseSQLResource implements ApiMarker {
           + "JOIN CLN_RELT rel ON rel.FKCLIENT_0  = cas.FKCHLD_CLT \n"
           + "JOIN CLIENT_T cc0 ON cc0.identifier  = rel.FKCLIENT_0 \n"
           + "JOIN CLIENT_T ccc ON ccc.identifier  = rel.FKCLIENT_T \n"
-          + "JOIN SYS_CD_C SC  ON SC.SYS_ID       = rel.CLNTRELC \n"
+          + "JOIN SYS_CD_C SC  ON SC.SYS_ID       = rel.CLNTRELC AND SC.FKS_META_T = 'CLNTRELC'\n"
           + "JOIN SYS_CD_C SC2 ON SC2.SYS_ID      = CAST(SC.LONG_DSC AS SMALLINT) \n"
           + "WHERE SC2.SYS_ID  IN (188,189,190,191,192,193,194,195,196,197,198,199,283,284,285,286,287,288,289,290,291,292,293,242,243,301,6360) \n"
           + "WITH UR";
