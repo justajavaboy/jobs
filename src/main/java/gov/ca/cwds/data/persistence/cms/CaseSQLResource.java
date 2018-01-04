@@ -122,15 +122,32 @@ public class CaseSQLResource implements ApiMarker {
 
   //@formatter:off
   public static final String SELECT_FOCUS_CHILD_PARENTS = 
-      "SELECT DISTINCT 1 AS STANZA, cas.FKCHLD_CLT AS FOCUS_CHILD_ID, ccc.IDENTIFIER AS L_CLIENT_ID, rel.CLNTRELC, \n"
-        + "cc0.IDENTIFIER AS R_CLIENT_ID, TRIM(cc0.COM_FST_NM) AS R_FIRST, TRIM(cc0.COM_LST_NM) AS R_LAST, cc0.SENSTV_IND\n"
-        + "FROM (SELECT DISTINCT gt.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT gt) x \n"
-        + "JOIN CASE_T cas   ON cas.IDENTIFIER = x.CASE_ID \n"
-        + "JOIN CLN_RELT rel ON rel.FKCLIENT_T = cas.FKCHLD_CLT \n"
-        + "JOIN CLIENT_T cc0 ON cc0.identifier = rel.FKCLIENT_0 \n"
-        + "JOIN CLIENT_T ccc ON ccc.identifier = rel.FKCLIENT_T \n"
-        + "WHERE REL.CLNTRELC IN (188,189,190,191,192,193,194,195,196,197,198,199,283,284,285,286,287,288,289,290,291,292,293,242,243,301,6360) \n"
-        + "FOR READ ONLY WITH UR";  
+       "SELECT DISTINCT cas.FKCHLD_CLT AS FOCUS_CHILD_ID,  \n"
+          + "ccc.IDENTIFIER AS L_CLIENT_ID, ccc.COM_FST_NM AS L_FIRST, ccc.COM_MID_NM AS L_MIDDLE, ccc.COM_LST_NM AS L_LAST, ccc.BIRTH_DT AS L_BIRTH, ccc.GENDER_CD AS L_GENDER, \n"
+          + "sc.SHORT_DSC AS REL_TYPE, sc.SYS_ID AS REL_CODE,  \n"
+          + "cc0.IDENTIFIER AS R_CLIENT_ID, cc0.COM_FST_NM AS R_FIRST, cc0.COM_MID_NM AS R_MIDDLE, cc0.COM_LST_NM AS R_LAST, cc0.BIRTH_DT AS R_BIRTH, cc0.GENDER_CD AS R_GENDER \n"
+          + "FROM (SELECT DISTINCT gt.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT gt) x \n"
+          + "JOIN CASE_T cas   ON cas.IDENTIFIER  = x.CASE_ID \n"
+          + "JOIN CLN_RELT rel ON rel.FKCLIENT_T  = cas.FKCHLD_CLT \n"
+          + "JOIN CLIENT_T cc0 ON cc0.identifier  = rel.FKCLIENT_0 \n"
+          + "JOIN CLIENT_T ccc ON ccc.identifier  = rel.FKCLIENT_T \n"
+          + "JOIN SYS_CD_C SC  ON SC.SYS_ID       = rel.CLNTRELC \n"
+          + "JOIN SYS_CD_C SC2 ON SC2.SYS_ID      = CAST(SC.LONG_DSC AS SMALLINT) \n"
+          + "WHERE SC.SYS_ID  IN (188,189,190,191,192,193,194,195,196,197,198,199,283,284,285,286,287,288,289,290,291,292,293,242,243,301,6360) \n"
+     + "UNION \n"
+     + "SELECT DISTINCT cas.FKCHLD_CLT AS FOCUS_CHILD_ID,  \n"
+          + "cc0.IDENTIFIER AS L_CLIENT_ID, cc0.COM_FST_NM AS L_FIRST, cc0.COM_MID_NM AS L_MIDDLE, cc0.COM_LST_NM AS L_LAST, cc0.BIRTH_DT AS L_BIRTH, cc0.GENDER_CD AS L_GENDER, \n"
+          + "sc2.SHORT_DSC AS REL_TYPE, sc2.SYS_ID AS REL_CODE,  \n"
+          + "ccc.IDENTIFIER AS R_CLIENT_ID, ccc.COM_FST_NM AS R_FIRST, ccc.COM_MID_NM AS R_MIDDLE, ccc.COM_LST_NM AS R_LAST, ccc.BIRTH_DT AS R_BIRTH, ccc.GENDER_CD AS R_GENDER \n"
+          + "FROM (SELECT DISTINCT gt.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT gt) x \n"
+          + "JOIN CASE_T cas   ON cas.IDENTIFIER  = x.CASE_ID \n"
+          + "JOIN CLN_RELT rel ON rel.FKCLIENT_0  = cas.FKCHLD_CLT \n"
+          + "JOIN CLIENT_T cc0 ON cc0.identifier  = rel.FKCLIENT_0 \n"
+          + "JOIN CLIENT_T ccc ON ccc.identifier  = rel.FKCLIENT_T \n"
+          + "JOIN SYS_CD_C SC  ON SC.SYS_ID       = rel.CLNTRELC \n"
+          + "JOIN SYS_CD_C SC2 ON SC2.SYS_ID      = CAST(SC.LONG_DSC AS SMALLINT) \n"
+          + "WHERE SC2.SYS_ID  IN (188,189,190,191,192,193,194,195,196,197,198,199,283,284,285,286,287,288,289,290,291,292,293,242,243,301,6360) \n"
+          + "WITH UR";
   //@formatter:on
 
   /**

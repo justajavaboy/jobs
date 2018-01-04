@@ -23,20 +23,23 @@ public class FocusChildParent implements ApiMarker {
   private static final long serialVersionUID = 1L;
 
   private int stanza;
-  private String focusClientId;
-  private String parentClientId;
+
   private short relationCode;
+  private String focusClientId;
+
+  private String parentClientId;
   private String parentFirstName;
   private String parentLastName;
   private String parentSensitivity = "N";
 
   public FocusChildParent(int stanza, String focusClientId, String parentClientId,
       short relationCode, String parentFirstName, String parentLastName, String parentSensitivity) {
-    this.parentClientId = parentClientId;
     this.focusClientId = focusClientId;
+    this.parentClientId = parentClientId;
     this.parentFirstName = parentFirstName;
     this.parentLastName = parentLastName;
     this.parentSensitivity = parentSensitivity;
+
     this.relationCode = relationCode;
 
     SystemCode sc = SystemCodeCache.global().getSystemCode(this.relationCode);
@@ -47,9 +50,8 @@ public class FocusChildParent implements ApiMarker {
   }
 
   public static FocusChildParent extract(final ResultSet rs) throws SQLException {
-    return new FocusChildParent(rs.getInt("STANZA"), rs.getString("FOCUS_CHILD_ID"),
-        rs.getString("R_CLIENT_ID"), rs.getShort("CLNTRELC"), rs.getString("R_FIRST"),
-        rs.getString("R_LAST"), rs.getString("SENSTV_IND"));
+    return new FocusChildParent(1, rs.getString("FOCUS_CHILD_ID"), rs.getString("R_CLIENT_ID"),
+        rs.getShort("REL_CODE"), rs.getString("R_FIRST"), rs.getString("R_LAST"), "N");
   }
 
   public String getFocusClientId() {

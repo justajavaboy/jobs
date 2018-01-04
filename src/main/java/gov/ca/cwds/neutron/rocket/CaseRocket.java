@@ -214,7 +214,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   protected void prepAffectedClients(final PreparedStatement stmtInsClient,
       final PreparedStatement stmtInsClientCase, final Pair<String, String> p) throws SQLException {
-    LOGGER.info("prepAffectedClients: range: {} - {}", p.getLeft(), p.getRight());
+    LOGGER.info("Prep Affected Clients: range: {} - {}", p.getLeft(), p.getRight());
     stmtInsClient.setMaxRows(0);
     stmtInsClient.setQueryTimeout(0);
 
@@ -659,7 +659,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     final String threadName = "case_" + nextThreadNum.incrementAndGet() + "_" + keyRange.getLeft()
         + "_" + keyRange.getRight();
     nameThread(threadName);
-    LOGGER.info("BEGIN");
+    LOGGER.info("BEGIN: range: {} - {}", keyRange.getLeft(), keyRange.getRight());
     getFlightLog().markRangeStart(keyRange);
 
     final List<Pair<String, String>> listCaseClients = new ArrayList<>(HASH_SIZE_LARGE);
@@ -712,7 +712,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       getFlightLog().markRangeComplete(keyRange);
     }
 
-    LOGGER.info("DONE");
+    LOGGER.info("DONE: range: {} - {}", keyRange.getLeft(), keyRange.getRight());
     return recordsProcessed;
   }
 
