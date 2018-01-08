@@ -61,6 +61,7 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  * 
  * @author CWDS API Team
  */
+//@formatter:off
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findAllUpdatedAfter",
     query = "select z.IDENTIFIER, z.ADPTN_STCD, trim(z.ALN_REG_NO) ALN_REG_NO, z.BIRTH_DT, "
@@ -83,7 +84,6 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
         + "z.HISP_UD_CD, z.SOCPLC_CD, z.CL_INDX_NO, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
         + "from {h-schema}CLIENT_T z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR",
     resultClass = ReplicatedClient.class)
-// @formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findByTemp",
     query = "\nSELECT \n" + "    c.IDENTIFIER \n" + "  , trim(c.COM_FST_NM) AS COM_FST_NM \n"
         + "  , trim(c.COM_LST_NM) AS COM_LST_NM \n" + "  , c.SENSTV_IND \n" + "  , c.LST_UPD_TS \n"
@@ -249,8 +249,8 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
     Map<String, ElasticSearchPersonAddress> esClientAddresses = new HashMap<>();
 
     for (ReplicatedClientAddress repClientAddress : this.clientAddresses) {
-      String effectiveEndDate = DomainChef.cookDate(repClientAddress.getEffEndDt());
-      String addressActive = StringUtils.isBlank(effectiveEndDate) ? "true" : "false";
+      final String effectiveEndDate = DomainChef.cookDate(repClientAddress.getEffEndDt());
+      final String addressActive = StringUtils.isBlank(effectiveEndDate) ? "true" : "false";
 
       /*
        * We index only active addresses
