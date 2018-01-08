@@ -3,7 +3,7 @@ package gov.ca.cwds.data.persistence.cms.rep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,7 +110,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
    * A client can have multiple active addresses, typically one active address per address type.
    */
   @OneToMany(fetch = FetchType.EAGER, mappedBy = "fkClient")
-  private Map<String, ReplicatedClientAddress> clientAddresses = new HashMap<>();
+  private Set<ReplicatedClientAddress> clientAddresses = new LinkedHashSet<>();
 
   @Transient
   private List<Short> clientRaces = new ArrayList<>();
@@ -142,7 +142,20 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
    * @return client addresses
    */
   public Set<ReplicatedClientAddress> getClientAddresses() {
-    return new HashSet<>(clientAddresses.values());
+    return clientAddresses;
+  }
+
+  /**
+   * Set the client address linkages.
+   *
+   * @param clientAddresses Set of client address linkages
+   */
+  public void setClientAddresses(Set<ReplicatedClientAddress> clientAddresses) {
+    if (clientAddresses != null) {
+      this.clientAddresses = clientAddresses;
+    } else {
+      this.clientAddresses = new LinkedHashSet<>();
+    }
   }
 
   /**
@@ -152,7 +165,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
    */
   public void addClientAddress(ReplicatedClientAddress clientAddress) {
     if (clientAddress != null) {
-      this.clientAddresses.put(clientAddress.getId(), clientAddress);
+      this.clientAddresses.add(clientAddress);
     }
   }
 
@@ -233,9 +246,9 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
   @JsonIgnore
   @Override
   public List<ElasticSearchPersonAddress> getElasticSearchPersonAddresses() {
-    List<ElasticSearchPersonAddress> esClientAddresses = new ArrayList<>();
+    Map<String, ElasticSearchPersonAddress> esClientAddresses = new HashMap<>();
 
-    for (ReplicatedClientAddress repClientAddress : this.clientAddresses.values()) {
+    for (ReplicatedClientAddress repClientAddress : this.clientAddresses) {
       String effectiveEndDate = DomainChef.cookDate(repClientAddress.getEffEndDt());
       String addressActive = StringUtils.isBlank(effectiveEndDate) ? "true" : "false";
 
@@ -254,7 +267,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
 
         for (ReplicatedAddress repAddress : repClientAddress.getAddresses()) {
           ElasticSearchPersonAddress esAddress = new ElasticSearchPersonAddress();
-          esClientAddresses.add(esAddress);
+          esClientAddresses.put(esAddress.getAddressId(), esAddress);
 
           esAddress.setLegacyDescriptor(repAddress.getLegacyDescriptor());
           esAddress.setId(repAddress.getAddressId());
@@ -299,7 +312,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
       }
     }
 
-    return esClientAddresses;
+    return new ArrayList<>(esClientAddresses.values());
   }
 
   // @JsonIgnore
@@ -316,7 +329,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
   @JsonIgnore
   @Override
   public ApiPhoneAware[] getPhones() {
-    return clientAddresses.values().stream().flatMap(ca -> ca.getAddresses().stream())
+    return clientAddresses.stream().flatMap(ca -> ca.getAddresses().stream())
         .flatMap(adr -> Arrays.stream(adr.getPhones())).collect(Collectors.toList())
         .toArray(new ApiPhoneAware[0]);
   }
