@@ -76,12 +76,6 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
   }
 
   @Test
-  public void setClientAddresses_Args__Set() throws Exception {
-    Set<ReplicatedClientAddress> clientAddresses = mock(Set.class);
-    target.setClientAddresses(clientAddresses);
-  }
-
-  @Test
   public void addClientAddress_Args__ReplicatedClientAddress() throws Exception {
     ReplicatedClientAddress clientAddress = mock(ReplicatedClientAddress.class);
     target.addClientAddress(clientAddress);
