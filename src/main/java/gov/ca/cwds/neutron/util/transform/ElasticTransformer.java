@@ -164,11 +164,11 @@ public final class ElasticTransformer {
     esp.setSourceJson(""); // Ditto.
 
     // null out client_county.
-    if (!esp.getAddresses().isEmpty()) {
-      for (ElasticSearchPersonAddress addr : esp.getAddresses()) {
-        addr.setCounty(null);
-      }
-    }
+    // if (!esp.getAddresses().isEmpty()) {
+    // for (ElasticSearchPersonAddress addr : esp.getAddresses()) {
+    // addr.setCounty(null);
+    // }
+    // }
 
     // Child classes may override these methods as needed. left = update, right = insert.
     Pair<String, String> json;
@@ -178,8 +178,6 @@ public final class ElasticTransformer {
     } catch (Exception e) {
       throw JobLogs.checked(LOGGER, e, "ERROR PREPARING UPSERT: {}", e.getMessage());
     }
-
-    LOGGER.info(json.getRight());
 
     // "Upsert": update if doc exists, insert if it does not.
     return new UpdateRequest(alias, docType, id).doc(json.getLeft(), XContentType.JSON)
