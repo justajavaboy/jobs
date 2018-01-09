@@ -109,7 +109,7 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
 
   @Override
   public String getMQTName() {
-    return getInitialLoadViewName();
+    return "REFRESH_ALL_MQTS";
   }
 
   @Override
