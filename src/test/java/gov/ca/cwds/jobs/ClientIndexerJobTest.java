@@ -264,7 +264,7 @@ public class ClientIndexerJobTest extends Goddard<ReplicatedClient, EsClientAddr
   @Test
   public void getMQTName_Args__() throws Exception {
     final String actual = target.getMQTName();
-    final String expected = "MQT_CLIENT_ADDRESS";
+    final String expected = "REFRESH_ALL_MQTS";
     assertThat(actual, is(equalTo(expected)));
   }
 

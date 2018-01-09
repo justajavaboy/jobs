@@ -75,6 +75,11 @@ public class ClientCountyRocket extends ClientIndexerJob
   }
 
   @Override
+  public String getMQTName() {
+    return "REFRESH_ALL_MQTS";
+  }
+
+  @Override
   public String getInitialLoadQuery(String dbSchemaName) {
     return INSERT_CLIENT_INITIAL_LOAD;
   }

@@ -73,7 +73,7 @@ public class ClientCountyRocketTest extends Goddard<ReplicatedClient, EsClientAd
   @Test
   public void getMQTName_Args__() throws Exception {
     String actual = target.getMQTName();
-    String expected = "CLIENT_T";
+    String expected = "REFRESH_ALL_MQTS";
     assertThat(actual, is(equalTo(expected)));
   }
 
