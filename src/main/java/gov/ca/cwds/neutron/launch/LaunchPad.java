@@ -245,7 +245,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Managed(description = "Shutdown command center")
   public String shutdown() throws NeutronException {
     LOGGER.warn("Shutting down command center!");
-    new Thread(this::threadShutdownLaunchCommand);
+    new Thread(this::threadShutdownLaunchCommand).start();
     return "Requested shutdown!";
   }
 
