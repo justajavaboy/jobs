@@ -45,7 +45,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(LaunchCommand.class);
 
   /**
-   * Singleton instance. One director to rule them all.
+   * Singleton instance. One launch director to rule them all!
    */
   private static LaunchCommand instance = new LaunchCommand();
 
@@ -60,7 +60,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private boolean shutdownRequested;
 
   /**
-   * <strong>HACK</strong>: make an interface for DI
+   * <strong>HACK</strong>: make an interface for DI (dependency injection).
    */
   private Injector injector;
 
@@ -336,10 +336,11 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
   /**
    * <p>
-   * Single launch mode: close resources and exit JVM.
+   * <strong>Single launch mode</strong>: close resources and exit JVM.
    * </p>
    * <p>
-   * Continuous launch mode: close resources and exit JVM only on fatal startup error.
+   * <strong>Continuous launch mode</strong>: close resources and exit JVM only on fatal startup
+   * error.
    * </p>
    */
   @Override

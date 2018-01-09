@@ -28,7 +28,7 @@ project.ext {
     dropwizardVersion = "1.1.0"
 }
 
-version = 0.39
+version = 0.40
 
 repositories {
     mavenCentral()
@@ -64,7 +64,7 @@ dependencies {
 	compile 'org.hibernate:hibernate-c3p0:5.2.10.Final'
 
 	// Exclude transitive dependencies.
-	compile ('gov.ca.cwds.api:api-core:3.6.519') {
+	compile ('gov.ca.cwds.api:api-core:3.6_173-RC') {
 	    exclude group: 'org.glassfish.jersey.core'
         exclude group: 'ch.qos.logback'
         exclude group: 'org.slf4j'

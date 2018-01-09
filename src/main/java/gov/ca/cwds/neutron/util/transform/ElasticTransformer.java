@@ -160,6 +160,16 @@ public final class ElasticTransformer {
       esp.setLegacyId(t.getPrimaryKey().toString());
     }
 
+    esp.setSource(""); // Clear out obsolete "source" element.
+    esp.setSourceJson(""); // Ditto.
+
+    // null out client_county.
+    // if (!esp.getAddresses().isEmpty()) {
+    // for (ElasticSearchPersonAddress addr : esp.getAddresses()) {
+    // addr.setCounty(null);
+    // }
+    // }
+
     // Child classes may override these methods as needed. left = update, right = insert.
     Pair<String, String> json;
     try {

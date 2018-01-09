@@ -34,7 +34,7 @@ public interface AtomValidateDocument extends AtomShared {
         docId = hit.docId();
         json = hit.getSourceAsString();
 
-        logger.info("docId: {}", docId);
+        logger.info("validate doc id: {}", docId);
         logger.trace("json: {}", json);
 
         person = ElasticSearchPerson.readPerson(json);

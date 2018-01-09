@@ -1,0 +1,546 @@
+{
+	"index_update_time": "2018-01-05T16:18:24.115-0800",
+	"first_name": "Spike",
+	"middle_name": "",
+	"last_name": "Bischoff",
+	"date_of_birth": "2010-09-02",
+	"gender": "male",
+	"ssn": "111111111",
+	"type": "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient",
+	"sensitivity_indicator": "N",
+	"client_county": {
+		"id": "1094",
+		"description": "Monterey"
+	},
+	"race_ethnicity": {
+		"race_codes": [
+			{
+				"description": "White*",
+				"id": "839"
+			}
+		],
+		"hispanic_codes": [],
+		"unable_to_determine_code": "",
+		"hispanic_origin_code": "U",
+		"hispanic_unable_to_determine_code": ""
+	},
+	"source": "",
+	"legacy_descriptor": {
+		"legacy_id": "CDKV4du0C6",
+		"legacy_ui_id": "0693-8154-8656-2000750",
+		"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+		"legacy_table_name": "CLIENT_T",
+		"legacy_table_description": "Client"
+	},
+	"legacy_id": "CDKV4du0C6",
+	"addresses": [
+		{
+			"zip": "93942",
+			"city": "Monterey",
+			"county": {
+				"description": "Monterey",
+				"id": "1094"
+			},
+			"legacy_descriptor": {
+				"legacy_last_updated": "2005-12-09T16:20:43.320-0800",
+				"legacy_id": "77ipDwQ0C6",
+				"legacy_ui_id": "0404-6769-4601-8000750",
+				"legacy_table_name": "ADDRS_T",
+				"legacy_table_description": "Address"
+			},
+			"active": "true",
+			"type": {
+				"description": "Residence",
+				"id": "32"
+			},
+			"street_name": "Artisan Street",
+			"state_name": "California",
+			"street_number": "150",
+			"effective_start_date": "1998-09-02",
+			"id": "77ipDwQ0C6",
+			"state": {
+				"description": "California",
+				"id": "1828"
+			},
+			"state_code": "CA"
+		}
+	],
+	"phone_numbers": [
+		{
+			"number": "8580001556"
+		}
+	],
+	"languages": [
+		{
+			"name": "English",
+			"id": "1253",
+			"primary": true
+		}
+	],
+	"id": "CDKV4du0C6",
+	"searchable_date_of_birth": [
+		"09022010",
+		"092010",
+		"92",
+		"2010",
+		"922010",
+		"92010",
+		"0902"
+	],
+	"searchable_name": [
+		"Spike",
+		"Bischoff"
+	],
+	"cases": [
+		{
+			"legacy_last_updated": "1999-09-14T23:29:12.369-0700",
+			"legacy_descriptor": {
+				"legacy_last_updated": "1999-09-14T23:29:12.369-0700",
+				"legacy_id": "4TQlhHG0C6",
+				"legacy_ui_id": "0254-1643-4697-8000750",
+				"legacy_table_name": "CASE_T",
+				"legacy_table_description": "Case"
+			},
+			"county_name": "Monterey",
+			"legacy_case_id": "4TQlhHG0C6",
+			"focus_child": {
+				"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+				"legacy_client_id": "S44dNIY0C6",
+				"legacy_descriptor": {
+					"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+					"legacy_id": "S44dNIY0C6",
+					"legacy_ui_id": "1594-1396-1737-8000750",
+					"legacy_table_name": "CLIENT_T",
+					"legacy_table_description": "Client"
+				},
+				"last_name": "Bischoff",
+				"id": "S44dNIY0C6",
+				"first_name": "Jessica",
+				"sensitivity_indicator": "N"
+			},
+			"county_id": "1094",
+			"service_component": "Emergency Response",
+			"assigned_social_worker": {
+				"legacy_assigned_social_worker_last_updated": "2000-08-29T13:51:39.247-0700",
+				"legacy_descriptor": {
+					"legacy_last_updated": "2000-08-29T13:51:39.247-0700",
+					"legacy_id": "0C6",
+					"legacy_ui_id": "0C6",
+					"legacy_table_name": "STFPERST",
+					"legacy_table_description": "Staff"
+				},
+				"last_name": "Clinton",
+				"id": "0C6",
+				"legacy_assigned_social_worker_id": "0C6",
+				"first_name": "Monica"
+			},
+			"access_limitation": {
+				"limited_access_government_entity_id": "0",
+				"limited_access_code": "N"
+			},
+			"id": "4TQlhHG0C6",
+			"service_component_id": "1692",
+			"start_date": "2015-09-02",
+			"parents": [
+				{
+					"legacy_source_table": "CLIENT_T",
+					"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+					"legacy_descriptor": {
+						"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+						"legacy_id": "8dmrePy0C6",
+						"legacy_ui_id": "0490-8531-1600-2000750",
+						"legacy_table_name": "CLIENT_T",
+						"legacy_table_description": "Client"
+					},
+					"last_name": "Bischoff",
+					"legacy_id": "8dmrePy0C6",
+					"id": "8dmrePy0C6",
+					"relationship": "Mother/Daughter (Birth)",
+					"first_name": "Melinda",
+					"sensitivity_indicator": "N"
+				}
+			]
+		},
+		{
+			"legacy_last_updated": "2010-10-01T15:26:53.539-0700",
+			"legacy_descriptor": {
+				"legacy_last_updated": "2010-10-01T15:26:53.539-0700",
+				"legacy_id": "5FUN3eU0C6",
+				"legacy_ui_id": "0298-1919-5606-6000750",
+				"legacy_table_name": "CASE_T",
+				"legacy_table_description": "Case"
+			},
+			"county_name": "Monterey",
+			"legacy_case_id": "5FUN3eU0C6",
+			"focus_child": {
+				"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+				"legacy_client_id": "CDKV4du0C6",
+				"legacy_descriptor": {
+					"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+					"legacy_id": "CDKV4du0C6",
+					"legacy_ui_id": "0693-8154-8656-2000750",
+					"legacy_table_name": "CLIENT_T",
+					"legacy_table_description": "Client"
+				},
+				"last_name": "Bischoff",
+				"id": "CDKV4du0C6",
+				"first_name": "Spike",
+				"sensitivity_indicator": "N"
+			},
+			"county_id": "1094",
+			"service_component": "Emergency Response",
+			"assigned_social_worker": {
+				"legacy_assigned_social_worker_last_updated": "2000-08-29T13:51:39.247-0700",
+				"legacy_descriptor": {
+					"legacy_last_updated": "2000-08-29T13:51:39.247-0700",
+					"legacy_id": "0C6",
+					"legacy_ui_id": "0C6",
+					"legacy_table_name": "STFPERST",
+					"legacy_table_description": "Staff"
+				},
+				"last_name": "Clinton",
+				"id": "0C6",
+				"legacy_assigned_social_worker_id": "0C6",
+				"first_name": "Monica"
+			},
+			"access_limitation": {
+				"limited_access_government_entity_id": "0",
+				"limited_access_code": "N"
+			},
+			"id": "5FUN3eU0C6",
+			"service_component_id": "1692",
+			"start_date": "2015-09-02",
+			"parents": [
+				{
+					"legacy_source_table": "CLIENT_T",
+					"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+					"legacy_descriptor": {
+						"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+						"legacy_id": "8dmrePy0C6",
+						"legacy_ui_id": "0490-8531-1600-2000750",
+						"legacy_table_name": "CLIENT_T",
+						"legacy_table_description": "Client"
+					},
+					"last_name": "Bischoff",
+					"legacy_id": "8dmrePy0C6",
+					"id": "8dmrePy0C6",
+					"relationship": "Mother/Son (Birth)",
+					"first_name": "Melinda",
+					"sensitivity_indicator": "N"
+				}
+			]
+		},
+		{
+			"legacy_last_updated": "2010-10-01T15:26:53.539-0700",
+			"legacy_descriptor": {
+				"legacy_last_updated": "2010-10-01T15:26:53.539-0700",
+				"legacy_id": "T3xkvcg0C6",
+				"legacy_ui_id": "1650-8382-1885-0000750",
+				"legacy_table_name": "CASE_T",
+				"legacy_table_description": "Case"
+			},
+			"county_name": "Monterey",
+			"legacy_case_id": "T3xkvcg0C6",
+			"focus_child": {
+				"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+				"legacy_client_id": "BVMf6YM0C6",
+				"legacy_descriptor": {
+					"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+					"legacy_id": "BVMf6YM0C6",
+					"legacy_ui_id": "0653-5375-8525-0000750",
+					"legacy_table_name": "CLIENT_T",
+					"legacy_table_description": "Client"
+				},
+				"last_name": "Bischoff",
+				"id": "BVMf6YM0C6",
+				"first_name": "Jason",
+				"sensitivity_indicator": "N"
+			},
+			"county_id": "1094",
+			"service_component": "Emergency Response",
+			"assigned_social_worker": {
+				"legacy_assigned_social_worker_last_updated": "2000-08-29T13:51:39.247-0700",
+				"legacy_descriptor": {
+					"legacy_last_updated": "2000-08-29T13:51:39.247-0700",
+					"legacy_id": "0C6",
+					"legacy_ui_id": "0C6",
+					"legacy_table_name": "STFPERST",
+					"legacy_table_description": "Staff"
+				},
+				"last_name": "Clinton",
+				"id": "0C6",
+				"legacy_assigned_social_worker_id": "0C6",
+				"first_name": "Monica"
+			},
+			"access_limitation": {
+				"limited_access_government_entity_id": "0",
+				"limited_access_code": "N"
+			},
+			"id": "T3xkvcg0C6",
+			"service_component_id": "1692",
+			"start_date": "2015-09-02",
+			"parents": [
+				{
+					"legacy_source_table": "CLIENT_T",
+					"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+					"legacy_descriptor": {
+						"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+						"legacy_id": "8dmrePy0C6",
+						"legacy_ui_id": "0490-8531-1600-2000750",
+						"legacy_table_name": "CLIENT_T",
+						"legacy_table_description": "Client"
+					},
+					"last_name": "Bischoff",
+					"legacy_id": "8dmrePy0C6",
+					"id": "8dmrePy0C6",
+					"relationship": "Mother/Son (Birth)",
+					"first_name": "Melinda",
+					"sensitivity_indicator": "N"
+				}
+			]
+		}
+	],
+	"relationships": [
+		{
+			"related_person_first_name": "Jason",
+			"indexed_person_relationship": "Brother",
+			"relationship_context": "Half",
+			"related_person_legacy_id": "BVMf6YM0C6",
+			"legacy_descriptor": {
+				"legacy_last_updated": "1998-09-02T17:01:55.000-0700",
+				"legacy_id": "BVMf6YM0C6",
+				"legacy_ui_id": "0653-5375-8525-0000750",
+				"legacy_table_name": "CLIENT_T",
+				"legacy_table_description": "Client"
+			},
+			"related_person_last_name": "Ranscombe",
+			"related_person_relationship": "Brother"
+		},
+		{
+			"related_person_first_name": "Jessica",
+			"indexed_person_relationship": "Brother",
+			"relationship_context": "Half",
+			"related_person_legacy_id": "S44dNIY0C6",
+			"legacy_descriptor": {
+				"legacy_last_updated": "1998-09-02T16:46:49.000-0700",
+				"legacy_id": "S44dNIY0C6",
+				"legacy_ui_id": "1594-1396-1737-8000750",
+				"legacy_table_name": "CLIENT_T",
+				"legacy_table_description": "Client"
+			},
+			"related_person_last_name": "Herreros",
+			"related_person_relationship": "Sister"
+		},
+		{
+			"related_person_first_name": "Melinda",
+			"indexed_person_relationship": "Mother",
+			"relationship_context": "Birth",
+			"related_person_legacy_id": "8dmrePy0C6",
+			"legacy_descriptor": {
+				"legacy_last_updated": "1998-09-02T16:46:49.000-0700",
+				"legacy_id": "8dmrePy0C6",
+				"legacy_ui_id": "0490-8531-1600-2000750",
+				"legacy_table_name": "CLIENT_T",
+				"legacy_table_description": "Client"
+			},
+			"related_person_last_name": "Bischoff",
+			"related_person_relationship": "Son"
+		}
+	],
+	"referrals": [
+		{
+			"legacy_referral_id": "O3ZfnCk0C6",
+			"end_date": "1998-09-02",
+			"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+			"legacy_descriptor": {
+				"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+				"legacy_id": "O3ZfnCk0C6",
+				"legacy_ui_id": "1366-4811-8486-6000750",
+				"legacy_table_name": "REFERL_T",
+				"legacy_table_description": "Referral"
+			},
+			"reporter": {
+				"legacy_reporter_id": "O3ZfnCk0C6",
+				"legacy_descriptor": {
+					"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+					"legacy_id": "O3ZfnCk0C6",
+					"legacy_ui_id": "1366-4811-8486-6000750",
+					"legacy_table_name": "REPTR_T",
+					"legacy_table_description": "Reporter"
+				},
+				"last_name": "Clark",
+				"id": "O3ZfnCk0C6",
+				"first_name": "Robert"
+			},
+			"county_name": "Monterey",
+			"response_time_id": "1520",
+			"county_id": "1094",
+			"allegations": [
+				{
+					"legacy_allegation_id": "OLoXhPm0C6",
+					"perpetrator_legacy_client_id": "8dmrePy0C6",
+					"perpetrator": {
+						"legacy_descriptor": {
+							"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+							"legacy_id": "8dmrePy0C6",
+							"legacy_ui_id": "0490-8531-1600-2000750",
+							"legacy_table_name": "CLIENT_T",
+							"legacy_table_description": "Client"
+						},
+						"last_name": "Bischoff",
+						"id": "8dmrePy0C6",
+						"first_name": "Melinda",
+						"sensitivity_indicator": "N"
+					},
+					"victim_last_name": "Bischoff",
+					"legacy_descriptor": {
+						"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+						"legacy_id": "OLoXhPm0C6",
+						"legacy_ui_id": "1383-1912-9200-2000750",
+						"legacy_table_name": "ALLGTN_T",
+						"legacy_table_description": "Allegation"
+					},
+					"victim_id": "BVMf6YM0C6",
+					"perpetrator_id": "8dmrePy0C6",
+					"victim_first_name": "Jason",
+					"perpetrator_last_name": "Bischoff",
+					"perpetrator_first_name": "Melinda",
+					"victim_legacy_client_id": "BVMf6YM0C6",
+					"disposition_description": "Substantiated",
+					"victim": {
+						"legacy_descriptor": {
+							"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+							"legacy_id": "BVMf6YM0C6",
+							"legacy_ui_id": "0653-5375-8525-0000750",
+							"legacy_table_name": "CLIENT_T",
+							"legacy_table_description": "Client"
+						},
+						"last_name": "Bischoff",
+						"id": "BVMf6YM0C6",
+						"first_name": "Jason",
+						"sensitivity_indicator": "N"
+					},
+					"id": "OLoXhPm0C6",
+					"allegation_description": "General Neglect",
+					"disposition_id": "45"
+				},
+				{
+					"legacy_allegation_id": "Tlru71O0C6",
+					"perpetrator_legacy_client_id": "8dmrePy0C6",
+					"perpetrator": {
+						"legacy_descriptor": {
+							"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+							"legacy_id": "8dmrePy0C6",
+							"legacy_ui_id": "0490-8531-1600-2000750",
+							"legacy_table_name": "CLIENT_T",
+							"legacy_table_description": "Client"
+						},
+						"last_name": "Bischoff",
+						"id": "8dmrePy0C6",
+						"first_name": "Melinda",
+						"sensitivity_indicator": "N"
+					},
+					"victim_last_name": "Bischoff",
+					"legacy_descriptor": {
+						"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+						"legacy_id": "Tlru71O0C6",
+						"legacy_ui_id": "1691-0615-9421-0000750",
+						"legacy_table_name": "ALLGTN_T",
+						"legacy_table_description": "Allegation"
+					},
+					"victim_id": "S44dNIY0C6",
+					"perpetrator_id": "8dmrePy0C6",
+					"victim_first_name": "Jessica",
+					"perpetrator_last_name": "Bischoff",
+					"perpetrator_first_name": "Melinda",
+					"victim_legacy_client_id": "S44dNIY0C6",
+					"disposition_description": "Substantiated",
+					"victim": {
+						"legacy_descriptor": {
+							"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+							"legacy_id": "S44dNIY0C6",
+							"legacy_ui_id": "1594-1396-1737-8000750",
+							"legacy_table_name": "CLIENT_T",
+							"legacy_table_description": "Client"
+						},
+						"last_name": "Bischoff",
+						"id": "S44dNIY0C6",
+						"first_name": "Jessica",
+						"sensitivity_indicator": "N"
+					},
+					"id": "Tlru71O0C6",
+					"allegation_description": "General Neglect",
+					"disposition_id": "45"
+				},
+				{
+					"legacy_allegation_id": "8pZmkM60C6",
+					"perpetrator_legacy_client_id": "8dmrePy0C6",
+					"perpetrator": {
+						"legacy_descriptor": {
+							"legacy_last_updated": "1998-09-02T16:46:49.251-0700",
+							"legacy_id": "8dmrePy0C6",
+							"legacy_ui_id": "0490-8531-1600-2000750",
+							"legacy_table_name": "CLIENT_T",
+							"legacy_table_description": "Client"
+						},
+						"last_name": "Bischoff",
+						"id": "8dmrePy0C6",
+						"first_name": "Melinda",
+						"sensitivity_indicator": "N"
+					},
+					"victim_last_name": "Bischoff",
+					"legacy_descriptor": {
+						"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+						"legacy_id": "8pZmkM60C6",
+						"legacy_ui_id": "0501-6534-4880-2000750",
+						"legacy_table_name": "ALLGTN_T",
+						"legacy_table_description": "Allegation"
+					},
+					"victim_id": "CDKV4du0C6",
+					"perpetrator_id": "8dmrePy0C6",
+					"victim_first_name": "Spike",
+					"perpetrator_last_name": "Bischoff",
+					"perpetrator_first_name": "Melinda",
+					"victim_legacy_client_id": "CDKV4du0C6",
+					"disposition_description": "Substantiated",
+					"victim": {
+						"legacy_descriptor": {
+							"legacy_last_updated": "1998-09-02T17:01:55.259-0700",
+							"legacy_id": "CDKV4du0C6",
+							"legacy_ui_id": "0693-8154-8656-2000750",
+							"legacy_table_name": "CLIENT_T",
+							"legacy_table_description": "Client"
+						},
+						"last_name": "Bischoff",
+						"id": "CDKV4du0C6",
+						"first_name": "Spike",
+						"sensitivity_indicator": "N"
+					},
+					"id": "8pZmkM60C6",
+					"allegation_description": "General Neglect",
+					"disposition_id": "45"
+				}
+			],
+			"assigned_social_worker": {
+				"legacy_descriptor": {
+					"legacy_last_updated": "2000-08-29T13:51:39.247-0700",
+					"legacy_id": "0C6",
+					"legacy_ui_id": "0C6",
+					"legacy_table_name": "STFPERST",
+					"legacy_table_description": "Staff"
+				},
+				"last_name": "Clinton",
+				"id": "0C6",
+				"legacy_assigned_social_worker_id": "0C6",
+				"first_name": "Monica"
+			},
+			"access_limitation": {
+				"limited_access_government_entity_id": "0",
+				"limited_access_code": "N"
+			},
+			"response_time": "Immediate",
+			"id": "O3ZfnCk0C6",
+			"start_date": "2015-09-02"
+		}
+	]
+}
