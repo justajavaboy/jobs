@@ -168,7 +168,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Managed(description = "Show rocket's flight history")
   public String history() {
     LOGGER.warn("Show rocket history");
-    StringBuilder buf = new StringBuilder();
+    final StringBuilder buf = new StringBuilder();
     flightRecorder.getHistory(this.flightSchedule.getRocketClass()).stream().forEach(buf::append);
     return buf.toString();
   }
@@ -179,7 +179,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Override
   @Managed(description = "Show rocket log")
   public String logs() {
-    StringBuilder buf = new StringBuilder();
+    final StringBuilder buf = new StringBuilder();
     buf.append("log stuff");
     // IMPL ME!
     return buf.toString();
@@ -197,7 +197,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
       final JobKey key = new JobKey(rocketName, NeutronSchedulerConstants.GRP_LST_CHG);
       scheduler.interrupt(key);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO ABORT ROCKET! rocket: {}", rocketName);
+      throw JobLogs.checked(LOGGER, e, "FAILED TO ABORT! rocket: {}", rocketName);
     }
   }
 
@@ -211,7 +211,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
       LOGGER.warn("Pause rocket {}", rocketName);
       scheduler.pauseTrigger(triggerKey);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO PAUSE ROCKET! rocket: {}", rocketName);
+      throw JobLogs.checked(LOGGER, e, "FAILED TO PAUSE! rocket: {}", rocketName);
     }
   }
 
@@ -225,7 +225,16 @@ public class LaunchPad implements VoxLaunchPadMBean {
       LOGGER.warn("Resume rocket {}", rocketName);
       scheduler.resumeTrigger(triggerKey);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO PAUSE ROCKET! rocket: {}", rocketName);
+      throw JobLogs.checked(LOGGER, e, "FAILED TO RESUME! rocket: {}", rocketName);
+    }
+  }
+
+  protected void threadShutdownLaunchCommand() {
+    try {
+      Thread.sleep(1000);
+      LaunchCommand.getInstance().shutdown();
+    } catch (InterruptedException | NeutronException e) {
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -234,9 +243,10 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Shutdown command center")
-  public void shutdown() throws NeutronException {
-    LOGGER.warn("Shutdown command center");
-    LaunchCommand.getInstance().shutdown();
+  public String shutdown() throws NeutronException {
+    LOGGER.warn("Shutting down command center!");
+    new Thread(this::threadShutdownLaunchCommand);
+    return "Requested shutdown!";
   }
 
   @Override

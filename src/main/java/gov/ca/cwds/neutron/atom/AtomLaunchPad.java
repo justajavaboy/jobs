@@ -69,9 +69,10 @@ public interface AtomLaunchPad extends ApiMarker {
   /**
    * Abort all rockets, shutdown command center, and exit JVM.
    * 
+   * @return readable result string
    * @throws NeutronException general error
    */
-  void shutdown() throws NeutronException;
+  String shutdown() throws NeutronException;
 
 
   FlightPlan getFlightPlan();
