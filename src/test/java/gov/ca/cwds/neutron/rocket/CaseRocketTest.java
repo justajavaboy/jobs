@@ -290,7 +290,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_getJdbcOrderBy_A$() throws Exception {
     String actual = target.getJdbcOrderBy();
-    String expected = null;
+    String expected = "";
     assertEquals(expected, actual);
   }
 
@@ -460,13 +460,18 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_extractCase_A$ResultSet() throws Exception {
     EsCaseRelatedPerson actual = target.extractCase(rs);
-    EsCaseRelatedPerson expected = null;
+    EsCaseRelatedPerson expected = new EsCaseRelatedPerson();
+    expected.setCaseId(DEFAULT_CLIENT_ID);
+    expected.setFocusChildId(DEFAULT_CLIENT_ID);
+    expected.setStartDate(null);
+    expected.setEndDate(null);
     assertEquals(expected, actual);
   }
 
   @Test
   public void test_extractCase_A$ResultSet_T$SQLException() throws Exception {
     try {
+      when(rs.getString(any(String.class))).thenThrow(SQLException.class);
       target.extractCase(rs);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
@@ -475,7 +480,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readClients_A$PreparedStatement$Map() throws Exception {
-    PreparedStatement stmtSelClient = null;
+    final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
     Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     Map<String, ReplicatedClient> actual = target.readClients(stmtSelClient, mapClients);
     Map<String, ReplicatedClient> expected = null;
@@ -567,7 +572,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_assemblePieces_A$List$List$Map$Map$Map_T$NeutronException() throws Exception {
-    List<FocusChildParent> listFocusChildParents = new ArrayList<FocusChildParent>();
+    List<FocusChildParent> listFocusChildParents = null;
     List listCaseClients = new ArrayList();
     Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
     Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
@@ -578,7 +583,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
       fail("Expected exception was not thrown!");
     } catch (NeutronException e) {
     }
-
   }
 
   @Test

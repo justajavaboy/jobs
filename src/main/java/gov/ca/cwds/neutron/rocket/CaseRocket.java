@@ -57,7 +57,6 @@ import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
-import gov.ca.cwds.neutron.rocket.cases.CaseClientRelative;
 import gov.ca.cwds.neutron.rocket.cases.FocusChildParent;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -576,8 +575,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           .collect(Collectors.toList());
 
       final Map<String, Set<String>> mapCaseClients = new HashMap<>(HASH_SIZE_LARGE);
-      final Map<String, Map<String, CaseClientRelative>> mapCaseParents =
-          new HashMap<>(HASH_SIZE_LARGE);
       final Map<String, Map<String, FocusChildParent>> mapFocusChildParents =
           new HashMap<>(HASH_SIZE_LARGE);
 
@@ -606,7 +603,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
       // Verify test data. Ignored in Perf/Prod.
       verify(mapReadyClientCases);
-
     } finally {
       // C'mon Jacoco ... cover the code ...
     }
