@@ -267,8 +267,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_getPartitionRanges_A$() throws Exception {
-    List actual = target.getPartitionRanges();
-    List expected = new ArrayList<>();
+    List<Pair<String, String>> actual = target.getPartitionRanges();
+    List<Pair<String, String>> expected = new ArrayList<>();
     expected.add(pair);
     assertEquals(expected, actual);
   }
