@@ -3,22 +3,39 @@ package gov.ca.cwds.neutron.rocket;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.dao.cms.ReplicatedPersonCasesDao;
 import gov.ca.cwds.dao.cms.StaffPersonDao;
+import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.persistence.cms.EsCaseRelatedPerson;
 import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
+import gov.ca.cwds.data.persistence.cms.StaffPerson;
+import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.jobs.Goddard;
+import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.rocket.cases.FocusChildParent;
 
 public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelatedPerson> {
 
@@ -214,8 +231,424 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   // @Test
   // public void main_Args__StringArray() throws Exception {
-  // String[] args = new String[] {};
+  // String[] args = new String[] {}
+
+  ;
   // CaseRocket.main(args);
   // }
+
+  @Test
+  public void test_useTransformThread_A$() throws Exception {
+    boolean actual = target.useTransformThread();
+    boolean expected = false;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_getPrepLastChangeSQL_A$() throws Exception {
+    String actual = target.getPrepLastChangeSQL();
+    final boolean sizeGood = actual.length() > 200;
+    assertEquals(sizeGood, true);
+  }
+
+  @Test
+  public void test_getInitialLoadViewName_A$() throws Exception {
+    String actual = target.getInitialLoadViewName();
+    String expected = "VW_MQT_REFRL_ONLY";
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_isInitialLoadJdbc_A$() throws Exception {
+    boolean actual = target.isInitialLoadJdbc();
+    boolean expected = true;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_getPartitionRanges_A$() throws Exception {
+    List actual = target.getPartitionRanges();
+    List expected = new ArrayList<>();
+    expected.add(pair);
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_getOptionalElementName_A$() throws Exception {
+    String actual = target.getOptionalElementName();
+    String expected = "cases";
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_mustDeleteLimitedAccessRecords_A$() throws Exception {
+    boolean actual = target.mustDeleteLimitedAccessRecords();
+    boolean expected = true;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_getJdbcOrderBy_A$() throws Exception {
+    String actual = target.getJdbcOrderBy();
+    String expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_getInitialLoadQuery_A$String() throws Exception {
+    String dbSchemaName = "CWSRS1";
+    String actual = target.getInitialLoadQuery(dbSchemaName);
+    final boolean sizeGood = actual.length() > 200;
+    assertEquals(sizeGood, true);
+  }
+
+  @Test
+  public void test_prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedPersonCases()
+      throws Exception {
+    ElasticSearchPerson esp = null;
+    ReplicatedPersonCases p = null;
+    UpdateRequest actual = target.prepareUpsertRequest(esp, p);
+    UpdateRequest expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedPersonCases_T$NeutronException()
+      throws Exception {
+    ElasticSearchPerson esp = null;
+    ReplicatedPersonCases p = null;
+    try {
+      target.prepareUpsertRequest(esp, p);
+      fail("Expected exception was not thrown!");
+    } catch (NeutronException e) {
+    }
+  }
+
+  @Test
+  public void test_getDenormalizedClass_A$() throws Exception {
+    Object actual = target.getDenormalizedClass();
+    Object expected = EsPersonCase.class;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_normalize_A$List() throws Exception {
+    List<EsCaseRelatedPerson> recs = new ArrayList<EsCaseRelatedPerson>();
+    List<ReplicatedPersonCases> actual = target.normalize(recs);
+    List<ReplicatedPersonCases> expected = new ArrayList<>();
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_prepAffectedClients_A$PreparedStatement$PreparedStatement$Pair()
+      throws Exception {
+    PreparedStatement stmtInsClient = null;
+    PreparedStatement stmtInsClientCase = null;
+    Pair<String, String> p = null;
+    target.prepAffectedClients(stmtInsClient, stmtInsClientCase, p);
+  }
+
+  @Test
+  public void test_prepAffectedClients_A$PreparedStatement$PreparedStatement$Pair_T$SQLException()
+      throws Exception {
+    PreparedStatement stmtInsClient = null;
+    PreparedStatement stmtInsClientCase = null;
+    Pair<String, String> p = null;
+    try {
+      target.prepAffectedClients(stmtInsClient, stmtInsClientCase, p);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void test_readCaseClients_A$PreparedStatement$List() throws Exception {
+    PreparedStatement stmt = null;
+    List list = new ArrayList();
+    target.readCaseClients(stmt, list);
+  }
+
+  @Test
+  public void test_readCaseClients_A$PreparedStatement$List_T$SQLException() throws Exception {
+    PreparedStatement stmt = null;
+    List list = new ArrayList();
+    try {
+      target.readCaseClients(stmt, list);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void test_readFocusChildParents_A$PreparedStatement$List() throws Exception {
+    PreparedStatement stmt = null;
+    List<FocusChildParent> list = new ArrayList<FocusChildParent>();
+    target.readFocusChildParents(stmt, list);
+  }
+
+  @Test
+  public void test_readFocusChildParents_A$PreparedStatement$List_T$SQLException()
+      throws Exception {
+    PreparedStatement stmt = null;
+    List<FocusChildParent> list = new ArrayList<FocusChildParent>();
+    try {
+      target.readFocusChildParents(stmt, list);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void test_readCases_A$PreparedStatement$Map() throws Exception {
+    PreparedStatement stmtSelCase = null;
+    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    target.readCases(stmtSelCase, mapCases);
+  }
+
+  @Test
+  public void test_readCases_A$PreparedStatement$Map_T$SQLException() throws Exception {
+    PreparedStatement stmtSelCase = null;
+    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    try {
+      target.readCases(stmtSelCase, mapCases);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void test_readStaffWorkers_A$() throws Exception {
+    Map<String, StaffPerson> actual = target.readStaffWorkers();
+    Map<String, StaffPerson> expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_readStaffWorkers_A$_T$NeutronException() throws Exception {
+    try {
+      target.readStaffWorkers();
+      fail("Expected exception was not thrown!");
+    } catch (NeutronException e) {
+    }
+  }
+
+  @Test
+  public void test_extract_A$ResultSet() throws Exception {
+
+    EsCaseRelatedPerson actual = target.extract(rs);
+    EsCaseRelatedPerson expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_extractClient_A$ResultSet() throws Exception {
+
+    ReplicatedClient actual = target.extractClient(rs);
+    ReplicatedClient expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_extractClient_A$ResultSet_T$SQLException() throws Exception {
+    try {
+      target.extractClient(rs);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void test_extractCase_A$ResultSet() throws Exception {
+    EsCaseRelatedPerson actual = target.extractCase(rs);
+    EsCaseRelatedPerson expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_extractCase_A$ResultSet_T$SQLException() throws Exception {
+    try {
+      target.extractCase(rs);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void test_readClients_A$PreparedStatement$Map() throws Exception {
+    PreparedStatement stmtSelClient = null;
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    Map<String, ReplicatedClient> actual = target.readClients(stmtSelClient, mapClients);
+    Map<String, ReplicatedClient> expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_readClients_A$PreparedStatement$Map_T$NeutronException() throws Exception {
+    PreparedStatement stmtSelClient = null;
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    try {
+      target.readClients(stmtSelClient, mapClients);
+      fail("Expected exception was not thrown!");
+    } catch (NeutronException e) {
+    }
+  }
+
+  @Test
+  public void test_collectCaseClients_A$Map$Pair() throws Exception {
+    Map mapCaseClients = new HashMap();
+    Pair<String, String> p = null;
+    target.collectCaseClients(mapCaseClients, p);
+  }
+
+  @Test
+  public void test_collectThisClientCase_A$Map$String$String() throws Exception {
+    Map mapClientCases = new HashMap();
+    String caseId = null;
+    String clientId = null;
+    target.collectThisClientCase(mapClientCases, caseId, clientId);
+  }
+
+  @Test
+  public void test_collectClientCases_A$Map$Pair() throws Exception {
+    Map mapClientCases = new HashMap();
+    Pair<String, String> p = null;
+    target.collectClientCases(mapClientCases, p);
+  }
+
+  @Test
+  public void test_collectFocusChildParents_A$Map$FocusChildParent() throws Exception {
+    Map mapFocusChildParents = new HashMap();
+    FocusChildParent rel = null;
+    target.collectFocusChildParents(mapFocusChildParents, rel);
+  }
+
+  @Test
+  public void test_addFocusChildren_A$Map$Map() throws Exception {
+    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    target.addFocusChildren(mapCases, mapClients);
+  }
+
+  @Test
+  public void test_reduceCase_A$ReplicatedPersonCases$EsCaseRelatedPerson$Map$Map()
+      throws Exception {
+    ReplicatedPersonCases cases = null;
+    EsCaseRelatedPerson rawCase = null;
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    Map mapFocusChildParents = new HashMap();
+    target.reduceCase(cases, rawCase, mapClients, mapFocusChildParents);
+  }
+
+  @Test
+  public void test_reduceClientCases_A$String$Map$Map$Map$Map() throws Exception {
+    String clientId = null;
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    Map mapClientCases = new HashMap();
+    Map mapFocusChildParents = new HashMap();
+    ReplicatedPersonCases actual = target.reduceClientCases(clientId, mapClients, mapCases,
+        mapClientCases, mapFocusChildParents);
+    ReplicatedPersonCases expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_assemblePieces_A$List$List$Map$Map$Map() throws Exception {
+    List<FocusChildParent> listFocusChildParents = new ArrayList<FocusChildParent>();
+    List listCaseClients = new ArrayList();
+    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    Map mapClientCases = new HashMap();
+    int actual = target.assemblePieces(listFocusChildParents, listCaseClients, mapCases, mapClients,
+        mapClientCases);
+    int expected = 0;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_assemblePieces_A$List$List$Map$Map$Map_T$NeutronException() throws Exception {
+    List<FocusChildParent> listFocusChildParents = new ArrayList<FocusChildParent>();
+    List listCaseClients = new ArrayList();
+    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    Map mapClientCases = new HashMap();
+    try {
+      target.assemblePieces(listFocusChildParents, listCaseClients, mapCases, mapClients,
+          mapClientCases);
+      fail("Expected exception was not thrown!");
+    } catch (NeutronException e) {
+    }
+
+  }
+
+  @Test
+  public void test_verify_A$Map() throws Exception {
+    Map<String, ReplicatedPersonCases> mapReadyClientCases =
+        new HashMap<String, ReplicatedPersonCases>();
+    mapReadyClientCases.put(DEFAULT_CLIENT_ID, new ReplicatedPersonCases(DEFAULT_CLIENT_ID));
+    boolean actual = target.verify(mapReadyClientCases);
+    boolean expected = true;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_verify_A$Map_T$NeutronException() throws Exception {
+    final Map<String, ReplicatedPersonCases> mapReadyClientCases = mock(Map.class);
+    when(mapReadyClientCases.get(any(String.class))).thenThrow(JobsException.class);
+    try {
+      target.verify(mapReadyClientCases);
+      fail("Expected exception was not thrown!");
+    } catch (NeutronException e) {
+    }
+  }
+
+  @Test
+  public void test_pullNextRange_A$Pair() throws Exception {
+    Pair<String, String> keyRange = null;
+    int actual = target.pullNextRange(keyRange);
+    int expected = 0;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_pullNextRange_A$Pair_T$NeutronException() throws Exception {
+    Pair<String, String> keyRange = null;
+    try {
+      target.pullNextRange(keyRange);
+      fail("Expected exception was not thrown!");
+    } catch (NeutronException e) {
+    }
+  }
+
+  @Test
+  public void test_runMultiThreadIndexing_A$() throws Exception {
+    target.runMultiThreadIndexing();
+  }
+
+  @Test
+  public void test_fetchLastRunResults_A$Date$Set() throws Exception {
+    Date lastRunDate = null;
+    Set<String> deletionResults = null;
+    List<ReplicatedPersonCases> actual = target.fetchLastRunResults(lastRunDate, deletionResults);
+    List<ReplicatedPersonCases> expected = null;
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_threadRetrieveByJdbc_A$() throws Exception {
+    target.threadRetrieveByJdbc();
+  }
+
+  @Test
+  public void test_getClientDao_A$() throws Exception {
+    ReplicatedClientDao actual = target.getClientDao();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void test_main_A$StringArray() throws Exception {
+    String[] args = new String[] {};
+    CaseRocket.main(args);
+  }
 
 }
