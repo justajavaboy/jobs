@@ -31,6 +31,7 @@ import gov.ca.cwds.data.persistence.cms.EsCaseRelatedPerson;
 import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
 import gov.ca.cwds.data.persistence.cms.StaffPerson;
+import gov.ca.cwds.data.persistence.cms.rep.EmbeddableAccessLimitation;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.jobs.Goddard;
 import gov.ca.cwds.jobs.exception.JobsException;
@@ -49,7 +50,13 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     super.setup();
     dao = new ReplicatedPersonCasesDao(sessionFactory);
     clientDao = new ReplicatedClientDao(sessionFactory);
-    staffPersonDao = new StaffPersonDao(sessionFactory);
+    staffPersonDao = mock(StaffPersonDao.class);
+
+    final List<StaffPerson> staffPersons = new ArrayList<>();
+    final StaffPerson staffPerson = new StaffPerson();
+    staffPersons.add(staffPerson);
+    when(staffPersonDao.findAll()).thenReturn(staffPersons);
+
     target = new CaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
   }
 
@@ -154,6 +161,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test(expected = NeutronException.class)
   public void readStaffWorkers_Args___T__NeutronException() throws Exception {
+    target = new CaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
     target.readStaffWorkers();
   }
 
@@ -460,11 +468,14 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_extractCase_A$ResultSet() throws Exception {
     EsCaseRelatedPerson actual = target.extractCase(rs);
+
     EsCaseRelatedPerson expected = new EsCaseRelatedPerson();
     expected.setCaseId(DEFAULT_CLIENT_ID);
     expected.setFocusChildId(DEFAULT_CLIENT_ID);
     expected.setStartDate(null);
     expected.setEndDate(null);
+    expected.setAccessLimitation(new EmbeddableAccessLimitation());
+
     assertEquals(expected, actual);
   }
 
