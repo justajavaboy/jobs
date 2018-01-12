@@ -171,8 +171,8 @@ public class RelationshipIndexerJob
   }
 
   /**
-   * The "extract" part of ETL. Single producer, chained consumers. This job normalizes **without**
-   * the transform thread.
+   * The "extract" part of ETL. Single producer, chained consumers. This job normalizes
+   * <strong>without</strong> the transform thread.
    */
   @Override
   protected void threadRetrieveByJdbc() {
@@ -200,7 +200,7 @@ public class RelationshipIndexerJob
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "RELATIONSHBATCH ERROR! {}", e.getMessage());
+      throw JobLogs.runtime(LOGGER, e, "RELATIONSHIP BATCH ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
       SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();

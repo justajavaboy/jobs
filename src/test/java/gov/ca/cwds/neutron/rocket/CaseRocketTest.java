@@ -45,6 +45,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   ReplicatedClientDao clientDao;
   StaffPersonDao staffPersonDao;
 
+  public PreparedStatement prepStmt;
+
   @Override
   public void setup() throws Exception {
     super.setup();
@@ -57,7 +59,11 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     staffPersons.add(staffPerson);
     when(staffPersonDao.findAll()).thenReturn(staffPersons);
 
+    prepStmt = mock(PreparedStatement.class);
+    when(prepStmt.executeQuery()).thenReturn(rs);
     when(rs.next()).thenReturn(true).thenReturn(false);
+    when(rs.getString("CLIENT_OPERATION")).thenReturn("U");
+
     target = new CaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
   }
 
@@ -381,11 +387,10 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readCaseClients_A$PreparedStatement$List_T$SQLException() throws Exception {
-    final PreparedStatement stmt = mock(PreparedStatement.class);
     List list = new ArrayList();
     try {
-      when(rs.next()).thenReturn(true).thenReturn(false);
-      target.readCaseClients(stmt, list);
+      when(rs.getString(any(String.class))).thenThrow(SQLException.class);
+      target.readCaseClients(prepStmt, list);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
     }
@@ -539,7 +544,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_collectFocusChildParents_A$Map$FocusChildParent() throws Exception {
     Map mapFocusChildParents = new HashMap();
-    FocusChildParent rel = null;
+    FocusChildParent rel = new FocusChildParent(1, DEFAULT_CLIENT_ID, "987654321abc", (short) 247,
+        "Fred", "Meyer", "N");
     target.collectFocusChildParents(mapFocusChildParents, rel);
   }
 

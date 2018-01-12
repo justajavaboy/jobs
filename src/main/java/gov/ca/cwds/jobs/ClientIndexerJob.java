@@ -47,7 +47,7 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClientIndexerJob.class);
 
-//@formatter:off
+  //@formatter:off
   private static final String INSERT_CLIENT_LAST_CHG =
       "INSERT INTO GT_ID (IDENTIFIER)\n" 
           + "SELECT CLT.IDENTIFIER \nFROM CLIENT_T clt\n"
@@ -63,7 +63,7 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
           + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T\n"
           + "JOIN ADDRS_T  adr ON cla.FKADDRS_T  = adr.IDENTIFIER\n"
           + "WHERE ADR.IBMSNAP_LOGMARKER > ?";
-//@formatter:on
+  //@formatter:on
 
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
 

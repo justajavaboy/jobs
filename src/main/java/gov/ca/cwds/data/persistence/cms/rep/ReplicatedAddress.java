@@ -32,9 +32,6 @@ public class ReplicatedAddress extends BaseAddress implements CmsReplicatedEntit
 
   private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
 
-  /**
-   * Default constructor.
-   */
   public ReplicatedAddress() {
     super();
   }
