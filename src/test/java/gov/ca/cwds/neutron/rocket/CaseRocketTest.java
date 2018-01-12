@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,8 +62,18 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
     prepStmt = mock(PreparedStatement.class);
     when(prepStmt.executeQuery()).thenReturn(rs);
+
+    final Timestamp ts = new Timestamp(new Date().getTime());
     when(rs.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+    when(rs.getString("CLT_ADPTN_STCD")).thenReturn("Y");
+
+    when(rs.getString("CLIENT_ID")).thenReturn(DEFAULT_CLIENT_ID);
+    when(rs.getString("CLIENT_FIRST_NM")).thenReturn("Donald");
+    when(rs.getString("CLIENT_LAST_NM")).thenReturn("Trump");
+    when(rs.getString("CLIENT_SENSITIVITY_IND")).thenReturn("R");
+    when(rs.getTimestamp("CLIENT_LAST_UPDATED")).thenReturn(ts);
     when(rs.getString("CLIENT_OPERATION")).thenReturn("U");
+    when(rs.getTimestamp("CLIENT_LOGMARKER")).thenReturn(ts);
 
     target = new CaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
   }
@@ -88,7 +99,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   public void getPrepLastChangeSQL_Args__() throws Exception {
     final String actual = target.getPrepLastChangeSQL();
     final String expected =
-        "INSERT INTO GT_ID (IDENTIFIER)WITH step1 AS ( \n SELECT CAS1.FKCHLD_CLT \n FROM  CASE_T CAS1  \n WHERE CAS1.IBMSNAP_LOGMARKER > ? \nUNION   \n SELECT CAS2.FKCHLD_CLT  \n FROM CASE_T CAS2 \n JOIN CHLD_CLT CCL1 ON CCL1.FKCLIENT_T = CAS2.FKCHLD_CLT   \n JOIN CLIENT_T CLC1 ON CLC1.IDENTIFIER = CCL1.FKCLIENT_T  \n WHERE CCL1.IBMSNAP_LOGMARKER > ?  \nUNION     \n SELECT CAS3.FKCHLD_CLT  \n FROM CASE_T CAS3  \n JOIN CLIENT_T CLC2 ON CLC2.IDENTIFIER = CAS3.FKCHLD_CLT \n WHERE CLC2.IBMSNAP_LOGMARKER > ? \nUNION  \n SELECT CAS4.FKCHLD_CLT  \n FROM CASE_T CAS4  \n JOIN CLN_RELT CLR  ON CLR.FKCLIENT_T = CAS4.FKCHLD_CLT \n WHERE CLR.IBMSNAP_LOGMARKER > ? \nUNION  \n SELECT CAS5.FKCHLD_CLT  \n FROM CASE_T CAS5 \n JOIN CLN_RELT CLR ON CLR.FKCLIENT_T = CAS5.FKCHLD_CLT \n JOIN CLIENT_T CLP ON CLP.IDENTIFIER = CLR.FKCLIENT_0  \n WHERE CLP.IBMSNAP_LOGMARKER > ? \n), step2 AS ( \n SELECT DISTINCT s1.FKCHLD_CLT FROM step1 s1 \n) \nSELECT c.FKCHLD_CLT  \nFROM step2 c \nWHERE   \n   EXISTS (  \n    SELECT CAS1.FKCHLD_CLT  \n    FROM CASE_T CAS1   \n    WHERE CAS1.FKCHLD_CLT = c.FKCHLD_CLT \n) \nOR EXISTS ( \n     SELECT REL2.FKCLIENT_T  \n     FROM CLN_RELT REL2  \n     JOIN CASE_T   CAS2 ON CAS2.FKCHLD_CLT = REL2.FKCLIENT_0  \n     WHERE REL2.FKCLIENT_T = c.FKCHLD_CLT  \n)  \nOR EXISTS (  \n     SELECT REL3.FKCLIENT_0  \n     FROM CLN_RELT REL3  \n     JOIN CASE_T   CAS3 ON CAS3.FKCHLD_CLT = REL3.FKCLIENT_T  \n     WHERE REL3.FKCLIENT_0 = c.FKCHLD_CLT  \n) \n";
+        "INSERT INTO GT_ID (IDENTIFIER)\nWITH step1 AS ( \n SELECT CAS1.FKCHLD_CLT \n FROM  CASE_T CAS1  \n WHERE CAS1.IBMSNAP_LOGMARKER > ? \nUNION   \n SELECT CAS2.FKCHLD_CLT  \n FROM CASE_T CAS2 \n JOIN CHLD_CLT CCL1 ON CCL1.FKCLIENT_T = CAS2.FKCHLD_CLT   \n JOIN CLIENT_T CLC1 ON CLC1.IDENTIFIER = CCL1.FKCLIENT_T  \n WHERE CCL1.IBMSNAP_LOGMARKER > ?  \nUNION     \n SELECT CAS3.FKCHLD_CLT  \n FROM CASE_T CAS3  \n JOIN CLIENT_T CLC2 ON CLC2.IDENTIFIER = CAS3.FKCHLD_CLT \n WHERE CLC2.IBMSNAP_LOGMARKER > ? \nUNION  \n SELECT CAS4.FKCHLD_CLT  \n FROM CASE_T CAS4  \n JOIN CLN_RELT CLR  ON CLR.FKCLIENT_T = CAS4.FKCHLD_CLT \n WHERE CLR.IBMSNAP_LOGMARKER > ? \nUNION  \n SELECT CAS5.FKCHLD_CLT  \n FROM CASE_T CAS5 \n JOIN CLN_RELT CLR ON CLR.FKCLIENT_T = CAS5.FKCHLD_CLT \n JOIN CLIENT_T CLP ON CLP.IDENTIFIER = CLR.FKCLIENT_0  \n WHERE CLP.IBMSNAP_LOGMARKER > ? \n), step2 AS ( \n SELECT DISTINCT s1.FKCHLD_CLT FROM step1 s1 \n) \nSELECT c.FKCHLD_CLT  \nFROM step2 c \nWHERE   \n   EXISTS (  \n    SELECT CAS1.FKCHLD_CLT  \n    FROM CASE_T CAS1   \n    WHERE CAS1.FKCHLD_CLT = c.FKCHLD_CLT \n) \nOR EXISTS ( \n     SELECT REL2.FKCLIENT_T  \n     FROM CLN_RELT REL2  \n     JOIN CASE_T   CAS2 ON CAS2.FKCHLD_CLT = REL2.FKCLIENT_0  \n     WHERE REL2.FKCLIENT_T = c.FKCHLD_CLT  \n)  \nOR EXISTS (  \n     SELECT REL3.FKCLIENT_0  \n     FROM CLN_RELT REL3  \n     JOIN CASE_T   CAS3 ON CAS3.FKCHLD_CLT = REL3.FKCLIENT_T  \n     WHERE REL3.FKCLIENT_0 = c.FKCHLD_CLT  \n) \n";
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -327,7 +338,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedPersonCases_T$NeutronException()
       throws Exception {
-    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final ElasticSearchPerson esp = null;
     final ReplicatedPersonCases p = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
     try {
       target.prepareUpsertRequest(esp, p);
@@ -354,23 +365,21 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_prepAffectedClients_A$PreparedStatement$PreparedStatement$Pair()
       throws Exception {
-    final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
-    final PreparedStatement stmtInsClientCase = mock(PreparedStatement.class);
-    Pair<String, String> p = null;
-    target.prepAffectedClients(stmtInsClient, stmtInsClientCase, p);
+    final PreparedStatement stmtInsClient = prepStmt;
+    final PreparedStatement stmtInsClientCase = prepStmt;
+    target.prepAffectedClients(stmtInsClient, stmtInsClientCase, pair);
   }
 
   @Test
   public void test_prepAffectedClients_A$PreparedStatement$PreparedStatement$Pair_T$SQLException()
       throws Exception {
-    PreparedStatement stmtInsClient = mock(PreparedStatement.class);
-    PreparedStatement stmtInsClientCase = mock(PreparedStatement.class);
-    final Pair<String, String> p = pair;
+    PreparedStatement stmtInsClient = prepStmt;
+    PreparedStatement stmtInsClientCase = prepStmt;
 
     doThrow(new SQLException("uh oh")).when(stmtInsClient).setString(any(Integer.class),
         any(String.class));
     try {
-      target.prepAffectedClients(stmtInsClient, stmtInsClientCase, p);
+      target.prepAffectedClients(stmtInsClient, stmtInsClientCase, pair);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
     }
@@ -378,13 +387,13 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readCaseClients_A$PreparedStatement$List() throws Exception {
-    List list = new ArrayList();
+    final List list = new ArrayList();
     target.readCaseClients(prepStmt, list);
   }
 
   @Test
   public void test_readCaseClients_A$PreparedStatement$List_T$SQLException() throws Exception {
-    List list = new ArrayList();
+    final List list = new ArrayList();
     try {
       when(rs.getString(any(String.class))).thenThrow(SQLException.class);
       target.readCaseClients(prepStmt, list);
@@ -395,9 +404,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readFocusChildParents_A$PreparedStatement$List() throws Exception {
-    final PreparedStatement stmt = mock(PreparedStatement.class);
-    List<FocusChildParent> list = new ArrayList<FocusChildParent>();
-    target.readFocusChildParents(stmt, list);
+    final List<FocusChildParent> list = new ArrayList<FocusChildParent>();
+    target.readFocusChildParents(prepStmt, list);
   }
 
   @Test
@@ -422,8 +430,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   public void test_readCases_A$PreparedStatement$Map_T$SQLException() throws Exception {
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
     try {
-      doThrow(new SQLException("uh oh")).when(prepStmt).setString(any(Integer.class),
-          any(String.class));
+      doThrow(new SQLException("uh oh")).when(rs).getString(any(String.class));
       target.readCases(prepStmt, mapCases);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
@@ -498,17 +505,16 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readClients_A$PreparedStatement$Map() throws Exception {
-    final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
-    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
-    Map<String, ReplicatedClient> actual = target.readClients(stmtSelClient, mapClients);
-    Map<String, ReplicatedClient> expected = null;
-    assertEquals(expected, actual);
+    final PreparedStatement stmtSelClient = prepStmt;
+    final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    final Map<String, ReplicatedClient> actual = target.readClients(stmtSelClient, mapClients);
+    assertEquals(actual, is(notNullValue()));
   }
 
   @Test
   public void test_readClients_A$PreparedStatement$Map_T$NeutronException() throws Exception {
-    PreparedStatement stmtSelClient = null;
-    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    final PreparedStatement stmtSelClient = prepStmt;
+    final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     try {
       target.readClients(stmtSelClient, mapClients);
       fail("Expected exception was not thrown!");
@@ -629,17 +635,15 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_pullNextRange_A$Pair() throws Exception {
-    final Pair<String, String> keyRange = pair;
-    final int actual = target.pullNextRange(keyRange);
+    final int actual = target.pullNextRange(pair);
     final int expected = 1;
     assertEquals(expected, actual);
   }
 
   @Test
   public void test_pullNextRange_A$Pair_T$NeutronException() throws Exception {
-    final Pair<String, String> keyRange = pair;
     try {
-      target.pullNextRange(keyRange);
+      target.pullNextRange(pair);
       fail("Expected exception was not thrown!");
     } catch (NeutronException e) {
     }

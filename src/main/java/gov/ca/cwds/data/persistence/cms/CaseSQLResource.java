@@ -155,7 +155,7 @@ public class CaseSQLResource implements ApiMarker {
    */
   //@formatter:off
   public static final String PREP_AFFECTED_CLIENTS_LAST_CHG =  
-      "INSERT INTO GT_ID (IDENTIFIER)"
+      "INSERT INTO GT_ID (IDENTIFIER)\n"
           + "WITH step1 AS ( \n"
           + " SELECT CAS1.FKCHLD_CLT \n"
           + " FROM  CASE_T CAS1  \n"
