@@ -61,7 +61,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
     prepStmt = mock(PreparedStatement.class);
     when(prepStmt.executeQuery()).thenReturn(rs);
-    when(rs.next()).thenReturn(true).thenReturn(false);
+    when(rs.next()).thenReturn(true).thenReturn(true).thenReturn(false);
     when(rs.getString("CLIENT_OPERATION")).thenReturn("U");
 
     target = new CaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
@@ -302,15 +302,15 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_getJdbcOrderBy_A$() throws Exception {
-    String actual = target.getJdbcOrderBy();
-    String expected = "";
+    final String actual = target.getJdbcOrderBy();
+    final String expected = "";
     assertEquals(expected, actual);
   }
 
   @Test
   public void test_getInitialLoadQuery_A$String() throws Exception {
-    String dbSchemaName = "CWSRS1";
-    String actual = target.getInitialLoadQuery(dbSchemaName);
+    final String dbSchemaName = "CWSRS1";
+    final String actual = target.getInitialLoadQuery(dbSchemaName);
     final boolean sizeGood = actual.length() > 200;
     assertEquals(sizeGood, true);
   }
@@ -318,18 +318,17 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedPersonCases()
       throws Exception {
-    ElasticSearchPerson esp = null;
-    ReplicatedPersonCases p = null;
-    UpdateRequest actual = target.prepareUpsertRequest(esp, p);
-    UpdateRequest expected = null;
-    assertEquals(expected, actual);
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final ReplicatedPersonCases p = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
+    final UpdateRequest actual = target.prepareUpsertRequest(esp, p);
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void test_prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedPersonCases_T$NeutronException()
       throws Exception {
-    ElasticSearchPerson esp = null;
-    ReplicatedPersonCases p = null;
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final ReplicatedPersonCases p = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
     try {
       target.prepareUpsertRequest(esp, p);
       fail("Expected exception was not thrown!");
@@ -370,7 +369,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
     doThrow(new SQLException("uh oh")).when(stmtInsClient).setString(any(Integer.class),
         any(String.class));
-
     try {
       target.prepAffectedClients(stmtInsClient, stmtInsClientCase, p);
       fail("Expected exception was not thrown!");
@@ -380,9 +378,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readCaseClients_A$PreparedStatement$List() throws Exception {
-    final PreparedStatement stmt = mock(PreparedStatement.class);
     List list = new ArrayList();
-    target.readCaseClients(stmt, list);
+    target.readCaseClients(prepStmt, list);
   }
 
   @Test
@@ -406,10 +403,10 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_readFocusChildParents_A$PreparedStatement$List_T$SQLException()
       throws Exception {
-    final PreparedStatement stmt = mock(PreparedStatement.class);
     final List<FocusChildParent> list = new ArrayList<FocusChildParent>();
     try {
-      target.readFocusChildParents(stmt, list);
+      doThrow(new SQLException("uh oh")).when(rs).getString(any(String.class));
+      target.readFocusChildParents(prepStmt, list);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
     }
@@ -417,17 +414,17 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_readCases_A$PreparedStatement$Map() throws Exception {
-    final PreparedStatement stmtSelCase = mock(PreparedStatement.class);
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
-    target.readCases(stmtSelCase, mapCases);
+    target.readCases(prepStmt, mapCases);
   }
 
   @Test
   public void test_readCases_A$PreparedStatement$Map_T$SQLException() throws Exception {
-    final PreparedStatement stmtSelCase = mock(PreparedStatement.class);
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
     try {
-      target.readCases(stmtSelCase, mapCases);
+      doThrow(new SQLException("uh oh")).when(prepStmt).setString(any(Integer.class),
+          any(String.class));
+      target.readCases(prepStmt, mapCases);
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
     }
@@ -462,7 +459,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   public void test_extractClient_A$ResultSet() throws Exception {
     final ReplicatedClient actual = target.extractClient(rs);
     final ReplicatedClient expected = null;
-    assertEquals(expected, actual);
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
@@ -522,8 +519,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_collectCaseClients_A$Map$Pair() throws Exception {
     Map mapCaseClients = new HashMap();
-    Pair<String, String> p = null;
-    target.collectCaseClients(mapCaseClients, p);
+    target.collectCaseClients(mapCaseClients, pair);
   }
 
   @Test
@@ -537,8 +533,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_collectClientCases_A$Map$Pair() throws Exception {
     Map mapClientCases = new HashMap();
-    Pair<String, String> p = null;
-    target.collectClientCases(mapClientCases, p);
+    target.collectClientCases(mapClientCases, pair);
   }
 
   @Test
@@ -568,12 +563,16 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_reduceClientCases_A$String$Map$Map$Map$Map() throws Exception {
-    String clientId = DEFAULT_CLIENT_ID;
-    Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
-    Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
-    Map mapClientCases = new HashMap();
-    Map mapFocusChildParents = new HashMap();
-    ReplicatedPersonCases actual = target.reduceClientCases(clientId, mapClients, mapCases,
+    final String clientId = DEFAULT_CLIENT_ID;
+    final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    ReplicatedClient repClient = new ReplicatedClient();
+    repClient.setId(clientId);
+    mapClients.put(clientId, repClient);
+
+    final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    final Map mapClientCases = new HashMap();
+    final Map mapFocusChildParents = new HashMap();
+    final ReplicatedPersonCases actual = target.reduceClientCases(clientId, mapClients, mapCases,
         mapClientCases, mapFocusChildParents);
     ReplicatedPersonCases expected = null;
     assertEquals(expected, actual);
