@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -576,12 +577,16 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     mapClients.put(clientId, repClient);
 
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
-    final Map mapClientCases = new HashMap();
+    final Map<String, Set<String>> mapClientCases = new HashMap<>();
+    final Set<String> set = new HashSet<>();
+    set.add("987654321xyz");
+    mapClientCases.put(DEFAULT_CLIENT_ID, set);
+
     final Map mapFocusChildParents = new HashMap();
+
     final ReplicatedPersonCases actual = target.reduceClientCases(clientId, mapClients, mapCases,
         mapClientCases, mapFocusChildParents);
-    ReplicatedPersonCases expected = null;
-    assertEquals(expected, actual);
+    assertEquals(actual, is(notNullValue()));
   }
 
   @Test

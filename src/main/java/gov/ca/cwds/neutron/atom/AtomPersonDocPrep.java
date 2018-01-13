@@ -99,20 +99,20 @@ public interface AtomPersonDocPrep<T extends PersistentObject> extends ApiMarker
 
       buf.append("]}");
       insertJson = getMapper().writeValueAsString(esp);
+
+      final String updateJson = buf.toString();
+      final String id = esp.getId();
+      final ElasticsearchConfiguration config = getEsDao().getConfig();
+      final String alias = config.getElasticsearchAlias();
+      final String docType = config.getElasticsearchDocType();
+      final UpdateRequest ur =
+          new UpdateRequest(alias, docType, id).doc(updateJson, XContentType.JSON);
+
+      return updateOnly ? ur
+          : ur.upsert(new IndexRequest(alias, docType, id).source(insertJson, XContentType.JSON));
     } catch (Exception e) {
       throw JobLogs.checked(getLogger(), e, "NESTED ELEMENT ERROR! {}", e.getMessage());
     }
-
-    final String updateJson = buf.toString();
-    final String id = esp.getId();
-    final ElasticsearchConfiguration config = getEsDao().getConfig();
-    final String alias = config.getElasticsearchAlias();
-    final String docType = config.getElasticsearchDocType();
-    final UpdateRequest ur =
-        new UpdateRequest(alias, docType, id).doc(updateJson, XContentType.JSON);
-
-    return updateOnly ? ur
-        : ur.upsert(new IndexRequest(alias, docType, id).source(insertJson, XContentType.JSON));
   }
 
   /**
