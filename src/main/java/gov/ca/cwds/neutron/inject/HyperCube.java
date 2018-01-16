@@ -215,7 +215,6 @@ public class HyperCube extends NeutronGuiceModule {
 
         // Static injection.
         ElasticTransformer.setMapper(injector.getInstance(ObjectMapper.class));
-
         ElasticSearchPerson.getSystemCodes();
       } catch (Exception e) {
         throw JobLogs.checked(LOGGER, e, "FAILED TO BUILD INJECTOR! {}", e.getMessage());
