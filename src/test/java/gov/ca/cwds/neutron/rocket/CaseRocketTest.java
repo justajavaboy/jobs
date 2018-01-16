@@ -509,7 +509,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     final PreparedStatement stmtSelClient = prepStmt;
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     final Map<String, ReplicatedClient> actual = target.readClients(stmtSelClient, mapClients);
-    assertEquals(actual, is(notNullValue()));
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
@@ -517,6 +517,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     final PreparedStatement stmtSelClient = prepStmt;
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     try {
+      doThrow(new SQLException("uh oh")).when(rs).getString(any(String.class));
       target.readClients(stmtSelClient, mapClients);
       fail("Expected exception was not thrown!");
     } catch (NeutronException e) {
@@ -583,7 +584,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     mapClientCases.put(DEFAULT_CLIENT_ID, set);
 
     final Map mapFocusChildParents = new HashMap();
-
     final ReplicatedPersonCases actual = target.reduceClientCases(clientId, mapClients, mapCases,
         mapClientCases, mapFocusChildParents);
     assertEquals(actual, is(notNullValue()));
