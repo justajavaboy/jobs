@@ -2,6 +2,7 @@ package gov.ca.cwds.neutron.inject;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -132,6 +133,12 @@ public class HyperCube extends NeutronGuiceModule {
    */
   private static Injector injector;
 
+  private static HyperCube instance;
+
+  private static Function<FlightPlan, HyperCube> cubeMaker = HyperCube::buildCube;
+
+  private Map<String, Client> clients;
+
   private File esConfig;
 
   private String lastJobRunTimeFilename;
@@ -141,10 +148,6 @@ public class HyperCube extends NeutronGuiceModule {
   private String hibernateConfigCms = HIBERNATE_CONFIG_CMS;
 
   private String hibernateConfigNs = HIBERNATE_CONFIG_NS;
-
-  private static HyperCube instance;
-
-  private static Function<FlightPlan, HyperCube> cubeMaker = HyperCube::buildCube;
 
   /**
    * Default constructor.

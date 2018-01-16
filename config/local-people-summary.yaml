@@ -4,15 +4,16 @@ elasticsearch.cluster: elasticsearch
 elasticsearch.alias: people-summary
 elasticsearch.doctype: person
 
-# People index
-#elasticsearch.index.setting.file: /elasticsearch/setting/people-index-settings.json
-#elasticsearch.document.mapping.file: /elasticsearch/mapping/map_person_5x_snake.json
 
-# People summary index
-#elasticsearch.index.setting.file: /elasticsearch/setting/people-index-settings.json
-#elasticsearch.document.mapping.file: /elasticsearch/mapping/map_person_summary.json
+# People index:
+# elasticsearch.index.setting.file: /elasticsearch/setting/people-index-settings.json
+# elasticsearch.document.mapping.file: /elasticsearch/mapping/map_person_5x_snake.json
 
-# xpack
-#elasticsearch.xpack.user: neutron
-#elasticsearch.xpack.password: neutron
+# People summary index:
+# elasticsearch.index.setting.file: /elasticsearch/setting/people-index-settings.json
+# elasticsearch.document.mapping.file: /elasticsearch/mapping/map_person_summary.json
+
+# X-Pack:
+# elasticsearch.xpack.user: neutron
+# elasticsearch.xpack.password: neutron
 
