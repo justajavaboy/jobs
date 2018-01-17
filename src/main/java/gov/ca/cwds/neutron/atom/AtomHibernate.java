@@ -130,7 +130,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
    */
   default boolean isLargeDataSet() throws NeutronException {
     final String schema = getDBSchemaName().toUpperCase().trim();
-    return isDB2OnZOS() && (schema.endsWith("RSQ") || schema.endsWith("REP"));
+    return isDB2OnZOS() && (schema.endsWith("RSQ") || schema.endsWith("REP")); // Not the best idea
   }
 
   /**
@@ -142,6 +142,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   default Function<Connection, PreparedStatement> getPreparedStatementMaker() {
     return c -> {
       try {
+        getLogger().info("LAST CHANGE SQL: {}", getPrepLastChangeSQL());
         return c.prepareStatement(getPrepLastChangeSQL());
       } catch (SQLException e) {
         throw JobLogs.runtime(getLogger(), e, "FAILED TO PREPARE STATEMENT! {}", e.getMessage());

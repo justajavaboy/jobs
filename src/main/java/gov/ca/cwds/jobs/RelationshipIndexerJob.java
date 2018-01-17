@@ -57,17 +57,19 @@ public class RelationshipIndexerJob
   // @formatter:off
   static final String INSERT_CLIENT_LAST_CHG = 
      "INSERT INTO GT_ID (IDENTIFIER)\n"
-      + "SELECT clnr.IDENTIFIER\nFROM CLN_RELT CLNR\n" 
-      + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
-    + "UNION ALL\n" 
-      + "SELECT clnr.IDENTIFIER\n" + "FROM CLN_RELT CLNR\n"
-      + "JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
-      + "WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
-    + "UNION ALL\n" 
-      + "SELECT clnr.IDENTIFIER\n" 
-      + "FROM CLN_RELT CLNR\n"
-      + "JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
-      + "WHERE CLNP.IBMSNAP_LOGMARKER > ?";
+       + "SELECT clnr.IDENTIFIER\n"
+       + "FROM CLN_RELT CLNR\n" 
+       + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
+    + "UNION\n" 
+       + "SELECT clnr.IDENTIFIER\n" 
+       + "FROM CLN_RELT CLNR\n"
+       + "JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
+       + "WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
+    + "UNION\n" 
+       + "SELECT clnr.IDENTIFIER\n" 
+       + "FROM CLN_RELT CLNR\n"
+       + "JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
+       + "WHERE CLNP.IBMSNAP_LOGMARKER > ?";
   // @formatter:on
 
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
