@@ -5,7 +5,7 @@
 DROP TABLE MQT_REL_CLN_RELT_CLIENT;
 
 CREATE TABLE MQT_REL_CLN_RELT_CLIENT AS (
-      SELECT                                                         
+      SELECT  DISTINCT                                                
             'CLN_RELT'              AS THIS_LEGACY_TABLE,
             'CLIENT_T'              AS RELATED_LEGACY_TABLE,
             CLNS.IDENTIFIER         AS THIS_LEGACY_ID,

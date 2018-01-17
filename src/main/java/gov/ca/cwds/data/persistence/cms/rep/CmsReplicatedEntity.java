@@ -19,7 +19,7 @@ public interface CmsReplicatedEntity extends ApiLegacyAware, PersistentObject {
    * @return true if deleted
    */
   static boolean isDelete(CmsReplicatedEntity t) {
-    return t.getReplicationOperation() == CmsReplicationOperation.D;
+    return t != null && t.getReplicationOperation() == CmsReplicationOperation.D;
   }
 
   /**
@@ -33,7 +33,7 @@ public interface CmsReplicatedEntity extends ApiLegacyAware, PersistentObject {
    * @return replication operation
    */
   default CmsReplicationOperation getReplicationOperation() {
-    return getReplicatedEntity().getReplicationOperation();
+    return getReplicatedEntity() != null ? getReplicatedEntity().getReplicationOperation() : null;
   }
 
   /**
@@ -42,7 +42,7 @@ public interface CmsReplicatedEntity extends ApiLegacyAware, PersistentObject {
    * @return replication date
    */
   default Date getReplicationDate() {
-    return getReplicatedEntity().getReplicationDate();
+    return getReplicatedEntity() != null ? getReplicatedEntity().getReplicationDate() : null;
   }
 
   /**
@@ -51,7 +51,9 @@ public interface CmsReplicatedEntity extends ApiLegacyAware, PersistentObject {
    * @param replicationOperation SQL operation that triggered the replication of this record..
    */
   default void setReplicationOperation(CmsReplicationOperation replicationOperation) {
-    getReplicatedEntity().setReplicationOperation(replicationOperation);
+    if (getReplicatedEntity() != null) {
+      getReplicatedEntity().setReplicationOperation(replicationOperation);
+    }
   }
 
   /**
@@ -60,7 +62,9 @@ public interface CmsReplicatedEntity extends ApiLegacyAware, PersistentObject {
    * @param replicationDate when this record replicated
    */
   default void setReplicationDate(Date replicationDate) {
-    getReplicatedEntity().setReplicationDate(replicationDate);
+    if (getReplicatedEntity() != null) {
+      getReplicatedEntity().setReplicationDate(replicationDate);
+    }
   }
 
 }

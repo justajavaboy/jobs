@@ -232,8 +232,8 @@ public class EsRelationship
   }
 
   /**
-   * Implementation notes: Only reading from CLN_RELT, for the moment. Intake will set field
-   * "related_person_id" from <strong>PostgreSQL</strong>, NOT from DB2.
+   * <strong>Implementation notes:</strong> Only reading from CLN_RELT, for the moment. Intake sets
+   * field "related_person_id" <strong>from PostgreSQL, NOT from DB2</strong>.
    */
   @Override
   public ReplicatedRelationships normalize(Map<Object, ReplicatedRelationships> map) {
@@ -241,26 +241,32 @@ public class EsRelationship
     final ReplicatedRelationships ret =
         isClientAdded ? map.get(this.thisLegacyId) : new ReplicatedRelationships(this.thisLegacyId);
 
-    final ElasticSearchPersonRelationship rel = new ElasticSearchPersonRelationship();
-    ret.addRelation(rel);
+    // INT-1037: Omit deleted relationships and clients.
+    if (this.thisClientReplicationOperation != CmsReplicationOperation.D
+        && this.relatedClientReplicationOperation != CmsReplicationOperation.D
+        && this.relationshipReplicationOperation != CmsReplicationOperation.D) {
+      final ElasticSearchPersonRelationship rel = new ElasticSearchPersonRelationship();
+      ret.addRelation(rel);
 
-    if (StringUtils.isNotBlank(this.relatedFirstName)) {
-      rel.setRelatedPersonFirstName(this.relatedFirstName.trim());
+      if (StringUtils.isNotBlank(this.relatedFirstName)) {
+        rel.setRelatedPersonFirstName(this.relatedFirstName.trim());
+      }
+
+      if (StringUtils.isNotBlank(this.relatedLastName)) {
+        rel.setRelatedPersonLastName(this.relatedLastName.trim());
+      }
+
+      if (StringUtils.isNotBlank(this.relatedLegacyId)) {
+        rel.setRelatedPersonLegacyId(this.relatedLegacyId.trim());
+      }
+
+      rel.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(this.relatedLegacyId,
+          this.relatedLegacyLastUpdated, LegacyTable.CLIENT));
+
+      parseBiDirectionalRelationship(rel);
+      map.put(ret.getId(), ret);
     }
 
-    if (StringUtils.isNotBlank(this.relatedLastName)) {
-      rel.setRelatedPersonLastName(this.relatedLastName.trim());
-    }
-
-    if (StringUtils.isNotBlank(this.relatedLegacyId)) {
-      rel.setRelatedPersonLegacyId(this.relatedLegacyId.trim());
-    }
-
-    rel.setLegacyDescriptor(ElasticTransformer.createLegacyDescriptor(this.relatedLegacyId,
-        this.relatedLegacyLastUpdated, LegacyTable.CLIENT));
-
-    parseBiDirectionalRelationship(rel);
-    map.put(ret.getId(), ret);
     return ret;
   }
 

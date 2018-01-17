@@ -7,7 +7,10 @@ import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
 import gov.ca.cwds.data.es.ElasticSearchPersonRelationship;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicatedEntity;
+import gov.ca.cwds.data.persistence.cms.rep.EmbeddableCmsReplicatedEntity;
 import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
 
 /**
@@ -15,7 +18,7 @@ import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
  * 
  * @author CWDS API Team
  */
-public class ReplicatedRelationships implements RetrovillePerson {
+public class ReplicatedRelationships implements RetrovillePerson, CmsReplicatedEntity {
 
   private static final long serialVersionUID = 1L;
 
@@ -47,6 +50,7 @@ public class ReplicatedRelationships implements RetrovillePerson {
     return id;
   }
 
+  @Override
   public String getId() {
     return id;
   }
@@ -75,6 +79,24 @@ public class ReplicatedRelationships implements RetrovillePerson {
   @Override
   public boolean equals(Object obj) {
     return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
+  @Override
+  public String getLegacyId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
