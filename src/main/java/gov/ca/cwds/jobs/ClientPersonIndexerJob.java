@@ -106,7 +106,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
 
   @Override
   public String getJdbcOrderBy() {
-    return " ORDER BY x.clt_identifier ";
+    return " ORDER BY X.CLT_IDENTIFIER ";
   }
 
   /**
@@ -125,7 +125,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
     final StringBuilder buf = new StringBuilder();
 
     buf.append("SELECT x.* FROM ").append(dbSchemaName).append('.').append(getInitialLoadViewName())
-        .append(" x WHERE x.clt_identifier BETWEEN ':fromId' AND ':toId' ");
+        .append(" x WHERE X.CLT_IDENTIFIER BETWEEN ':fromId' AND ':toId' ");
 
     if (!getFlightPlan().isLoadSealedAndSensitive()) {
       buf.append(" AND x.CLT_SENSTV_IND = 'N' ");
