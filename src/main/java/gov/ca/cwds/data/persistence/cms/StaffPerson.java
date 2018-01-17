@@ -37,25 +37,25 @@ import gov.ca.cwds.data.persistence.cms.rep.EmbeddableCmsReplicatedEntityAware;
     query = "SELECT "
           + "s.IDENTIFIER, \n"
           + "s.END_DT, \n"
-          + "trim(s.FIRST_NM)   AS FIRST_NM, \n"
-          + "trim(s.JOB_TL_DSC) AS JOB_TL_DSC, \n"
-          + "trim(s.LAST_NM)    AS LAST_NM, \n"
-          + "trim(s.MID_INI_NM) AS MID_INI_NM, \n"
-          + "trim(s.NMPRFX_DSC) AS NMPRFX_DSC, \n"
+          + "TRIM(s.FIRST_NM)   AS FIRST_NM, \n"
+          + "TRIM(s.JOB_TL_DSC) AS JOB_TL_DSC, \n"
+          + "TRIM(s.LAST_NM)    AS LAST_NM, \n"
+          + "TRIM(s.MID_INI_NM) AS MID_INI_NM, \n"
+          + "TRIM(s.NMPRFX_DSC) AS NMPRFX_DSC, \n"
           + "s.PHONE_NO, \n"
           + "s.TEL_EXT_NO, \n"
           + "s.START_DT, \n"
-          + "trim(s.SUFX_TLDSC) AS SUFX_TLDSC, \n"
+          + "TRIM(s.SUFX_TLDSC) AS SUFX_TLDSC, \n"
           + "s.TLCMTR_IND, \n"
           + "s.LST_UPD_ID, \n"
           + "s.LST_UPD_TS, \n"
           + "s.FKCWS_OFFT, \n"
-          + "trim(s.AVLOC_DSC)  AS AVLOC_DSC, \n"
+          + "TRIM(s.AVLOC_DSC)  AS AVLOC_DSC, \n"
           + "s.SSRS_WKRID, \n"
           + "s.CNTY_SPFCD, \n"
           + "s.DTYWKR_IND, \n"
           + "s.FKCWSADDRT, \n"
-          + "trim(s.EMAIL_ADDR) AS EMAIL_ADDR,\n"
+          + "TRIM(s.EMAIL_ADDR) AS EMAIL_ADDR,\n"
           + "s.IBMSNAP_LOGMARKER,\n"
           + "s.IBMSNAP_OPERATION\n"
         + "FROM {h-schema}STFPERST s\n"
@@ -76,23 +76,23 @@ public class StaffPerson extends CmsPersistentObject
   private Date endDate;
 
   @Column(name = "FIRST_NM", length = 20, nullable = false)
-  @ColumnTransformer(read = "trim(FIRST_NM)")
+  @ColumnTransformer(read = "TRIM(FIRST_NM)")
   private String firstName;
 
   @Column(name = "JOB_TL_DSC")
-  @ColumnTransformer(read = "trim(JOB_TL_DSC)")
+  @ColumnTransformer(read = "TRIM(JOB_TL_DSC)")
   private String jobTitle;
 
   @Column(name = "LAST_NM", length = 25, nullable = false)
-  @ColumnTransformer(read = "trim(LAST_NM)")
+  @ColumnTransformer(read = "TRIM(LAST_NM)")
   private String lastName;
 
   @Column(name = "MID_INI_NM")
-  @ColumnTransformer(read = "trim(MID_INI_NM)")
+  @ColumnTransformer(read = "TRIM(MID_INI_NM)")
   private String middleInitial;
 
   @Column(name = "NMPRFX_DSC")
-  @ColumnTransformer(read = "trim(NMPRFX_DSC)")
+  @ColumnTransformer(read = "TRIM(NMPRFX_DSC)")
   private String namePrefix;
 
   @Column(name = "PHONE_NO")
@@ -107,7 +107,7 @@ public class StaffPerson extends CmsPersistentObject
   private Date startDate;
 
   @Column(name = "SUFX_TLDSC")
-  @ColumnTransformer(read = "trim(SUFX_TLDSC)")
+  @ColumnTransformer(read = "TRIM(SUFX_TLDSC)")
   private String nameSuffix;
 
   @Column(name = "TLCMTR_IND")
@@ -117,7 +117,7 @@ public class StaffPerson extends CmsPersistentObject
   private String cwsOffice;
 
   @Column(name = "AVLOC_DSC")
-  @ColumnTransformer(read = "trim(AVLOC_DSC)")
+  @ColumnTransformer(read = "TRIM(AVLOC_DSC)")
   private String availabilityAndLocationDescription;
 
   @Column(name = "SSRS_WKRID")
@@ -133,7 +133,7 @@ public class StaffPerson extends CmsPersistentObject
   private String cwsOfficeAddress;
 
   @Column(name = "EMAIL_ADDR")
-  @ColumnTransformer(read = "trim(EMAIL_ADDR)")
+  @ColumnTransformer(read = "TRIM(EMAIL_ADDR)")
   private String emailAddress;
 
   private EmbeddableCmsReplicatedEntity embeddableCmsReplicatedEntity;
