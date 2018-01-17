@@ -55,12 +55,17 @@ public class RelationshipIndexerJob
    * VW_LST_BI_DIR_RELATION and VW_LST_REL_CLN_RELT_CLIENT.
    */
   // @formatter:off
-  static final String INSERT_CLIENT_LAST_CHG = "INSERT INTO GT_ID (IDENTIFIER)\n"
-      + "SELECT clnr.IDENTIFIER\nFROM CLN_RELT CLNR\n" + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
-      + "UNION ALL\n" + "SELECT clnr.IDENTIFIER\n" + "FROM CLN_RELT CLNR\n"
+  static final String INSERT_CLIENT_LAST_CHG = 
+     "INSERT INTO GT_ID (IDENTIFIER)\n"
+      + "SELECT clnr.IDENTIFIER\nFROM CLN_RELT CLNR\n" 
+      + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
+    + "UNION ALL\n" 
+      + "SELECT clnr.IDENTIFIER\n" + "FROM CLN_RELT CLNR\n"
       + "JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
       + "WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
-      + "UNION ALL\n" + "SELECT clnr.IDENTIFIER\n" + "FROM CLN_RELT CLNR\n"
+    + "UNION ALL\n" 
+      + "SELECT clnr.IDENTIFIER\n" 
+      + "FROM CLN_RELT CLNR\n"
       + "JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
       + "WHERE CLNP.IBMSNAP_LOGMARKER > ?";
   // @formatter:on
@@ -111,7 +116,16 @@ public class RelationshipIndexerJob
   @Override
   public String getInitialLoadQuery(String dbSchemaName) {
     final StringBuilder buf = new StringBuilder();
-    buf.append("SELECT x.* FROM ").append(dbSchemaName).append('.').append(getInitialLoadViewName())
+    buf.append("SELECT x.REVERSE_RELATIONSHIP, x.THIS_LEGACY_ID, x.THIS_SENSITIVITY_IND, ")
+        .append("x.THIS_FIRST_NAME, x.THIS_LAST_NAME, ")
+        .append("x.THIS_LEGACY_LAST_UPDATED, x.THIS_LEGACY_LAST_UPDATED_ID, ")
+        .append("x.REL_CODE, x.RELATED_LEGACY_ID, x.RELATED_SENSITIVITY_IND, ")
+        .append("x.RELATED_LEGACY_LAST_UPDATED, x.RELATED_LEGACY_LAST_UPDATED_ID, ")
+        .append("x.RELATED_FIRST_NAME, x.RELATED_LAST_NAME, ")
+        .append("x.REL_IBMSNAP_LOGMARKER, x.REL_IBMSNAP_OPERATION, ")
+        .append("x.THIS_IBMSNAP_LOGMARKER, x.THIS_IBMSNAP_OPERATION, ")
+        .append("x.RELATED_IBMSNAP_LOGMARKER, x.RELATED_IBMSNAP_OPERATION, x.LAST_CHG")
+        .append(" FROM ").append(dbSchemaName).append('.').append(getInitialLoadViewName())
         .append(" x WHERE x.THIS_LEGACY_ID BETWEEN ':fromId' AND ':toId' ");
 
     if (!getFlightPlan().isLoadSealedAndSensitive()) {

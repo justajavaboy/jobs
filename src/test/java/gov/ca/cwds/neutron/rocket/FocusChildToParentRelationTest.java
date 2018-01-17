@@ -39,6 +39,18 @@ public class FocusChildToParentRelationTest extends Goddard {
   }
 
   @Test
+  public void setter_getter_parentId() throws Exception {
+    target.setParentId(DEFAULT_CLIENT_ID);
+    assertThat(target.getParentId(), is(equalTo(DEFAULT_CLIENT_ID)));
+  }
+
+  @Test
+  public void setter_getter_relationship() throws Exception {
+    target.setRelationship("Mother/Daughter (birth)");
+    assertThat(target.getRelationship(), is(equalTo("Mother/Daughter (birth)")));
+  }
+
+  @Test
   public void toString_A$() throws Exception {
     String actual = target.toString();
     assertThat(actual, is(notNullValue()));

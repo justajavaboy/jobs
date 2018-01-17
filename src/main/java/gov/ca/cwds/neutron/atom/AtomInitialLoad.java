@@ -106,6 +106,11 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
         : false;
   }
 
+  /**
+   * Work-around for annoying condition where a transaction should have started but did not.
+   * 
+   * @return current, active transaction
+   */
   default Transaction getOrCreateTransaction() {
     Transaction txn = null;
     final Session session = getJobDao().getSessionFactory().getCurrentSession();

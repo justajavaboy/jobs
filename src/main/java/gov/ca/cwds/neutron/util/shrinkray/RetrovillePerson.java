@@ -10,7 +10,9 @@ import gov.ca.cwds.data.std.ApiPersonAware;
  * Empty person implementation. Useful for jobs which POJOs that return no personal information but
  * still implement ApiPersonAware.
  * 
- * Named after the Jimmy's home town.
+ * <p>
+ * Named after the Jimmy Neutron's home town.
+ * </p>
  * 
  * @author CWDS API Team
  */

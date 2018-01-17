@@ -53,9 +53,6 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 public class ReplicatedServiceProvider extends BaseServiceProvider
     implements CmsReplicatedEntity, ApiGroupNormalizer<ReplicatedServiceProvider> {
 
-  /**
-   * Default.
-   */
   private static final long serialVersionUID = 1L;
 
   private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();

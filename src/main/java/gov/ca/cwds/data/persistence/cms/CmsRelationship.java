@@ -11,7 +11,8 @@ import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
 /**
- * Parse legacy relationship strings.
+ * Parse legacy relationship strings in the format of "left/right (context)", such as
+ * "Mother/Daughter (birth)".
  * 
  * @author CWDS API Team
  */
@@ -28,9 +29,9 @@ public final class CmsRelationship implements ApiMarker {
   String relContext = "";
 
   /**
-   * Construct a relationship parser from a syscodeid.
+   * Construct a relationship parser from a system code id.
    * 
-   * @param relCode legacy syscodeid
+   * @param relCode legacy system code id
    */
   public CmsRelationship(final Short relCode) {
     sysCodeId = relCode.shortValue();
@@ -52,8 +53,9 @@ public final class CmsRelationship implements ApiMarker {
             break;
 
           case 3:
-            relContext = StringUtils.isNotBlank(s)
-                ? s.replaceAll("\\(", "").replaceAll("\\)", "").trim() : "";
+            relContext =
+                StringUtils.isNotBlank(s) ? s.replaceAll("\\(", "").replaceAll("\\)", "").trim()
+                    : "";
             break;
 
           default:

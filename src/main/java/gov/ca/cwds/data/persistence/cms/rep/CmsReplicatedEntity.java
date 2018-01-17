@@ -13,7 +13,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 public interface CmsReplicatedEntity extends ApiLegacyAware, PersistentObject {
 
   /**
-   * Determines whether record was deleted from companion transactional table.
+   * Determines whether record was deleted from the companion, transactional table.
    * 
    * @param t another replicated entity
    * @return true if deleted

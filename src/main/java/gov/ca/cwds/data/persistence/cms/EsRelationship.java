@@ -45,6 +45,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
  */
 @Entity
 @Table(name = "VW_LST_BI_DIR_RELATION")
+//@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsRelationship.findAllUpdatedAfter",
     query = "WITH driver as (\n"
         + " SELECT v1.THIS_LEGACY_ID, v1.RELATED_LEGACY_ID FROM {h-schema}VW_LST_BI_DIR_RELATION v1 \n"
@@ -53,7 +54,9 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "v.THIS_LEGACY_LAST_UPDATED, v.THIS_LEGACY_LAST_UPDATED_ID, v.THIS_FIRST_NAME, v.THIS_LAST_NAME, \n"
         + "v.REL_CODE, v.RELATED_LEGACY_ID, v.RELATED_SENSITIVITY_IND, \n"
         + "v.RELATED_LEGACY_LAST_UPDATED, v.RELATED_LEGACY_LAST_UPDATED_ID, \n"
-        + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
+        + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, "
+        + "v.REL_IBMSNAP_LOGMARKER, v.REL_IBMSNAP_OPERATION, \n"
+        + "v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
         + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG \n"
         + "FROM {h-schema}VW_LST_BI_DIR_RELATION v \n"
         + "WHERE v.THIS_LEGACY_ID IN (select d1.THIS_LEGACY_ID from driver d1) \n"
@@ -69,7 +72,9 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "v.THIS_LEGACY_LAST_UPDATED, v.THIS_LEGACY_LAST_UPDATED_ID, v.THIS_FIRST_NAME, v.THIS_LAST_NAME, \n"
         + "v.REL_CODE, v.RELATED_LEGACY_ID, v.RELATED_SENSITIVITY_IND, \n"
         + "v.RELATED_LEGACY_LAST_UPDATED, v.RELATED_LEGACY_LAST_UPDATED_ID, \n"
-        + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
+        + "v.RELATED_FIRST_NAME, v.RELATED_LAST_NAME, "
+        + "v.REL_IBMSNAP_LOGMARKER, v.REL_IBMSNAP_OPERATION, \n"
+        + "v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
         + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG \n"
         + "FROM {h-schema}VW_LST_BI_DIR_RELATION v \n"
         + "WHERE (v.THIS_LEGACY_ID IN (select d1.THIS_LEGACY_ID from driver d1) \n"
@@ -77,6 +82,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "AND (v.THIS_SENSITIVITY_IND = 'N' AND v.RELATED_SENSITIVITY_IND = 'N') \n"
         + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
     resultClass = EsRelationship.class, readOnly = true)
+//@formatter:on
 public class EsRelationship
     implements PersistentObject, ApiGroupNormalizer<ReplicatedRelationships>,
     Comparable<EsRelationship>, Comparator<EsRelationship> {
@@ -121,24 +127,37 @@ public class EsRelationship
   @Type(type = "date")
   private Date relatedLegacyLastUpdated;
 
-  // NOTE: add replication columns when available.
-  // Needed to delete ES documents.
+  // =====================
+  // REPLICATION:
+  // =====================
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "REL_IBMSNAP_OPERATION", updatable = false)
+  private CmsReplicationOperation relationshipReplicationOperation;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "THIS_IBMSNAP_OPERATION", updatable = false)
-  private CmsReplicationOperation thisReplicationOperation;
-
-  @Type(type = "timestamp")
-  @Column(name = "THIS_IBMSNAP_LOGMARKER", updatable = false)
-  private Date thisReplicationDate;
+  private CmsReplicationOperation thisClientReplicationOperation;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "RELATED_IBMSNAP_OPERATION", updatable = false)
-  private CmsReplicationOperation relatedReplicationOperation;
+  private CmsReplicationOperation relatedClientReplicationOperation;
+
+  @Type(type = "timestamp")
+  @Column(name = "REL_IBMSNAP_LOGMARKER", updatable = false)
+  private Date relationshipReplicationDate;
+
+  @Type(type = "timestamp")
+  @Column(name = "THIS_IBMSNAP_LOGMARKER", updatable = false)
+  private Date thisClientReplicationDate;
 
   @Type(type = "timestamp")
   @Column(name = "RELATED_IBMSNAP_LOGMARKER", updatable = false)
-  private Date relatedReplicationDate;
+  private Date relatedClientReplicationDate;
+
+  // =====================
+  // ROW MAPPING:
+  // =====================
 
   /**
    * Build an EsRelationship from an incoming ResultSet.
@@ -160,6 +179,17 @@ public class EsRelationship
     ret.setRelatedLastName(ifNull(rs.getString("RELATED_LAST_NAME")));
     ret.setThisLegacyLastUpdated(rs.getDate("THIS_LEGACY_LAST_UPDATED"));
     ret.setRelatedLegacyLastUpdated(rs.getDate("RELATED_LEGACY_LAST_UPDATED"));
+
+    ret.relationshipReplicationDate = rs.getTimestamp("REL_IBMSNAP_LOGMARKER");
+    ret.thisClientReplicationDate = rs.getTimestamp("THIS_IBMSNAP_LOGMARKER");
+    ret.relatedClientReplicationDate = rs.getTimestamp("RELATED_IBMSNAP_LOGMARKER");
+
+    ret.relationshipReplicationOperation =
+        CmsReplicationOperation.strToRepOp(rs.getString("REL_IBMSNAP_OPERATION"));
+    ret.thisClientReplicationOperation =
+        CmsReplicationOperation.strToRepOp(rs.getString("THIS_IBMSNAP_OPERATION"));
+    ret.relatedClientReplicationOperation =
+        CmsReplicationOperation.strToRepOp(rs.getString("RELATED_IBMSNAP_OPERATION"));
 
     return ret;
   }
@@ -237,35 +267,6 @@ public class EsRelationship
   @Override
   public String getNormalizationGroupKey() {
     return this.thisLegacyId;
-  }
-
-  /**
-   * This view (i.e., materialized query table) doesn't have a proper unique key, but a combination
-   * of several fields might come close.
-   */
-  @Override
-  public Serializable getPrimaryKey() {
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  @Override
-  public final int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this, false);
-  }
-
-  /**
-   * {@inheritDoc}
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @Override
-  public final boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
   public String getThisLegacyId() {
@@ -349,35 +350,91 @@ public class EsRelationship
   }
 
   public CmsReplicationOperation getThisReplicationOperation() {
-    return thisReplicationOperation;
+    return thisClientReplicationOperation;
   }
 
   public void setThisReplicationOperation(CmsReplicationOperation thisReplicationOperation) {
-    this.thisReplicationOperation = thisReplicationOperation;
+    this.thisClientReplicationOperation = thisReplicationOperation;
   }
 
   public Date getThisReplicationDate() {
-    return NeutronDateUtils.freshDate(thisReplicationDate);
+    return NeutronDateUtils.freshDate(thisClientReplicationDate);
   }
 
   public void setThisReplicationDate(Date thisReplicationDate) {
-    this.thisReplicationDate = NeutronDateUtils.freshDate(thisReplicationDate);
+    this.thisClientReplicationDate = NeutronDateUtils.freshDate(thisReplicationDate);
   }
 
   public CmsReplicationOperation getRelatedReplicationOperation() {
-    return relatedReplicationOperation;
+    return relatedClientReplicationOperation;
   }
 
   public void setRelatedReplicationOperation(CmsReplicationOperation relatedReplicationOperation) {
-    this.relatedReplicationOperation = relatedReplicationOperation;
+    this.relatedClientReplicationOperation = relatedReplicationOperation;
   }
 
   public Date getRelatedReplicationDate() {
-    return NeutronDateUtils.freshDate(relatedReplicationDate);
+    return NeutronDateUtils.freshDate(relatedClientReplicationDate);
   }
 
   public void setRelatedReplicationDate(Date relatedReplicationDate) {
-    this.relatedReplicationDate = NeutronDateUtils.freshDate(relatedReplicationDate);
+    this.relatedClientReplicationDate = NeutronDateUtils.freshDate(relatedReplicationDate);
+  }
+
+
+  public CmsReplicationOperation getRelationshipReplicationOperation() {
+    return relationshipReplicationOperation;
+  }
+
+  public void setRelationshipReplicationOperation(
+      CmsReplicationOperation relationshipReplicationOperation) {
+    this.relationshipReplicationOperation = relationshipReplicationOperation;
+  }
+
+  public CmsReplicationOperation getThisClientReplicationOperation() {
+    return thisClientReplicationOperation;
+  }
+
+  public void setThisClientReplicationOperation(
+      CmsReplicationOperation thisClientReplicationOperation) {
+    this.thisClientReplicationOperation = thisClientReplicationOperation;
+  }
+
+  public CmsReplicationOperation getRelatedClientReplicationOperation() {
+    return relatedClientReplicationOperation;
+  }
+
+  public void setRelatedClientReplicationOperation(
+      CmsReplicationOperation relatedClientReplicationOperation) {
+    this.relatedClientReplicationOperation = relatedClientReplicationOperation;
+  }
+
+  public Date getRelationshipReplicationDate() {
+    return relationshipReplicationDate;
+  }
+
+  public void setRelationshipReplicationDate(Date relationshipReplicationDate) {
+    this.relationshipReplicationDate = relationshipReplicationDate;
+  }
+
+  public Date getThisClientReplicationDate() {
+    return thisClientReplicationDate;
+  }
+
+  public void setThisClientReplicationDate(Date thisClientReplicationDate) {
+    this.thisClientReplicationDate = thisClientReplicationDate;
+  }
+
+  public Date getRelatedClientReplicationDate() {
+    return relatedClientReplicationDate;
+  }
+
+  public void setRelatedClientReplicationDate(Date relatedClientReplicationDate) {
+    this.relatedClientReplicationDate = relatedClientReplicationDate;
+  }
+
+  public static long getSerialversionuid() {
+    return serialVersionUID;
   }
 
   @Override
@@ -388,6 +445,35 @@ public class EsRelationship
   @Override
   public int compareTo(EsRelationship o) {
     return compare(this, o);
+  }
+
+  /**
+   * This view (i.e., materialized query table) doesn't have a proper unique key, but a combination
+   * of several fields might come close.
+   */
+  @Override
+  public Serializable getPrimaryKey() {
+    return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public final int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public final boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

@@ -130,10 +130,12 @@ public class EsSafetyAlert implements PersistentObject, ApiGroupNormalizer<Repli
       map.put(this.clientId, alerts);
     }
 
-    ElasticSearchSafetyAlert alert = new ElasticSearchSafetyAlert();
+    final ElasticSearchSafetyAlert alert = new ElasticSearchSafetyAlert();
     alert.setId(this.alertId);
 
-    ElasticSearchSafetyAlert.Activation activation = new ElasticSearchSafetyAlert.Activation();
+    // Activation:
+    final ElasticSearchSafetyAlert.Activation activation =
+        new ElasticSearchSafetyAlert.Activation();
     alert.setActivation(activation);
 
     activation.setActivationReasonDescription(
@@ -141,7 +143,7 @@ public class EsSafetyAlert implements PersistentObject, ApiGroupNormalizer<Repli
     activation.setActivationReasonId(
         this.activationReasonCode != null ? this.activationReasonCode.toString() : null);
 
-    ElasticSearchSystemCode activationCounty = new ElasticSearchSystemCode();
+    final ElasticSearchSystemCode activationCounty = new ElasticSearchSystemCode();
     activation.setActivationCounty(activationCounty);
     activationCounty.setDescription(
         SystemCodeCache.global().getSystemCodeShortDescription(this.activationCountyCode));
@@ -151,12 +153,12 @@ public class EsSafetyAlert implements PersistentObject, ApiGroupNormalizer<Repli
     activation.setActivationDate(DomainChef.cookDate(this.activationDate));
     activation.setActivationExplanation(this.activationExplanation);
 
-
-    ElasticSearchSafetyAlert.Deactivation deactivation =
+    // Deactivation:
+    final ElasticSearchSafetyAlert.Deactivation deactivation =
         new ElasticSearchSafetyAlert.Deactivation();
     alert.setDeactivation(deactivation);
 
-    ElasticSearchSystemCode deactivationCounty = new ElasticSearchSystemCode();
+    final ElasticSearchSystemCode deactivationCounty = new ElasticSearchSystemCode();
     deactivation.setDeactivationCounty(deactivationCounty);
 
     deactivationCounty.setDescription(
