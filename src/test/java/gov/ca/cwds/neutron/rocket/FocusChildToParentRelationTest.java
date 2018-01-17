@@ -33,6 +33,12 @@ public class FocusChildToParentRelationTest extends Goddard {
   }
 
   @Test
+  public void setter_getter_focusChildId() throws Exception {
+    target.setFocusChildId(DEFAULT_CLIENT_ID);
+    assertThat(target.getFocusChildId(), is(equalTo(DEFAULT_CLIENT_ID)));
+  }
+
+  @Test
   public void toString_A$() throws Exception {
     String actual = target.toString();
     assertThat(actual, is(notNullValue()));
