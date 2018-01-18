@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
@@ -69,7 +70,8 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
    * @param flightPlan command line options
    */
   @Inject
-  public ClientPersonIndexerJob(final ReplicatedClientDao dao, final ElasticsearchDao esDao,
+  public ClientPersonIndexerJob(final ReplicatedClientDao dao,
+      @Named("elasticsearch.people-summary") final ElasticsearchDao esDao,
       @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }

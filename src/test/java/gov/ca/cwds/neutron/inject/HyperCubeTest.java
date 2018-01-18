@@ -134,7 +134,7 @@ public class HyperCubeTest extends Goddard<TestNormalizedEntity, TestDenormalize
 
   @Test
   public void elasticSearchConfig_Args__() throws Exception {
-    ElasticsearchConfiguration actual = target.elasticSearchConfig();
+    ElasticsearchConfiguration actual = target.elasticSearchConfigPeople();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -172,7 +172,7 @@ public class HyperCubeTest extends Goddard<TestNormalizedEntity, TestDenormalize
 
   @Test
   public void elasticsearchClient_Args__() throws Exception {
-    Client actual = target.elasticsearchClient();
+    Client actual = target.elasticsearchClientPeople();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -180,7 +180,7 @@ public class HyperCubeTest extends Goddard<TestNormalizedEntity, TestDenormalize
   public void elasticsearchClient_Args__boom() throws Exception {
     final ElasticsearchConfiguration config = mock(ElasticsearchConfiguration.class);
     final TransportClient transportClient = target.makeTransportClient(config, false);
-    Client actual = target.elasticsearchClient();
+    Client actual = target.elasticsearchClientPeople();
     assertThat(actual, is(notNullValue()));
   }
 

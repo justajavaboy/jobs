@@ -2,7 +2,6 @@ package gov.ca.cwds.neutron.inject;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -29,6 +28,7 @@ import com.google.inject.Injector;
 import com.google.inject.NeutronGuiceModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.ObjectMapperUtils;
 import gov.ca.cwds.common.ApiFileAssistant;
@@ -137,9 +137,9 @@ public class HyperCube extends NeutronGuiceModule {
 
   private static Function<FlightPlan, HyperCube> cubeMaker = HyperCube::buildCube;
 
-  private Map<String, Client> clients;
+  private File esConfigPeople;
 
-  private File esConfig;
+  private File esConfigPeopleSummary;
 
   private String lastJobRunTimeFilename;
 
@@ -157,17 +157,21 @@ public class HyperCube extends NeutronGuiceModule {
   }
 
   /**
-   * Usual constructor.
+   * Preferred constructor. Construct from command line options and required arguments.
    * 
    * @param opts command line options
    * @param esConfigFile location of Elasticsearch configuration file
    * @param lastJobRunTimeFilename location of last run file
    */
   public HyperCube(final FlightPlan opts, final File esConfigFile, String lastJobRunTimeFilename) {
-    this.esConfig = esConfigFile;
+    this.esConfigPeople = esConfigFile;
     this.lastJobRunTimeFilename =
         !StringUtils.isBlank(lastJobRunTimeFilename) ? lastJobRunTimeFilename : "";
     this.flightPlan = opts;
+
+    if (StringUtils.isNotEmpty(opts.getEsConfigPeopleSummaryLoc())) {
+      this.esConfigPeopleSummary = new File(opts.getEsConfigPeopleSummaryLoc());
+    }
   }
 
   public Configuration makeHibernateConfiguration() {
@@ -321,6 +325,7 @@ public class HyperCube extends NeutronGuiceModule {
     bind(StaffPersonDao.class);
 
     // PostgreSQL:
+    // OPTION: only connect to Postgres if needed.
     bind(EsIntakeScreeningDao.class);
 
     // CMS system codes.
@@ -331,6 +336,16 @@ public class HyperCube extends NeutronGuiceModule {
   protected Configuration additionalDaos(Configuration config) {
     return config;
   }
+
+  @Provides
+  @Singleton
+  public LaunchCommandSettings commandCenterSettings() {
+    return LaunchCommand.getSettings();
+  }
+
+  // =========================
+  // DB2:
+  // =========================
 
   protected SessionFactory makeCmsSessionFactory() {
     LOGGER.info("make CMS session factory");
@@ -354,12 +369,20 @@ public class HyperCube extends NeutronGuiceModule {
     return additionalDaos(config).buildSessionFactory();
   }
 
+  // =========================
+  // POSTGRESQL:
+  // =========================
+
   protected SessionFactory makeNsSessionFactory() {
     LOGGER.info("make NS session factory");
     return makeHibernateConfiguration().configure(getHibernateConfigNs())
         .addAnnotatedClass(EsIntakeScreening.class).addAnnotatedClass(IntakeScreening.class)
         .buildSessionFactory();
   }
+
+  // =========================
+  // CMS SYSTEM CODE CACHE:
+  // =========================
 
   @Provides
   @Singleton
@@ -386,20 +409,18 @@ public class HyperCube extends NeutronGuiceModule {
 
   @Provides
   @Singleton
-  public LaunchCommandSettings commandCenterSettings() {
-    return LaunchCommand.getSettings();
-  }
-
-  @Provides
-  @Singleton
   public CmsSystemCodeSerializer provideCmsSystemCodeSerializer(SystemCodeCache systemCodeCache) {
     return new CmsSystemCodeSerializer(systemCodeCache);
   }
 
+  // =========================
+  // ELASTICSEARCH:
+  // =========================
+
   protected TransportClient makeTransportClient(final ElasticsearchConfiguration config,
-      boolean es55) {
+      boolean enableXPack) {
     TransportClient ret;
-    if (es55) {
+    if (enableXPack) {
       LOGGER.warn("ENABLE X-PACK");
       final Settings.Builder settings =
           Settings.builder().put("cluster.name", config.getElasticsearchCluster());
@@ -412,65 +433,117 @@ public class HyperCube extends NeutronGuiceModule {
     return ret;
   }
 
+  protected TransportClient buildElasticsearchClient(final ElasticsearchConfiguration config)
+      throws NeutronException {
+    TransportClient client = null;
+    LOGGER.debug("Create NEW ES client");
+    try {
+      client = makeTransportClient(config,
+          StringUtils.isNotBlank(config.getUser()) && StringUtils.isNotBlank(config.getPassword()));
+      client.addTransportAddress(
+          new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
+              Integer.parseInt(config.getElasticsearchPort())));
+      return client;
+    } catch (Exception e) {
+      if (client != null) {
+        client.close();
+      }
+      throw JobLogs.checked(LOGGER, e,
+          "ERROR initializing Elasticsearch client for people index: {}", e.getMessage(), e);
+    }
+  }
+
   /**
-   * Elasticsearch 5x. Instantiate the singleton ElasticSearch client on demand.
+   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand.
    * 
    * <p>
    * Initializes X-Pack security.
    * </p>
    * 
-   * @return initialized singleton ElasticSearch client
+   * @return initialized singleton ElasticSearch client, people index
    * @throws NeutronException on ES connection error
    */
   @Provides
   @Singleton
-  public Client elasticsearchClient() throws NeutronException {
+  public Client elasticsearchClientPeople() throws NeutronException {
     TransportClient client = null;
-    if (esConfig != null) {
-      LOGGER.debug("Create NEW ES client");
-      try {
-        final ElasticsearchConfiguration config = elasticSearchConfig();
-        client = makeTransportClient(config, StringUtils.isNotBlank(config.getUser())
-            && StringUtils.isNotBlank(config.getPassword()));
-        client.addTransportAddress(
-            new InetSocketTransportAddress(InetAddress.getByName(config.getElasticsearchHost()),
-                Integer.parseInt(config.getElasticsearchPort())));
-      } catch (Exception e) {
-        if (client != null) {
-          client.close();
-        }
-        throw JobLogs.checked(LOGGER, e, "Error initializing Elasticsearch client: {}",
-            e.getMessage(), e);
-      }
+    if (esConfigPeople != null) {
+      client = buildElasticsearchClient(elasticSearchConfigPeople());
     }
     return client;
   }
 
   /**
-   * Read Elasticsearch configuration on demand.
+   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand.
    * 
-   * @return ES configuration
-   * @throws NeutronException on error
+   * <p>
+   * Initializes X-Pack security.
+   * </p>
+   * 
+   * @return initialized singleton ElasticSearch client, people summary index
+   * @throws NeutronException on ES connection error
    */
   @Provides
-  public ElasticsearchConfiguration elasticSearchConfig() throws NeutronException {
+  @Singleton
+  public Client elasticsearchClientPeopleSummary() throws NeutronException {
+    TransportClient client = null;
+    if (esConfigPeopleSummary != null) {
+      client = buildElasticsearchClient(elasticSearchConfigPeopleSummary());
+    }
+    return client;
+  }
+
+  protected ElasticsearchConfiguration loadElasticSearchConfig(File esConfig)
+      throws NeutronException {
     ElasticsearchConfiguration ret = null;
-    if (esConfig != null) {
-      LOGGER.debug("Create NEW ES configuration");
-      try {
-        ret = new ObjectMapper(new YAMLFactory()).readValue(esConfig,
-            ElasticsearchConfiguration.class);
-      } catch (Exception e) {
-        throw JobLogs.checked(LOGGER, e, "ERROR READING ES CONFIG! {}", e.getMessage(), e);
-      }
+    try {
+      ret =
+          new ObjectMapper(new YAMLFactory()).readValue(esConfig, ElasticsearchConfiguration.class);
+    } catch (Exception e) {
+      throw JobLogs.checked(LOGGER, e, "ERROR READING ES CONFIG! {}", e.getMessage(), e);
     }
     return ret;
   }
 
   /**
-   * Configure Quartz scheduling.
+   * Read Elasticsearch configuration for the People index.
    * 
-   * @param injector DI
+   * @return ES configuration for the People index
+   * @throws NeutronException on error
+   */
+  @Provides
+  public ElasticsearchConfiguration elasticSearchConfigPeople() throws NeutronException {
+    ElasticsearchConfiguration ret = null;
+    if (esConfigPeople != null) {
+      LOGGER.debug("Create NEW ES configuration: people");
+    }
+    return ret;
+  }
+
+  /**
+   * Read Elasticsearch configuration for the People Summary index.
+   * 
+   * @return ES configuration for the People Summary index
+   * @throws NeutronException on error
+   */
+  @Provides
+  @Named("elasticsearch.people-summary")
+  public ElasticsearchConfiguration elasticSearchConfigPeopleSummary() throws NeutronException {
+    ElasticsearchConfiguration ret = null;
+    if (esConfigPeopleSummary != null) {
+      LOGGER.debug("Create NEW ES configuration: people summary");
+    }
+    return ret;
+  }
+
+  // =========================
+  // QUARTZ SCHEDULER:
+  // =========================
+
+  /**
+   * Configure Quartz scheduling. Quartz operates as a singleton.
+   * 
+   * @param injector Guice dependency injection
    * @param flightRecorder flight recorder
    * @param rocketFactory rocket factory
    * @param flightPlanMgr flight plan manager
@@ -484,7 +557,6 @@ public class HyperCube extends NeutronGuiceModule {
       final AtomFlightPlanManager flightPlanMgr) throws SchedulerException {
     final boolean initialMode = LaunchCommand.isInitialMode();
     final LaunchDirector ret = new LaunchDirector(flightRecorder, rocketFactory, flightPlanMgr);
-
     final Properties p = new Properties();
     p.put("org.quartz.scheduler.instanceName", NeutronSchedulerConstants.SCHEDULER_INSTANCE_NAME);
 
@@ -506,6 +578,10 @@ public class HyperCube extends NeutronGuiceModule {
         : new NeutronJobListener());
     return ret;
   }
+
+  // =========================
+  // ACCESSORS:
+  // =========================
 
   @SuppressWarnings("javadoc")
   public FlightPlan getFlightPlan() {
@@ -556,6 +632,10 @@ public class HyperCube extends NeutronGuiceModule {
 
   public static void setInjector(Injector injector) {
     HyperCube.injector = injector;
+  }
+
+  public File getEsConfigPeopleSummary() {
+    return esConfigPeopleSummary;
   }
 
 }
