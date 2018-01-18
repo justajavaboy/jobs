@@ -12,8 +12,8 @@
 		<property name="hibernate.cache.use_second_level_cache">false</property>
 		<property name="hibernate.connection.autocommit">false</property>
 		
-		<property name="connection_pool_size">2</property>
-		<property name="hibernate.connection.pool_size">2</property>
+		<property name="connection_pool_size">4</property>
+		<property name="hibernate.connection.pool_size">4</property>
 		
 		<property name="show_sql">true</property>
 		<property name="format_sql">true</property>
@@ -39,14 +39,14 @@
 		<property name="hibernate.connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 		
 		<!-- To prefix or not to prefix, that is the question. -->
-		<property name="hibernate.c3p0.min_size">2</property>
-		<property name="hibernate.c3p0.max_size">8</property>
-		<property name="hibernate.c3p0.maxAdministrativeTaskTime">45</property>
-		<property name="hibernate.c3p0.timeout">110</property>
+		<property name="hibernate.c3p0.min_size">4</property>
+		<property name="hibernate.c3p0.max_size">12</property>
+		<property name="hibernate.c3p0.maxAdministrativeTaskTime">90</property>
+		<property name="hibernate.c3p0.timeout">180</property>  <!-- seconds -->
 		<property name="hibernate.c3p0.statementCacheNumDeferredCloseThreads">1</property>
 		<property name="hibernate.c3p0.max_statements">0</property>
-		<property name="hibernate.c3p0.maxStatementsPerConnection">50</property>
-		<property name="hibernate.c3p0.idle_test_period">3000</property>
+		<property name="hibernate.c3p0.maxStatementsPerConnection">0</property>
+		<property name="hibernate.c3p0.idle_test_period">300</property>  <!-- seconds -->
 		<property name="hibernate.c3p0.acquire_increment">3</property>
 		<property name="hibernate.c3p0.preferredTestQuery">SELECT 1 FROM sysibm.sysdummy1 for read only with ur</property>
 
