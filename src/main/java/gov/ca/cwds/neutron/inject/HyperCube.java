@@ -160,11 +160,12 @@ public class HyperCube extends NeutronGuiceModule {
    * Preferred constructor. Construct from command line options and required arguments.
    * 
    * @param opts command line options
-   * @param esConfigFile location of Elasticsearch configuration file
+   * @param esConfigFilePeople location of Elasticsearch configuration file for the people file
    * @param lastJobRunTimeFilename location of last run file
    */
-  public HyperCube(final FlightPlan opts, final File esConfigFile, String lastJobRunTimeFilename) {
-    this.esConfigPeople = esConfigFile;
+  public HyperCube(final FlightPlan opts, final File esConfigFilePeople,
+      String lastJobRunTimeFilename) {
+    this.esConfigPeople = esConfigFilePeople;
     this.lastJobRunTimeFilename =
         !StringUtils.isBlank(lastJobRunTimeFilename) ? lastJobRunTimeFilename : "";
     this.flightPlan = opts;
@@ -292,7 +293,7 @@ public class HyperCube extends NeutronGuiceModule {
 
     // Singleton:
     bind(ObjectMapper.class).toInstance(ObjectMapperUtils.createObjectMapper());
-    bind(ElasticsearchDao.class).asEagerSingleton();
+    // bind(ElasticsearchDao.class).asEagerSingleton();
 
     // Command Center:
     bind(AtomFlightRecorder.class).to(FlightRecorder.class).asEagerSingleton();
@@ -485,12 +486,28 @@ public class HyperCube extends NeutronGuiceModule {
    */
   @Provides
   @Singleton
+  @Named("elasticsearch.people-summary")
   public Client elasticsearchClientPeopleSummary() throws NeutronException {
     TransportClient client = null;
     if (esConfigPeopleSummary != null) {
       client = buildElasticsearchClient(elasticSearchConfigPeopleSummary());
     }
     return client;
+  }
+
+  @Provides
+  @Singleton
+  @Named("elasticsearch.people")
+  public ElasticsearchDao makeElasticsearchDaoPeople() throws NeutronException {
+    return new ElasticsearchDao(elasticsearchClientPeople(), elasticSearchConfigPeople());
+  }
+
+  @Provides
+  @Singleton
+  @Named("elasticsearch.people-summary")
+  public ElasticsearchDao makeElasticsearchDaoPeopleSummary() throws NeutronException {
+    return new ElasticsearchDao(elasticsearchClientPeopleSummary(),
+        elasticSearchConfigPeopleSummary());
   }
 
   protected ElasticsearchConfiguration loadElasticSearchConfig(File esConfig)
@@ -516,6 +533,7 @@ public class HyperCube extends NeutronGuiceModule {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeople != null) {
       LOGGER.debug("Create NEW ES configuration: people");
+      ret = loadElasticSearchConfig(this.esConfigPeople);
     }
     return ret;
   }
@@ -532,6 +550,7 @@ public class HyperCube extends NeutronGuiceModule {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeopleSummary != null) {
       LOGGER.debug("Create NEW ES configuration: people summary");
+      ret = loadElasticSearchConfig(this.esConfigPeopleSummary);
     }
     return ret;
   }
@@ -636,6 +655,10 @@ public class HyperCube extends NeutronGuiceModule {
 
   public File getEsConfigPeopleSummary() {
     return esConfigPeopleSummary;
+  }
+
+  public File getEsConfigPeople() {
+    return esConfigPeople;
   }
 
 }
