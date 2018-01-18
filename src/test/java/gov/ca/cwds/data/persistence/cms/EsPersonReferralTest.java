@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -34,7 +35,6 @@ public class EsPersonReferralTest extends Goddard {
   @Before
   public void setup() throws Exception {
     super.setup();
-
     EsPersonReferral.setOpts(flightPlan);
     target = new EsPersonReferral();
     target.setClientId(DEFAULT_CLIENT_ID);
@@ -494,6 +494,7 @@ public class EsPersonReferralTest extends Goddard {
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
     }
+
   }
 
   @Test
@@ -510,6 +511,7 @@ public class EsPersonReferralTest extends Goddard {
       fail("Expected exception was not thrown!");
     } catch (SQLException e) {
     }
+
   }
 
   @Test
@@ -661,5 +663,246 @@ public class EsPersonReferralTest extends Goddard {
     int expected = 0;
     assertThat(actual, is(equalTo(expected)));
   }
+
+  @Test
+  public void extractAllegation_A$ResultSet() throws Exception {
+    EsPersonReferral actual = EsPersonReferral.extractAllegation(rs);
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void extractAllegation_A$ResultSet_T$SQLException() throws Exception {
+    try {
+      when(rs.getString(any(String.class))).thenThrow(SQLException.class);
+      EsPersonReferral.extractAllegation(rs);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void extractReferral_A$ResultSet() throws Exception {
+    EsPersonReferral actual = EsPersonReferral.extractReferral(rs);
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void extractReferral_A$ResultSet_T$SQLException() throws Exception {
+    try {
+      when(rs.getString(any(String.class))).thenThrow(SQLException.class);
+      EsPersonReferral.extractReferral(rs);
+      fail("Expected exception was not thrown!");
+    } catch (SQLException e) {
+    }
+  }
+
+  @Test
+  public void getNormalizationClass_A$() throws Exception {
+    Class<ReplicatedPersonReferrals> actual = target.getNormalizationClass();
+    Class<ReplicatedPersonReferrals> expected = ReplicatedPersonReferrals.class;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void mergeClientReferralInfo_A$String$EsPersonReferral() throws Exception {
+    String clientId = null;
+    EsPersonReferral ref = mock(EsPersonReferral.class);
+    target.mergeClientReferralInfo(clientId, ref);
+  }
+
+  @Test
+  public void normalizeAllegation_A$ReplicatedPersonReferrals$ElasticSearchPersonReferral()
+      throws Exception {
+    ReplicatedPersonReferrals ret = mock(ReplicatedPersonReferrals.class);
+    ElasticSearchPersonReferral r = mock(ElasticSearchPersonReferral.class);
+    target.normalizeAllegation(ret, r);
+  }
+
+  @Test
+  public void getNormalizationGroupKey_A$() throws Exception {
+    String actual = target.getNormalizationGroupKey();
+    String expected = DEFAULT_CLIENT_ID;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPrimaryKey_A$() throws Exception {
+    Serializable actual = target.getPrimaryKey();
+    Serializable expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getWorkerId_A$() throws Exception {
+    String actual = target.getWorkerId();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setWorkerId_A$String() throws Exception {
+    String workerId = null;
+    target.setWorkerId(workerId);
+  }
+
+  @Test
+  public void getWorkerFirstName_A$() throws Exception {
+    String actual = target.getWorkerFirstName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setWorkerFirstName_A$String() throws Exception {
+    String workerFirstName = null;
+    target.setWorkerFirstName(workerFirstName);
+  }
+
+  @Test
+  public void getWorkerLastName_A$() throws Exception {
+    String actual = target.getWorkerLastName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setWorkerLastName_A$String() throws Exception {
+    String workerLastName = null;
+    target.setWorkerLastName(workerLastName);
+  }
+
+  @Test
+  public void getWorkerLastUpdated_A$() throws Exception {
+    Date actual = target.getWorkerLastUpdated();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setWorkerLastUpdated_A$Date() throws Exception {
+    Date workerLastUpdated = new Date();
+    target.setWorkerLastUpdated(workerLastUpdated);
+  }
+
+  @Test
+  public void getClientSensitivity_A$() throws Exception {
+    String actual = target.getClientSensitivity();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setClientSensitivity_A$String() throws Exception {
+    String clientSensitivity = null;
+    target.setClientSensitivity(clientSensitivity);
+  }
+
+  @Test
+  public void setOpts_A$FlightPlan() throws Exception {
+    FlightPlan opts = mock(FlightPlan.class);
+    EsPersonReferral.setOpts(opts);
+  }
+
+  @Test
+  public void toString_A$() throws Exception {
+    String actual = target.toString();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void compare_A$EsPersonReferral$EsPersonReferral() throws Exception {
+    EsPersonReferral o1 = new EsPersonReferral();
+    o1.setClientId(DEFAULT_CLIENT_ID);
+    EsPersonReferral o2 = new EsPersonReferral();
+    o2.setClientId(DEFAULT_CLIENT_ID);
+
+    int actual = target.compare(o1, o2);
+    int expected = 0;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void compareTo_A$EsPersonReferral() throws Exception {
+    EsPersonReferral o = new EsPersonReferral();
+    o.setClientId(DEFAULT_CLIENT_ID);
+    int actual = target.compareTo(o);
+    int expected = 0;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void hashCode_A$() throws Exception {
+    int actual = target.hashCode();
+    assertThat(actual, is(not(0)));
+  }
+
+  @Test
+  public void equals_A$Object() throws Exception {
+    Object obj = null;
+    boolean actual = target.equals(obj);
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getLimitedAccessCode_A$() throws Exception {
+    String actual = target.getLimitedAccessCode();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setLimitedAccessCode_A$String() throws Exception {
+    String limitedAccessCode = null;
+    target.setLimitedAccessCode(limitedAccessCode);
+  }
+
+  @Test
+  public void getLimitedAccessDate_A$() throws Exception {
+    Date actual = target.getLimitedAccessDate();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setLimitedAccessDate_A$Date() throws Exception {
+    Date limitedAccessDate = new Date();
+    target.setLimitedAccessDate(limitedAccessDate);
+  }
+
+  @Test
+  public void getLimitedAccessDescription_A$() throws Exception {
+    String actual = target.getLimitedAccessDescription();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setLimitedAccessDescription_A$String() throws Exception {
+    String limitedAccessDescription = null;
+    target.setLimitedAccessDescription(limitedAccessDescription);
+  }
+
+  @Test
+  public void getLimitedAccessGovernmentEntityId_A$() throws Exception {
+    Integer actual = target.getLimitedAccessGovernmentEntityId();
+    Integer expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setLimitedAccessGovernmentEntityId_A$Integer() throws Exception {
+    Integer limitedAccessGovernmentEntityId = null;
+    target.setLimitedAccessGovernmentEntityId(limitedAccessGovernmentEntityId);
+  }
+
+  // @Test
+  // public void normalize_A$Map() throws Exception {
+  // Map<Object, ReplicatedPersonReferrals> map = new HashMap<Object, ReplicatedPersonReferrals>();
+  // target.setClientId(DEFAULT_CLIENT_ID);
+  // ReplicatedPersonReferrals actual = target.normalize(map);
+  // ReplicatedPersonReferrals expected = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
+  // assertThat(actual, is(equalTo(expected)));
+  // }
 
 }
