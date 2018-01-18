@@ -38,7 +38,6 @@
 		<!-- <property name="hibernate.connection.readOnly">true</property> -->
 		<property name="hibernate.connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 		
-		<!-- To prefix or not to prefix, that is the question. -->
 		<property name="hibernate.c3p0.min_size">4</property>
 		<property name="hibernate.c3p0.max_size">12</property>
 		<property name="hibernate.c3p0.maxAdministrativeTaskTime">90</property>
