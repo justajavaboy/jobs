@@ -56,6 +56,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "v.THIS_IBMSNAP_LOGMARKER, v.THIS_IBMSNAP_OPERATION, \n"
         + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG \n"
         + "FROM {h-schema}VW_LST_BI_DIR_RELATION v \n"
+        + "WHERE 1=1 OR v.REL_IBMSNAP_LOGMARKER > :after\n"
         + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
     resultClass = EsRelationship.class, readOnly = true)
 @NamedNativeQuery(
@@ -70,6 +71,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "v.RELATED_IBMSNAP_LOGMARKER, v.RELATED_IBMSNAP_OPERATION, v.LAST_CHG \n"
         + "FROM {h-schema}VW_LST_BI_DIR_RELATION v \n"
         + "WHERE v.THIS_SENSITIVITY_IND = 'N' AND v.RELATED_SENSITIVITY_IND = 'N' \n"
+        + "  AND (1=1 OR v.REL_IBMSNAP_LOGMARKER > :after)\n"
         + "ORDER BY THIS_LEGACY_ID, RELATED_LEGACY_ID FOR READ ONLY WITH UR ",
     resultClass = EsRelationship.class, readOnly = true)
 //@formatter:on
