@@ -5,7 +5,9 @@ import static gov.ca.cwds.data.persistence.cms.CmsPersistentObject.CMS_ID_LEN;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -349,11 +351,12 @@ public final class ElasticTransformer {
   protected static List<ElasticSearchPersonPhone> buildPhone(ApiPersonAware p) {
     List<ElasticSearchPersonPhone> ret = null;
     if (p instanceof ApiMultiplePhonesAware) {
-      ret = new ArrayList<>();
+      Map<String, ElasticSearchPersonPhone> uniquePhones = new HashMap<>();
       ApiMultiplePhonesAware mphx = (ApiMultiplePhonesAware) p;
       for (ApiPhoneAware phx : mphx.getPhones()) {
-        ret.add(new ElasticSearchPersonPhone(phx));
+        uniquePhones.putIfAbsent(phx.getPhoneNumber(), new ElasticSearchPersonPhone(phx));
       }
+      ret = new ArrayList<>(uniquePhones.values());
     } else if (p instanceof ApiPhoneAware) {
       ret = new ArrayList<>();
       ApiPhoneAware phx = (ApiPhoneAware) p;
