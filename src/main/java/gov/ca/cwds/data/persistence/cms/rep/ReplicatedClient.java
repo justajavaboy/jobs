@@ -250,12 +250,12 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
 
     for (ReplicatedClientAddress repClientAddress : this.clientAddresses) {
       final String effectiveEndDate = DomainChef.cookDate(repClientAddress.getEffEndDt());
-      final String addressActive = StringUtils.isBlank(effectiveEndDate) ? "true" : "false";
+      final boolean addressActive = StringUtils.isBlank(effectiveEndDate);
 
       /*
        * We index only active addresses
        */
-      if (Boolean.valueOf(addressActive)) {
+      if (addressActive) {
         String effectiveStartDate = DomainChef.cookDate(repClientAddress.getEffStartDt());
         ElasticSearchSystemCode addressType = new ElasticSearchSystemCode();
         SystemCode addressTypeSystemCode =
@@ -282,7 +282,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
           esAddress.setEffectiveStartDate(effectiveStartDate);
           esAddress.setEffectiveEndDate(effectiveEndDate);
           esAddress.setType(addressType);
-          esAddress.setActive(addressActive);
+          esAddress.setActive(addressActive ? "true" : "false");
 
           ElasticSearchSystemCode stateCode = new ElasticSearchSystemCode();
           esAddress.setStateSystemCode(stateCode);
