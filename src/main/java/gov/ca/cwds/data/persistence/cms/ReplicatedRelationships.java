@@ -2,6 +2,7 @@ package gov.ca.cwds.data.persistence.cms;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -10,8 +11,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
 import gov.ca.cwds.data.es.ElasticSearchPersonRelationship;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicatedEntity;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.EmbeddableCmsReplicatedEntity;
 import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
+import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
  * Pseudo-normalized container for CMS legacy relationships by legacy person id.
@@ -29,11 +33,15 @@ public class ReplicatedRelationships implements RetrovillePerson, CmsReplicatedE
 
   private List<ElasticSearchPersonRelationship> relations = new ArrayList<>();
 
+  private EmbeddableCmsReplicatedEntity embeddableCmsReplicatedEntity =
+      new EmbeddableCmsReplicatedEntity();
+
   /**
    * Default constructor.
    */
   public ReplicatedRelationships() {
-    // Default, no-op.
+    this.embeddableCmsReplicatedEntity.setReplicationDate(new Date());
+    this.embeddableCmsReplicatedEntity.setReplicationOperation(CmsReplicationOperation.I);
   }
 
   /**
@@ -83,20 +91,18 @@ public class ReplicatedRelationships implements RetrovillePerson, CmsReplicatedE
 
   @Override
   public String getLegacyId() {
-    // TODO Auto-generated method stub
-    return null;
+    return id;
   }
 
   @Override
   public ElasticSearchLegacyDescriptor getLegacyDescriptor() {
-    // TODO Auto-generated method stub
-    return null;
+    return ElasticTransformer.createLegacyDescriptor(getId(), new Date(),
+        LegacyTable.CLIENT_RELATIONSHIP);
   }
 
   @Override
   public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
-    // TODO Auto-generated method stub
-    return null;
+    return embeddableCmsReplicatedEntity;
   }
 
 }

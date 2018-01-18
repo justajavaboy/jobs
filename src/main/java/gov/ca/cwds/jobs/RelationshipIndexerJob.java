@@ -56,20 +56,34 @@ public class RelationshipIndexerJob
    */
   // @formatter:off
   static final String INSERT_CLIENT_LAST_CHG = 
-     "INSERT INTO GT_ID (IDENTIFIER)\n"
-       + "SELECT clnr.IDENTIFIER\n"
-       + "FROM CLN_RELT CLNR\n" 
-       + "WHERE clnr.IBMSNAP_LOGMARKER > ?\n"
-    + "UNION\n" 
-       + "SELECT clnr.IDENTIFIER\n" 
-       + "FROM CLN_RELT CLNR\n"
-       + "JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
-       + "WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
-    + "UNION\n" 
-       + "SELECT clnr.IDENTIFIER\n" 
-       + "FROM CLN_RELT CLNR\n"
-       + "JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
-       + "WHERE CLNP.IBMSNAP_LOGMARKER > ?";
+      "INSERT INTO GT_ID (IDENTIFIER)\n"
+          + "WITH LAST_CHG AS (\n"
+             + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID\n"
+             + " FROM CLN_RELT CLNR \n"
+             + " WHERE CLNR.IBMSNAP_LOGMARKER > '2018-01-10-00.00.00.000000'\n"
+           + " UNION \n"
+             + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID \n"
+             + " FROM CLN_RELT CLNR\n"
+             + " JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
+             + " WHERE CLNS.IBMSNAP_LOGMARKER > '2018-01-10-00.00.00.000000'\n"
+           + " UNION \n"
+             + " SELECT DISTINCT CLNR.IDENTIFIER  AS REL_ID\n"
+             + " FROM CLN_RELT CLNR\n"
+             + " JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
+             + " WHERE CLNP.IBMSNAP_LOGMARKER > '2018-01-10-00.00.00.000000'\n"
+             + "),\n"
+         + "CHG_CLIENTS AS (\n"
+             + " SELECT DISTINCT CLNP.IDENTIFIER AS CLIENT_ID\n"
+             + " FROM LAST_CHG LC\n"
+             + " JOIN CLN_RELT CLNR ON CLNR.IDENTIFIER = LC.REL_ID\n"
+             + " JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
+           + " UNION\n"
+             + " SELECT DISTINCT CLNS.IDENTIFIER AS CLIENT_ID\n"
+             + " FROM LAST_CHG LC\n"
+             + " JOIN CLN_RELT CLNR ON CLNR.IDENTIFIER = LC.REL_ID\n"
+             + " JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
+             + ")\n"
+        + "SELECT chg.CLIENT_ID FROM CHG_CLIENTS chg\n";  
   // @formatter:on
 
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
