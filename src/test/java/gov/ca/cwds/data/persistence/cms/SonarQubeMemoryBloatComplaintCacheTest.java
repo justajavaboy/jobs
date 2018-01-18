@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,8 @@ import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.jobs.Goddard;
 import gov.ca.cwds.jobs.test.SimpleTestSystemCodeCache;
 
-public class SonarQubeMemoryBloatComplaintCacheTest extends Goddard<ReplicatedRelationships, EsRelationship> {
+public class SonarQubeMemoryBloatComplaintCacheTest
+    extends Goddard<ReplicatedRelationships, EsRelationship> {
 
   EsRelationship target = new EsRelationship();
 
@@ -55,9 +57,10 @@ public class SonarQubeMemoryBloatComplaintCacheTest extends Goddard<ReplicatedRe
   @Test
   public void mapRow_Args__ResultSet() throws Exception {
     when(rs.getString(any(String.class))).thenReturn("Y");
+    when(rs.getString(contains("_OPERATION"))).thenReturn("I");
 
-    EsRelationship actual = EsRelationship.mapRow(rs);
-    EsRelationship expected = new EsRelationship();
+    final EsRelationship actual = EsRelationship.mapRow(rs);
+    final EsRelationship expected = new EsRelationship();
     expected.setRelCode(Short.valueOf((short) 0));
     expected.setReverseRelationship(false);
     assertThat(actual, is(notNullValue()));
@@ -81,7 +84,7 @@ public class SonarQubeMemoryBloatComplaintCacheTest extends Goddard<ReplicatedRe
   public void parseBiDirectionalRelationship_Args__ElasticSearchPersonRelationship()
       throws Exception {
     target.setRelCode((short) 196);
-    ElasticSearchPersonRelationship rel = new ElasticSearchPersonRelationship();
+    final ElasticSearchPersonRelationship rel = new ElasticSearchPersonRelationship();
     rel.setIndexedPersonRelationship("daughter");
     rel.setRelatedPersonFirstName("Britney");
     rel.setRelatedPersonLastName("Spears");
@@ -96,15 +99,15 @@ public class SonarQubeMemoryBloatComplaintCacheTest extends Goddard<ReplicatedRe
     target.setRelatedLegacyId("abc12340x7");
     target.setRelatedFirstName("Idina");
     target.setRelatedLastName("Menzel");
-    Map<Object, ReplicatedRelationships> map = new HashMap<Object, ReplicatedRelationships>();
-    ReplicatedRelationships actual = target.normalize(map);
+    final Map<Object, ReplicatedRelationships> map = new HashMap<Object, ReplicatedRelationships>();
+    final ReplicatedRelationships actual = target.normalize(map);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getNormalizationGroupKey_Args__() throws Exception {
-    Object actual = target.getNormalizationGroupKey();
-    Object expected = DEFAULT_CLIENT_ID;
+    final Object actual = target.getNormalizationGroupKey();
+    final Object expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -118,8 +121,7 @@ public class SonarQubeMemoryBloatComplaintCacheTest extends Goddard<ReplicatedRe
   @Test
   public void hashCode_Args__() throws Exception {
     int actual = target.hashCode();
-    int expected = -2120005431;
-    assertThat(actual, not(equalTo(expected)));
+    assertThat(actual, not(equalTo(0)));
   }
 
   @Test
