@@ -36,11 +36,24 @@ import gov.ca.cwds.neutron.rocket.IndexResetRocket;
 public enum StandardFlightSchedule {
 
   /**
-   * If requested, drop and create Elasticsearch indexes.
+   * If requested, drop and create Elasticsearch People index.
    */
-  RESET_INDEX(IndexResetRocket.class, // rocket class
+  RESET_PEOPLE_INDEX(IndexResetRocket.class, // rocket class
       "reset_people_index", // rocket name
       1, // initial load order
+      200000000, // start delay seconds. N/A.
+      10000, // execute every N seconds. N/A.
+      null, // last run priority. N/A.
+      false, // run in last change mode
+      true // run in initial load
+  ),
+
+  /**
+   * If requested, drop and create Elasticsearch People index.
+   */
+  RESET_PEOPLE_SUMMARY_INDEX(IndexResetRocket.class, // rocket class
+      "reset_people_summary_index", // rocket name
+      2, // initial load order
       200000000, // start delay seconds. N/A.
       10000, // execute every N seconds. N/A.
       null, // last run priority. N/A.

@@ -13,7 +13,7 @@ import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.jobs.Goddard;
 
-public class IndexResetRocketTest
+public class IndexResetPeopleRocketTest
     extends Goddard<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
 
   ReplicatedOtherAdultInPlacemtHomeDao dao;
@@ -24,7 +24,7 @@ public class IndexResetRocketTest
     super.setup();
 
     dao = new ReplicatedOtherAdultInPlacemtHomeDao(sessionFactory);
-    target = new IndexResetRocket(dao, esDao, mapper, flightPlan);
+    target = new IndexResetPeopleRocket(dao, esDao, mapper, flightPlan);
   }
 
   @Test

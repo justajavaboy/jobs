@@ -39,7 +39,7 @@ public class StandardFlightScheduleTest extends Goddard {
     List<StandardFlightSchedule> actual = StandardFlightSchedule.getInitialLoadRockets();
 
     List<StandardFlightSchedule> expected = new ArrayList<>();
-    expected.add(StandardFlightSchedule.RESET_INDEX);
+    expected.add(StandardFlightSchedule.RESET_PEOPLE_INDEX);
     expected.add(StandardFlightSchedule.CLIENT);
     expected.add(StandardFlightSchedule.REPORTER);
     expected.add(StandardFlightSchedule.COLLATERAL_INDIVIDUAL);

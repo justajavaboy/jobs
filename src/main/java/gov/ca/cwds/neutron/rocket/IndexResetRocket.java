@@ -6,23 +6,21 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
-import gov.ca.cwds.neutron.enums.NeutronElasticsearchDefaults;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
- * Drop and creates ES indexes, if requested.
+ * Drops and creates an Elasticsearch index, if requested.
  * 
  * @author CWDS API Team
  */
-public class IndexResetRocket
+public abstract class IndexResetRocket
     extends BasePersonRocket<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
 
   private static final long serialVersionUID = 1L;
@@ -32,17 +30,20 @@ public class IndexResetRocket
   /**
    * Construct rocket with all required dependencies.
    * 
-   * @param dao OtherAdultInPlacemtHome arbitrary DAO
-   * @param esDao ElasticSearch DAO
+   * @param dao arbitrary DAO to fulfill interface
+   * @param esDao ElasticSearch DAO for the target index
    * @param mapper Jackson ObjectMapper
    * @param flightPlan command line options
    */
   @Inject
   public IndexResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
-      FlightPlan flightPlan) {
+      final ElasticsearchDao esDao, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
   }
+
+  protected abstract String getIndexSettingsLocation();
+
+  protected abstract String getDocumentMappingLocation();
 
   @Override
   public Date launch(Date lastRunDate) {
@@ -54,7 +55,7 @@ public class IndexResetRocket
       final String effectiveIndexName =
           StringUtils.isBlank(indexNameOverride) ? esDao.getConfig().getElasticsearchAlias()
               : indexNameOverride;
-      getFlightPlan().setIndexName(effectiveIndexName); // WARNING: probably a bad idea.
+      getFlightPlan().setIndexName(effectiveIndexName);
 
       // Drop index first, if requested.
       if (getFlightPlan().isDropIndex()) {
@@ -66,11 +67,11 @@ public class IndexResetRocket
 
       final String settingFile = StringUtils.isNotBlank(esDao.getConfig().getIndexSettingFile())
           ? esDao.getConfig().getIndexSettingFile()
-          : NeutronElasticsearchDefaults.ES_PEOPLE_INDEX_SETTINGS.getValue();
+          : getIndexSettingsLocation();
 
       final String mappingFile = StringUtils.isNotBlank(esDao.getConfig().getDocumentMappingFile())
           ? esDao.getConfig().getDocumentMappingFile()
-          : NeutronElasticsearchDefaults.ES_PERSON_MAPPING.getValue();
+          : getDocumentMappingLocation();
 
       LOGGER.info(
           "Create index if missing, effective index name: {}, setting file: {}, mapping file: {}",
