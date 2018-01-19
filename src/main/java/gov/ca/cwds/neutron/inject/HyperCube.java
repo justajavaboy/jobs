@@ -466,6 +466,7 @@ public class HyperCube extends NeutronGuiceModule {
    */
   @Provides
   @Singleton
+  @Named("elasticsearch.client.people-summary")
   public Client elasticsearchClientPeople() throws NeutronException {
     TransportClient client = null;
     if (esConfigPeople != null) {
@@ -486,25 +487,21 @@ public class HyperCube extends NeutronGuiceModule {
    */
   @Provides
   @Singleton
-  @Named("elasticsearch.people-summary")
+  @Named("elasticsearch.client.people-summary")
   public Client elasticsearchClientPeopleSummary() throws NeutronException {
-    TransportClient client = null;
-    if (esConfigPeopleSummary != null) {
-      client = buildElasticsearchClient(elasticSearchConfigPeopleSummary());
-    }
-    return client;
+    return buildElasticsearchClient(elasticSearchConfigPeopleSummary());
   }
 
   @Provides
   @Singleton
-  @Named("elasticsearch.people")
+  @Named("elasticsearch.dao.people")
   public ElasticsearchDao makeElasticsearchDaoPeople() throws NeutronException {
     return new ElasticsearchDao(elasticsearchClientPeople(), elasticSearchConfigPeople());
   }
 
   @Provides
   @Singleton
-  @Named("elasticsearch.people-summary")
+  @Named("elasticsearch.dao.people-summary")
   public ElasticsearchDao makeElasticsearchDaoPeopleSummary() throws NeutronException {
     return new ElasticsearchDao(elasticsearchClientPeopleSummary(),
         elasticSearchConfigPeopleSummary());
@@ -545,7 +542,7 @@ public class HyperCube extends NeutronGuiceModule {
    * @throws NeutronException on error
    */
   @Provides
-  @Named("elasticsearch.people-summary")
+  @Named("elasticsearch.config.people-summary")
   public ElasticsearchConfiguration elasticSearchConfigPeopleSummary() throws NeutronException {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeopleSummary != null) {

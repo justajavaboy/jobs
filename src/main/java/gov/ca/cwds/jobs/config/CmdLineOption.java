@@ -29,7 +29,7 @@ public enum CmdLineOption {
    * indexes and name them with Guice annotations.
    * </p>
    */
-  ES_CONFIG_PEOPLE_SUMMARY(FlightPlan.makeOpt("p", FlightPlan.CMD_LINE_ES_CONFIG_PEOPLE,
+  ES_CONFIG_PEOPLE_SUMMARY(FlightPlan.makeOpt("p", FlightPlan.CMD_LINE_ES_CONFIG_PEOPLE_SUMMARY,
       "ElasticSearch configuration file [index: people-summary]", false, 1, String.class, ',')),
 
   /**

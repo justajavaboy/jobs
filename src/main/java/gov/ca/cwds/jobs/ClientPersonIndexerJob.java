@@ -71,7 +71,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
    */
   @Inject
   public ClientPersonIndexerJob(final ReplicatedClientDao dao,
-      @Named("elasticsearch.people-summary") final ElasticsearchDao esDao,
+      @Named("elasticsearch.dao.people-summary") final ElasticsearchDao esDao,
       @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
