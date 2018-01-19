@@ -170,7 +170,7 @@ public class HyperCube extends NeutronGuiceModule {
         !StringUtils.isBlank(lastJobRunTimeFilename) ? lastJobRunTimeFilename : "";
     this.flightPlan = opts;
 
-    if (StringUtils.isNotEmpty(opts.getEsConfigPeopleSummaryLoc())) {
+    if (StringUtils.isNotBlank(opts.getEsConfigPeopleSummaryLoc())) {
       this.esConfigPeopleSummary = new File(opts.getEsConfigPeopleSummaryLoc());
     }
   }
@@ -189,7 +189,11 @@ public class HyperCube extends NeutronGuiceModule {
     if (instance != null) {
       ret = instance;
     } else {
-      ret = new HyperCube(opts, new ApiFileAssistant().validateFileLocation(opts.getEsConfigLoc()),
+      final boolean usePeopleIndex = StringUtils.isNotBlank(opts.getEsConfigLoc());
+      if (usePeopleIndex) {
+        new ApiFileAssistant().validateFileLocation(opts.getEsConfigLoc());
+      }
+      ret = new HyperCube(opts, usePeopleIndex ? new File(opts.getEsConfigLoc()) : null,
           opts.getLastRunLoc());
     }
 
