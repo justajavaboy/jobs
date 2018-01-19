@@ -28,19 +28,19 @@ public class IndexResetPeopleRocket extends IndexResetRocket {
    */
   @Inject
   public IndexResetPeopleRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      @Named("elasticsearch.dao.people-summary") final ElasticsearchDao esDao,
-      final ObjectMapper mapper, FlightPlan flightPlan) {
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
+      FlightPlan flightPlan) {
     super(dao, esDao, mapper, flightPlan);
   }
 
   @Override
   protected String getIndexSettingsLocation() {
-    return NeutronElasticsearchDefaults.ES_PEOPLE_SUMMARY_INDEX_SETTINGS.getValue();
+    return NeutronElasticsearchDefaults.ES_PEOPLE_INDEX_SETTINGS.getValue();
   }
 
   @Override
   protected String getDocumentMappingLocation() {
-    return NeutronElasticsearchDefaults.ES_PEOPLE_SUMMARY_PERSON_MAPPING.getValue();
+    return NeutronElasticsearchDefaults.ES_PEOPLE_PERSON_MAPPING.getValue();
   }
 
 }
