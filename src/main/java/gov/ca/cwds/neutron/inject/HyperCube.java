@@ -459,18 +459,15 @@ public class HyperCube extends NeutronGuiceModule {
   }
 
   /**
-   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand.
-   * 
-   * <p>
-   * Initializes X-Pack security.
-   * </p>
+   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand. Initializes X-Pack
+   * security.
    * 
    * @return initialized singleton ElasticSearch client, people index
    * @throws NeutronException on ES connection error
    */
   @Provides
   @Singleton
-  @Named("elasticsearch.client.people-summary")
+  @Named("elasticsearch.client.people")
   public Client elasticsearchClientPeople() throws NeutronException {
     TransportClient client = null;
     if (esConfigPeople != null) {
@@ -480,11 +477,8 @@ public class HyperCube extends NeutronGuiceModule {
   }
 
   /**
-   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand.
-   * 
-   * <p>
-   * Initializes X-Pack security.
-   * </p>
+   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand. Initializes X-Pack
+   * security.
    * 
    * @return initialized singleton ElasticSearch client, people summary index
    * @throws NeutronException on ES connection error
@@ -506,9 +500,11 @@ public class HyperCube extends NeutronGuiceModule {
   @Provides
   @Singleton
   @Named("elasticsearch.dao.people-summary")
-  public ElasticsearchDao makeElasticsearchDaoPeopleSummary() throws NeutronException {
-    return new ElasticsearchDao(elasticsearchClientPeopleSummary(),
-        elasticSearchConfigPeopleSummary());
+  public ElasticsearchDao makeElasticsearchDaoPeopleSummary(
+      @Named("elasticsearch.client.people-summary") Client client,
+      @Named("elasticsearch.config.people-summary") ElasticsearchConfiguration config)
+      throws NeutronException {
+    return new ElasticsearchDao(client, config);
   }
 
   protected ElasticsearchConfiguration loadElasticSearchConfig(File esConfig)
@@ -530,6 +526,7 @@ public class HyperCube extends NeutronGuiceModule {
    * @throws NeutronException on error
    */
   @Provides
+  @Named("elasticsearch.config.people")
   public ElasticsearchConfiguration elasticSearchConfigPeople() throws NeutronException {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeople != null) {
