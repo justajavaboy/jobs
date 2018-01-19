@@ -67,7 +67,7 @@ public abstract class CaseHistoryIndexerJob
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
-//@formatter:off
+  //@formatter:off
   @Override
   public String getPrepLastChangeSQL() {
     return 
@@ -107,7 +107,7 @@ public abstract class CaseHistoryIndexerJob
           + "\nWHERE CLP.IBMSNAP_LOGMARKER > ? "
      + "\n) x";
   }
-//@formatter:on
+  //@formatter:on
 
   @SuppressWarnings("unchecked")
   protected List<EsPersonCase> fetchLastRunGroup(final Session session, String queryType) {
