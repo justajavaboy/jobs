@@ -39,13 +39,13 @@ public enum StandardFlightSchedule {
    * If requested, drop and create Elasticsearch indexes.
    */
   RESET_INDEX(IndexResetRocket.class, // rocket class
-      "reset_index", // rocket name
+      "reset_people_index", // rocket name
       1, // initial load order
-      200000000, // start delay seconds
-      10000, // period seconds
-      null, // last run priority
-      false, // nested element
-      true // run initial load
+      200000000, // start delay seconds. N/A.
+      10000, // execute every N seconds. N/A.
+      null, // last run priority. N/A.
+      false, // run in last change mode
+      true // run in initial load
   ),
 
   /**

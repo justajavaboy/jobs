@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
@@ -38,7 +39,8 @@ public class IndexResetRocket
    */
   @Inject
   public IndexResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      final ElasticsearchDao esDao, final ObjectMapper mapper, FlightPlan flightPlan) {
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
+      FlightPlan flightPlan) {
     super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
   }
 
