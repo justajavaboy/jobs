@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
@@ -77,10 +78,15 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
    * @param flightPlan command line options
    */
   @Inject
-  public ClientIndexerJob(final ReplicatedClientDao dao, final ElasticsearchDao esDao,
+  public ClientIndexerJob(final ReplicatedClientDao dao,
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
       @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
+
+  // =======================
+  // FIXED ROCKET SPECS:
+  // =======================
 
   @Override
   public boolean useTransformThread() {
@@ -90,11 +96,6 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   @Override
   public String getPrepLastChangeSQL() {
     return INSERT_CLIENT_LAST_CHG;
-  }
-
-  @Override
-  public EsClientAddress extract(ResultSet rs) throws SQLException {
-    return EsClientAddress.extract(rs);
   }
 
   @Override
@@ -117,17 +118,6 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
     return " ORDER BY X.CLT_IDENTIFIER ";
   }
 
-  /**
-   * Send all records for same client id to the index queue.
-   * 
-   * @param grpRecs records for same client id
-   */
-  protected void normalizeAndQueueIndex(final List<EsClientAddress> grpRecs) {
-    grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2)).sequential().sorted()
-        .collect(Collectors.groupingBy(EsClientAddress::getNormalizationGroupKey)).entrySet()
-        .stream().map(e -> normalizeSingle(e.getValue())).forEach(this::addToIndexQueue);
-  }
-
   @Override
   public String getInitialLoadQuery(String dbSchemaName) {
     final StringBuilder buf = new StringBuilder();
@@ -143,6 +133,36 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
     final String sql = buf.toString();
     LOGGER.info("CLIENT INITIAL LOAD SQL: {}", sql);
     return sql;
+  }
+
+  @Override
+  public boolean isInitialLoadJdbc() {
+    return true;
+  }
+
+  @Override
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    return NeutronJdbcUtils.getCommonPartitionRanges64(this);
+  }
+
+  // =======================
+  // WORK METHODS:
+  // =======================
+
+  @Override
+  public EsClientAddress extract(ResultSet rs) throws SQLException {
+    return EsClientAddress.extract(rs);
+  }
+
+  /**
+   * Send all records for same client id to the index queue.
+   * 
+   * @param grpRecs records for same client id
+   */
+  protected void normalizeAndQueueIndex(final List<EsClientAddress> grpRecs) {
+    grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2)).sequential().sorted()
+        .collect(Collectors.groupingBy(EsClientAddress::getNormalizationGroupKey)).entrySet()
+        .stream().map(e -> normalizeSingle(e.getValue())).forEach(this::addToIndexQueue);
   }
 
   /**
@@ -240,16 +260,6 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   @Override
   protected void threadRetrieveByJdbc() {
     pullMultiThreadJdbc();
-  }
-
-  @Override
-  public boolean isInitialLoadJdbc() {
-    return true;
-  }
-
-  @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
-    return NeutronJdbcUtils.getCommonPartitionRanges64(this);
   }
 
   /**

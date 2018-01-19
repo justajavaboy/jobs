@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.dao.cms.ReplicatedPersonCasesDao;
@@ -102,9 +103,10 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * @param flightPlan command line options
    */
   @Inject
-  public CaseRocket(ReplicatedPersonCasesDao dao, ElasticsearchDao esDao,
-      ReplicatedClientDao clientDao, StaffPersonDao staffPersonDao, @LastRunFile String lastRunFile,
-      ObjectMapper mapper, FlightPlan flightPlan) {
+  public CaseRocket(ReplicatedPersonCasesDao dao,
+      @Named("elasticsearch.dao.people") ElasticsearchDao esDao, ReplicatedClientDao clientDao,
+      StaffPersonDao staffPersonDao, @LastRunFile String lastRunFile, ObjectMapper mapper,
+      FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
 
     this.clientDao = clientDao;

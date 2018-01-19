@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedRelationshipsDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
@@ -98,7 +99,8 @@ public class RelationshipIndexerJob
    * @param flightPlan command line options
    */
   @Inject
-  public RelationshipIndexerJob(final ReplicatedRelationshipsDao dao, final ElasticsearchDao esDao,
+  public RelationshipIndexerJob(final ReplicatedRelationshipsDao dao,
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
       @LastRunFile String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
     SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();

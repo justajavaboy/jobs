@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.ns.EsIntakeScreeningDao;
 import gov.ca.cwds.dao.ns.IntakeParticipantDao;
@@ -56,7 +57,8 @@ public class IntakeScreeningJob extends BasePersonRocket<IntakeParticipant, EsIn
    */
   @Inject
   public IntakeScreeningJob(final IntakeParticipantDao dao, final EsIntakeScreeningDao viewDao,
-      final ElasticsearchDao esDao, final ObjectMapper mapper, FlightPlan flightPlan) {
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
+      FlightPlan flightPlan) {
     super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
     this.viewDao = viewDao;
   }

@@ -6,6 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedReporterDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
@@ -36,9 +37,9 @@ public class ReporterIndexerJob extends BasePersonRocket<ReplicatedReporter, Rep
    * @param flightPlan command line options
    */
   @Inject
-  public ReporterIndexerJob(final ReplicatedReporterDao dao, final ElasticsearchDao esDao,
-      @LastRunFile final String lastRunFile, final ObjectMapper mapper,
-      FlightPlan flightPlan) {
+  public ReporterIndexerJob(final ReplicatedReporterDao dao,
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
+      @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 
