@@ -37,7 +37,8 @@ public class FlightPlan implements ApiMarker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlightPlan.class);
 
-  public static final String CMD_LINE_ES_CONFIG = "config";
+  public static final String CMD_LINE_ES_CONFIG_PEOPLE = "config-people";
+  public static final String CMD_LINE_ES_CONFIG_PEOPLE_SUMMARY = "config-people-summary";
   public static final String CMD_LINE_INDEX_NAME = "index-name";
   public static final String CMD_LINE_LAST_RUN_TIME = "last-run-time";
   public static final String CMD_LINE_LAST_RUN_FILE = "last-run-file";
@@ -55,9 +56,14 @@ public class FlightPlan implements ApiMarker {
   public static final String CMD_LINE_SIMULATE_LAUNCH = "simulate_launch";
 
   /**
-   * Location of Elasticsearch configuration file.
+   * Location of Elasticsearch configuration file for people index.
    */
-  String esConfigLoc;
+  String esConfigPeopleLoc;
+
+  /**
+   * Location of Elasticsearch configuration file for people summary index.
+   */
+  String esConfigPeopleSummaryLoc;
 
   /**
    * Name of index to create or use. If this is not provided then alias is used from ES Config file.
@@ -128,7 +134,9 @@ public class FlightPlan implements ApiMarker {
   /**
    * Construct from all settings.
    * 
-   * @param esConfigLoc location of Elasticsearch configuration file
+   * @param esConfigPeopleLoc location of Elasticsearch configuration file for people index
+   * @param esConfigPeopleSummaryLoc location of Elasticsearch configuration file for people summary
+   *        index
    * @param indexName Name of index to use. If not provided, then use alias from ES config.
    * @param lastRunTime Last run time to use
    * @param lastRunLoc location of last run file
@@ -143,11 +151,12 @@ public class FlightPlan implements ApiMarker {
    * @param dropIndex drop the index before start (full load only)
    * @param simulateLaunch simulate launch (test mode!)
    */
-  public FlightPlan(String esConfigLoc, String indexName, Date lastRunTime, String lastRunLoc,
-      boolean lastRunMode, long startBucket, long endBucket, long threadCount,
-      boolean loadSealedAndSensitive, boolean rangeGiven, String baseDirectory, boolean refreshMqt,
-      boolean dropIndex, boolean simulateLaunch) {
-    this.esConfigLoc = esConfigLoc;
+  public FlightPlan(String esConfigPeopleLoc, String esConfigPeopleSummaryLoc, String indexName,
+      Date lastRunTime, String lastRunLoc, boolean lastRunMode, long startBucket, long endBucket,
+      long threadCount, boolean loadSealedAndSensitive, boolean rangeGiven, String baseDirectory,
+      boolean refreshMqt, boolean dropIndex, boolean simulateLaunch) {
+    this.esConfigPeopleLoc = esConfigPeopleLoc;
+    this.esConfigPeopleSummaryLoc = esConfigPeopleSummaryLoc;
     this.indexName = StringUtils.isBlank(indexName) ? null : indexName;
     this.overrideLastRunTime = NeutronDateUtils.freshDate(lastRunTime);
     this.lastRunLoc = lastRunLoc;
@@ -169,7 +178,8 @@ public class FlightPlan implements ApiMarker {
    * @param flightPlan other job options
    */
   public FlightPlan(final FlightPlan flightPlan) {
-    this.esConfigLoc = flightPlan.esConfigLoc;
+    this.esConfigPeopleLoc = flightPlan.esConfigPeopleLoc;
+    this.esConfigPeopleSummaryLoc = flightPlan.esConfigPeopleSummaryLoc;
     this.indexName = StringUtils.isBlank(flightPlan.indexName) ? null : flightPlan.indexName;
     this.overrideLastRunTime = flightPlan.overrideLastRunTime;
     this.lastRunLoc = flightPlan.lastRunLoc;
@@ -206,7 +216,7 @@ public class FlightPlan implements ApiMarker {
    * @return location of Elasticsearch configuration file
    */
   public String getEsConfigLoc() {
-    return esConfigLoc;
+    return esConfigPeopleLoc;
   }
 
   /**
@@ -311,10 +321,11 @@ public class FlightPlan implements ApiMarker {
    * @return command line option definitions
    */
   protected static Options buildCmdLineOptions() {
-    Options ret = new Options();
+    final Options ret = new Options();
 
     ret.addOption(CmdLineOption.SIMULATE_LAUNCH.getOpt());
-    ret.addOption(CmdLineOption.ES_CONFIG.getOpt());
+    ret.addOption(CmdLineOption.ES_CONFIG_PEOPLE.getOpt());
+    ret.addOption(CmdLineOption.ES_CONFIG_PEOPLE_SUMMARY.getOpt());
     ret.addOption(CmdLineOption.INDEX_NAME.getOpt());
     ret.addOption(CmdLineOption.LAST_RUN_TIME.getOpt());
     ret.addOption(CmdLineOption.THREADS.getOpt());
@@ -330,7 +341,7 @@ public class FlightPlan implements ApiMarker {
     ret.addOption(CmdLineOption.MAX_ID.getOpt());
 
     // RUN MODE: mutually exclusive choice.
-    OptionGroup group = new OptionGroup();
+    final OptionGroup group = new OptionGroup();
     group.setRequired(true);
     group.addOption(CmdLineOption.LAST_RUN_FILE.getOpt());
     group.addOption(CmdLineOption.BASE_DIRECTORY.getOpt());
@@ -340,7 +351,7 @@ public class FlightPlan implements ApiMarker {
   }
 
   /**
-   * Print usage.
+   * Pretty print usage.
    * 
    * @throws NeutronException on IO exception
    */
@@ -380,7 +391,8 @@ public class FlightPlan implements ApiMarker {
    * @throws NeutronException if unable to parse command line
    */
   public static FlightPlan parseCommandLine(final String[] args) throws NeutronException {
-    String esConfigLoc = null;
+    String esConfigPeopleLoc = null;
+    String esConfigPeopleSummaryLoc = null;
     String indexName = null;
     Date lastRunTime = null;
     String lastRunLoc = null;
@@ -406,8 +418,12 @@ public class FlightPlan implements ApiMarker {
       // enum members (evaluated at compile time), are not considered "constants."
       for (final Option opt : cmd.getOptions()) {
         switch (opt.getArgName()) {
-          case CMD_LINE_ES_CONFIG:
-            esConfigLoc = opt.getValue().trim();
+          case CMD_LINE_ES_CONFIG_PEOPLE:
+            esConfigPeopleLoc = opt.getValue().trim();
+            break;
+
+          case CMD_LINE_ES_CONFIG_PEOPLE_SUMMARY:
+            esConfigPeopleSummaryLoc = opt.getValue().trim();
             break;
 
           case CMD_LINE_INDEX_NAME:
@@ -469,9 +485,9 @@ public class FlightPlan implements ApiMarker {
       throw JobLogs.checked(LOGGER, e, "INVALID ARGS", e.getMessage(), e);
     }
 
-    return new FlightPlan(esConfigLoc, indexName, lastRunTime, lastRunLoc, lastRunMode,
-        bucketRange.getLeft(), bucketRange.getRight(), threadCount, loadSealedAndSensitive,
-        rangeGiven, baseDirectory, refreshMqt, dropIndex, simulateLaunch);
+    return new FlightPlan(esConfigPeopleLoc, esConfigPeopleSummaryLoc, indexName, lastRunTime,
+        lastRunLoc, lastRunMode, bucketRange.getLeft(), bucketRange.getRight(), threadCount,
+        loadSealedAndSensitive, rangeGiven, baseDirectory, refreshMqt, dropIndex, simulateLaunch);
   }
 
   public void setStartBucket(long startBucket) {
@@ -544,7 +560,7 @@ public class FlightPlan implements ApiMarker {
   }
 
   public void setEsConfigLoc(String esConfigLoc) {
-    this.esConfigLoc = esConfigLoc;
+    this.esConfigPeopleLoc = esConfigLoc;
   }
 
   public boolean isSimulateLaunch() {
@@ -553,6 +569,14 @@ public class FlightPlan implements ApiMarker {
 
   public void setSimulateLaunch(boolean testMode) {
     this.simulateLaunch = testMode;
+  }
+
+  public String getEsConfigPeopleLoc() {
+    return esConfigPeopleLoc;
+  }
+
+  public String getEsConfigPeopleSummaryLoc() {
+    return esConfigPeopleSummaryLoc;
   }
 
 }

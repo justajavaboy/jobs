@@ -11,6 +11,7 @@ import org.elasticsearch.action.update.UpdateRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedAkaDao;
 import gov.ca.cwds.dao.cms.ReplicatedOtherClientNameDao;
@@ -58,8 +59,9 @@ public class OtherClientNameIndexerJob
    */
   @Inject
   public OtherClientNameIndexerJob(final ReplicatedAkaDao dao,
-      final ReplicatedOtherClientNameDao denormDao, final ElasticsearchDao esDao,
-      final ObjectMapper mapper, FlightPlan flightPlan) {
+      final ReplicatedOtherClientNameDao denormDao,
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
+      FlightPlan flightPlan) {
     super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
     this.denormDao = denormDao;
   }

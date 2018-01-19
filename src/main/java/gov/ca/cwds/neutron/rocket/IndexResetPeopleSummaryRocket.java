@@ -1,0 +1,46 @@
+package gov.ca.cwds.neutron.rocket;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
+import gov.ca.cwds.data.es.ElasticsearchDao;
+import gov.ca.cwds.neutron.enums.NeutronElasticsearchDefaults;
+import gov.ca.cwds.neutron.flight.FlightPlan;
+
+/**
+ * Drops and creates a Elasticsearch People index, if requested.
+ * 
+ * @author CWDS API Team
+ */
+public class IndexResetPeopleSummaryRocket extends IndexResetRocket {
+
+  private static final long serialVersionUID = 1L;
+
+  /**
+   * Construct rocket with all required dependencies.
+   * 
+   * @param dao arbitrary DAO
+   * @param esDao ElasticSearch DAO for the target index
+   * @param mapper Jackson ObjectMapper
+   * @param flightPlan command line options
+   */
+  @Inject
+  public IndexResetPeopleSummaryRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
+      @Named("elasticsearch.dao.people-summary") final ElasticsearchDao esDao,
+      final ObjectMapper mapper, FlightPlan flightPlan) {
+    super(dao, esDao, mapper, flightPlan);
+  }
+
+  @Override
+  protected String getIndexSettingsLocation() {
+    return NeutronElasticsearchDefaults.ES_PEOPLE_SUMMARY_INDEX_SETTINGS.getValue();
+  }
+
+  @Override
+  protected String getDocumentMappingLocation() {
+    return NeutronElasticsearchDefaults.ES_PEOPLE_SUMMARY_PERSON_MAPPING.getValue();
+  }
+
+}

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.ibm.db2.jcc.DB2SystemMonitor;
 
 import gov.ca.cwds.dao.cms.ReplicatedPersonReferralsDao;
@@ -210,8 +211,9 @@ public class ReferralHistoryIndexerJob
    * @param flightPlan command line options
    */
   @Inject
-  public ReferralHistoryIndexerJob(ReplicatedPersonReferralsDao dao, ElasticsearchDao esDao,
-      @LastRunFile String lastRunFile, ObjectMapper mapper, FlightPlan flightPlan) {
+  public ReferralHistoryIndexerJob(ReplicatedPersonReferralsDao dao,
+      @Named("elasticsearch.dao.people") ElasticsearchDao esDao, @LastRunFile String lastRunFile,
+      ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 

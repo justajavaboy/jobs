@@ -6,6 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
@@ -38,8 +39,8 @@ public class OtherAdultInPlacemtHomeIndexerJob
    */
   @Inject
   public OtherAdultInPlacemtHomeIndexerJob(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      final ElasticsearchDao esDao, @LastRunFile final String lastRunFile,
-      final ObjectMapper mapper, FlightPlan flightPlan) {
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
+      @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 

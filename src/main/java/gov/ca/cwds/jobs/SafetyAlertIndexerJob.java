@@ -11,6 +11,7 @@ import org.elasticsearch.action.update.UpdateRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedSafetyAlertsDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
@@ -49,9 +50,9 @@ public class SafetyAlertIndexerJob
    * @param flightPlan command line opts
    */
   @Inject
-  public SafetyAlertIndexerJob(ReplicatedSafetyAlertsDao dao, ElasticsearchDao esDao,
-      @LastRunFile String lastRunFile, ObjectMapper mapper,
-      FlightPlan flightPlan) {
+  public SafetyAlertIndexerJob(ReplicatedSafetyAlertsDao dao,
+      @Named("elasticsearch.dao.people") ElasticsearchDao esDao, @LastRunFile String lastRunFile,
+      ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
 

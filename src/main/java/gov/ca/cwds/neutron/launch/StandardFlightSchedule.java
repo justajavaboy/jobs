@@ -12,6 +12,7 @@ import org.quartz.listeners.JobChainingJobListener;
 
 import gov.ca.cwds.jobs.ChildCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ClientIndexerJob;
+import gov.ca.cwds.jobs.ClientPersonIndexerJob;
 import gov.ca.cwds.jobs.CollateralIndividualIndexerJob;
 import gov.ca.cwds.jobs.EducationProviderContactIndexerJob;
 import gov.ca.cwds.jobs.IntakeScreeningJob;
@@ -30,42 +31,73 @@ import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.rocket.CaseRocket;
 import gov.ca.cwds.neutron.rocket.ExitInitialLoadRocket;
-import gov.ca.cwds.neutron.rocket.IndexResetRocket;
+import gov.ca.cwds.neutron.rocket.IndexResetPeopleRocket;
+import gov.ca.cwds.neutron.rocket.IndexResetPeopleSummaryRocket;
 
 public enum StandardFlightSchedule {
 
   /**
-   * If requested, drop and create Elasticsearch indexes.
+   * If requested, drop and create Elasticsearch People index.
    */
-  RESET_INDEX(IndexResetRocket.class, // klazz
-      "reset_index", // rocketName
-      1, // initialLoadOrder
-      200000000, // startDelaySeconds
-      10000, // periodSeconds
-      null, // lastRunPriority
-      false, // nestedElement
-      true // runInitialLoad
+  RESET_PEOPLE_INDEX(IndexResetPeopleRocket.class, // rocket class
+      "reset_people_index", // rocket name
+      1, // initial load order
+      200000000, // start delay seconds. N/A.
+      10000, // execute every N seconds. N/A.
+      null, // last run priority. N/A.
+      false, // run in last change mode
+      true // run in initial load
   ),
+
+  /**
+   * If requested, drop and create Elasticsearch People Summary index.
+   */
+  RESET_PEOPLE_SUMMARY_INDEX(IndexResetPeopleSummaryRocket.class, // rocket class
+      "reset_people_summary_index", // rocket name
+      2, // initial load order
+      200000000, // start delay seconds. N/A.
+      10000, // execute every N seconds. N/A.
+      null, // last run priority. N/A.
+      false, // run in last change mode
+      true // run in initial load
+  ),
+
+  /**
+   * People Summary index.
+   */
+  PEOPLE_SUMMARY(ClientPersonIndexerJob.class, "people_summary", 5, 20, 1000, null, true, true),
 
   /**
    * Client. Essential document root.
    */
-  CLIENT(ClientIndexerJob.class, "client", 5, 20, 1000, null, true, true),
+  CLIENT(ClientIndexerJob.class, "client", 8, 20, 1000, null, true, true),
 
   /**
    * Document root. Reporter
    */
-  REPORTER(ReporterIndexerJob.class, "reporter", 10, 30, 950, null, true, true),
+  REPORTER(ReporterIndexerJob.class, "reporter", 14, 30, 950, null, true, true),
 
+  /**
+   * Document root. Collateral Individual.
+   */
   COLLATERAL_INDIVIDUAL(CollateralIndividualIndexerJob.class, "collateral_individual", 20, 30, 90,
       null, true, true),
 
+  /**
+   * Document root. Service Provider.
+   */
   SERVICE_PROVIDER(ServiceProviderIndexerJob.class, "service_provider", 25, 120, 85, null, true,
       true),
 
+  /**
+   * Document root. Substitute Care Provider.
+   */
   SUBSTITUTE_CARE_PROVIDER(SubstituteCareProviderIndexJob.class, "substitute_care_provider", 30, 25,
       80, null, true, true),
 
+  /**
+   * Document root. Education Provider.
+   */
   EDUCATION_PROVIDER(EducationProviderContactIndexerJob.class, "education_provider", 42, 120, 75,
       null, true, true),
 
@@ -76,13 +108,14 @@ public enum StandardFlightSchedule {
       true, true),
 
   //
-  // Nested JSON elements, inside a person document.
+  // Nested JSON elements, inside a people/person document.
   //
 
   /**
    * Client name aliases.
    */
-  OTHER_CLIENT_NAME(OtherClientNameIndexerJob.class, "other_client_name", 90, 45, 300, "akas", true, true),
+  OTHER_CLIENT_NAME(OtherClientNameIndexerJob.class, "other_client_name", 90, 45, 300, "akas", true,
+      true),
 
   /**
    * Combines child and parent case. {@link ParentCaseHistoryIndexerJob} and
@@ -93,7 +126,8 @@ public enum StandardFlightSchedule {
   /**
    * Relationships.
    */
-  RELATIONSHIP(RelationshipIndexerJob.class, "relationship", 90, 30, 600, "relationships", true, true),
+  RELATIONSHIP(RelationshipIndexerJob.class, "relationship", 90, 30, 600, "relationships", true,
+      true),
 
   /**
    * Referrals.
@@ -103,17 +137,20 @@ public enum StandardFlightSchedule {
   /**
    * Safety alerts.
    */
-  SAFETY_ALERT(SafetyAlertIndexerJob.class, "safety_alert", 90, 45, 800, "safety_alerts", true, true),
+  SAFETY_ALERT(SafetyAlertIndexerJob.class, "safety_alert", 90, 45, 800, "safety_alerts", true,
+      true),
 
   /**
    * Screenings.
    */
-  INTAKE_SCREENING(IntakeScreeningJob.class, "intake_screening", 90, 20, 900, "screenings", true, true),
+  INTAKE_SCREENING(IntakeScreeningJob.class, "intake_screening", 90, 20, 900, "screenings", true,
+      true),
 
   /**
    * Exit the initial load process.
    */
-  EXIT_INITIAL_LOAD(ExitInitialLoadRocket.class, "exit_initial_load", 140, 2000000, 10000, null, false, true);
+  EXIT_INITIAL_LOAD(ExitInitialLoadRocket.class, "exit_initial_load", 140, 2000000, 10000, null,
+      false, true);
 
   private static final ConditionalLogger LOGGER = new JetPackLogger(StandardFlightSchedule.class);
 

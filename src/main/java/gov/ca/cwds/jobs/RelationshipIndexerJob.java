@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedRelationshipsDao;
 import gov.ca.cwds.data.es.ElasticSearchPerson;
@@ -60,17 +61,17 @@ public class RelationshipIndexerJob
           + "WITH LAST_CHG AS (\n"
              + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID\n"
              + " FROM CLN_RELT CLNR \n"
-             + " WHERE CLNR.IBMSNAP_LOGMARKER > '2018-01-10-00.00.00.000000'\n"
+             + " WHERE CLNR.IBMSNAP_LOGMARKER > ?\n"
            + " UNION \n"
              + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID \n"
              + " FROM CLN_RELT CLNR\n"
              + " JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
-             + " WHERE CLNS.IBMSNAP_LOGMARKER > '2018-01-10-00.00.00.000000'\n"
+             + " WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
            + " UNION \n"
              + " SELECT DISTINCT CLNR.IDENTIFIER  AS REL_ID\n"
              + " FROM CLN_RELT CLNR\n"
              + " JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
-             + " WHERE CLNP.IBMSNAP_LOGMARKER > '2018-01-10-00.00.00.000000'\n"
+             + " WHERE CLNP.IBMSNAP_LOGMARKER > ?\n"
              + "),\n"
          + "CHG_CLIENTS AS (\n"
              + " SELECT DISTINCT CLNP.IDENTIFIER AS CLIENT_ID\n"
@@ -98,7 +99,8 @@ public class RelationshipIndexerJob
    * @param flightPlan command line options
    */
   @Inject
-  public RelationshipIndexerJob(final ReplicatedRelationshipsDao dao, final ElasticsearchDao esDao,
+  public RelationshipIndexerJob(final ReplicatedRelationshipsDao dao,
+      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
       @LastRunFile String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
     SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();

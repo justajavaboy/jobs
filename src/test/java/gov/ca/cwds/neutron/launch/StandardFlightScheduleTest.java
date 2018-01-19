@@ -39,7 +39,9 @@ public class StandardFlightScheduleTest extends Goddard {
     List<StandardFlightSchedule> actual = StandardFlightSchedule.getInitialLoadRockets();
 
     List<StandardFlightSchedule> expected = new ArrayList<>();
-    expected.add(StandardFlightSchedule.RESET_INDEX);
+    expected.add(StandardFlightSchedule.RESET_PEOPLE_INDEX);
+    expected.add(StandardFlightSchedule.RESET_PEOPLE_SUMMARY_INDEX);
+    expected.add(StandardFlightSchedule.PEOPLE_SUMMARY);
     expected.add(StandardFlightSchedule.CLIENT);
     expected.add(StandardFlightSchedule.REPORTER);
     expected.add(StandardFlightSchedule.COLLATERAL_INDIVIDUAL);
@@ -64,6 +66,7 @@ public class StandardFlightScheduleTest extends Goddard {
     List<StandardFlightSchedule> actual = StandardFlightSchedule.getLastChangeRockets();
 
     List<StandardFlightSchedule> expected = new ArrayList<>();
+    expected.add(StandardFlightSchedule.PEOPLE_SUMMARY);
     expected.add(StandardFlightSchedule.CLIENT);
     expected.add(StandardFlightSchedule.REPORTER);
     expected.add(StandardFlightSchedule.COLLATERAL_INDIVIDUAL);
@@ -84,8 +87,8 @@ public class StandardFlightScheduleTest extends Goddard {
 
   @Test
   public void getRocketName_Args__() throws Exception {
-    String actual = target.getRocketName();
-    String expected = "client";
+    final String actual = target.getRocketName();
+    final String expected = "client";
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -106,53 +109,53 @@ public class StandardFlightScheduleTest extends Goddard {
 
   @Test
   public void getStartDelaySeconds_Args__() throws Exception {
-    int actual = target.getStartDelaySeconds();
-    int expected = 5;
+    final int actual = target.getStartDelaySeconds();
+    final int expected = 8;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getWaitPeriodSeconds_Args__() throws Exception {
-    int actual = target.getWaitPeriodSeconds();
-    int expected = 20;
+    final int actual = target.getWaitPeriodSeconds();
+    final int expected = 20;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getLastRunPriority_Args__() throws Exception {
-    int actual = target.getLastRunPriority();
-    int expected = 1000;
+    final int actual = target.getLastRunPriority();
+    final int expected = 1000;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getNestedElement_Args__() throws Exception {
     StandardFlightSchedule target = StandardFlightSchedule.CLIENT;
-    String actual = target.getNestedElement();
-    String expected = null;
+    final String actual = target.getNestedElement();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void lookupByJobName_Args__String() throws Exception {
     String key = StandardFlightSchedule.CASES.getRocketName();
-    StandardFlightSchedule actual = StandardFlightSchedule.lookupByRocketName(key);
-    StandardFlightSchedule expected = StandardFlightSchedule.CASES;
+    final StandardFlightSchedule actual = StandardFlightSchedule.lookupByRocketName(key);
+    final StandardFlightSchedule expected = StandardFlightSchedule.CASES;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void lookupByClass_Args__Class() throws Exception {
     Class<?> key = StandardFlightSchedule.CLIENT.getRocketClass();
-    StandardFlightSchedule actual = StandardFlightSchedule.lookupByRocketClass(key);
-    StandardFlightSchedule expected = StandardFlightSchedule.CLIENT;
+    final StandardFlightSchedule actual = StandardFlightSchedule.lookupByRocketClass(key);
+    final StandardFlightSchedule expected = StandardFlightSchedule.CLIENT;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getInitialLoadOrder_Args__() throws Exception {
-    int actual = target.getInitialLoadOrder();
-    int expected = 1;
+    final int actual = target.getInitialLoadOrder();
+    final int expected = 3;
     assertThat(actual, is(equalTo(expected)));
   }
 
