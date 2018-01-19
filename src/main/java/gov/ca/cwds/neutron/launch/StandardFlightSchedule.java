@@ -31,14 +31,15 @@ import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.rocket.CaseRocket;
 import gov.ca.cwds.neutron.rocket.ExitInitialLoadRocket;
-import gov.ca.cwds.neutron.rocket.IndexResetRocket;
+import gov.ca.cwds.neutron.rocket.IndexResetPeopleRocket;
+import gov.ca.cwds.neutron.rocket.IndexResetPeopleSummaryRocket;
 
 public enum StandardFlightSchedule {
 
   /**
    * If requested, drop and create Elasticsearch People index.
    */
-  RESET_PEOPLE_INDEX(IndexResetRocket.class, // rocket class
+  RESET_PEOPLE_INDEX(IndexResetPeopleRocket.class, // rocket class
       "reset_people_index", // rocket name
       1, // initial load order
       200000000, // start delay seconds. N/A.
@@ -49,9 +50,9 @@ public enum StandardFlightSchedule {
   ),
 
   /**
-   * If requested, drop and create Elasticsearch People index.
+   * If requested, drop and create Elasticsearch People Summary index.
    */
-  RESET_PEOPLE_SUMMARY_INDEX(IndexResetRocket.class, // rocket class
+  RESET_PEOPLE_SUMMARY_INDEX(IndexResetPeopleSummaryRocket.class, // rocket class
       "reset_people_summary_index", // rocket name
       2, // initial load order
       200000000, // start delay seconds. N/A.
@@ -76,15 +77,27 @@ public enum StandardFlightSchedule {
    */
   REPORTER(ReporterIndexerJob.class, "reporter", 14, 30, 950, null, true, true),
 
+  /**
+   * Document root. Collateral Individual.
+   */
   COLLATERAL_INDIVIDUAL(CollateralIndividualIndexerJob.class, "collateral_individual", 20, 30, 90,
       null, true, true),
 
+  /**
+   * Document root. Service Provider.
+   */
   SERVICE_PROVIDER(ServiceProviderIndexerJob.class, "service_provider", 25, 120, 85, null, true,
       true),
 
+  /**
+   * Document root. Substitute Care Provider.
+   */
   SUBSTITUTE_CARE_PROVIDER(SubstituteCareProviderIndexJob.class, "substitute_care_provider", 30, 25,
       80, null, true, true),
 
+  /**
+   * Document root. Education Provider.
+   */
   EDUCATION_PROVIDER(EducationProviderContactIndexerJob.class, "education_provider", 42, 120, 75,
       null, true, true),
 
