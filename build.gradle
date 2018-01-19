@@ -112,10 +112,10 @@ dependencies {
 
 shadowJar {
   classifier = ''
-  baseName = (System.properties.getProperty('baseName') != null) ? System.properties.getProperty('baseName') : 'DocumentIndexerJob'
+  baseName = (System.properties.getProperty('baseName') != null) ? System.properties.getProperty('baseName') : 'LaunchCommand'
   mergeServiceFiles()	
   manifest {
-    attributes 'Main-Class': (System.properties.getProperty('mainClass') != null) ? System.properties.getProperty('mainClass') : 'gov.ca.cwds.jobs.DocumentIndexerJob'
+    attributes 'Main-Class': (System.properties.getProperty('mainClass') != null) ? System.properties.getProperty('mainClass') : 'gov.ca.cwds.jobs.schedule.LaunchCommand'
   }
   version version + ((System.properties.getProperty('build') != null ) ? '.' + System.properties.getProperty('build') : '')
 }
@@ -160,8 +160,7 @@ task libLicenseReportFiles(type: Copy){
     include "licenses.txt"
 }
 
-task libLicenseReport(dependsOn:[generateLicenseReport, libLicenceFolders,
-                                 libLicenseReportFiles ] ){
+task libLicenseReport(dependsOn:[generateLicenseReport, libLicenceFolders, libLicenseReportFiles] ){
 }
 
 jacocoTestReport {
@@ -201,9 +200,9 @@ public class CWDSReportRenderer implements ReportRenderer {
     void render(ProjectData data) {
         new CWDSTextReportRenderer().render(data)
         new CWDSHtmlReportRenderer().render(data)
-
     }
 }
+
 public class CWDSTextReportRenderer implements ReportRenderer {
 
   private Project project
@@ -215,6 +214,7 @@ public class CWDSTextReportRenderer implements ReportRenderer {
   CWDSTextReportRenderer(String filename = 'licenses.txt'){
       this.fileName = filename
   }
+  
   public void render(ProjectData data) {
         project = data.project
         config = project.licenseReport
