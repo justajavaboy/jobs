@@ -92,8 +92,6 @@ public abstract class CaseHistoryIndexerJob
           + "\nJOIN CHLD_CLT CCL3 ON CCL3.FKCLIENT_T = CAS.FKCHLD_CLT  "
           + "\nJOIN CLIENT_T CLC3 ON CLC3.IDENTIFIER = CCL3.FKCLIENT_T "
           + "\nJOIN CLN_RELT CLR ON CLR.FKCLIENT_T = CCL3.FKCLIENT_T AND "
-       // + "\n((CLR.CLNTRELC BETWEEN 187 and 214) OR "
-       // + "\n(CLR.CLNTRELC BETWEEN 245 and 254) OR (CLR.CLNTRELC BETWEEN 282 and 294) OR (CLR.CLNTRELC IN (272, 273, 5620, 6360, 6361))) "
           + "\nWHERE CLR.IBMSNAP_LOGMARKER > ? "
       + "\nUNION "
           + "\nSELECT CAS.IDENTIFIER "
@@ -101,8 +99,6 @@ public abstract class CaseHistoryIndexerJob
           + "\nJOIN CHLD_CLT CCL ON CCL.FKCLIENT_T = CAS.FKCHLD_CLT "
           + "\nJOIN CLIENT_T CLC ON CLC.IDENTIFIER = CCL.FKCLIENT_T "
           + "\nJOIN CLN_RELT CLR ON CLR.FKCLIENT_T = CCL.FKCLIENT_T AND "
-       // + "\n((CLR.CLNTRELC BETWEEN 187 and 214) OR "
-       // + "\n(CLR.CLNTRELC BETWEEN 245 and 254) OR (CLR.CLNTRELC BETWEEN 282 and 294) OR (CLR.CLNTRELC IN (272, 273, 5620, 6360, 6361))) "
           + "\nJOIN CLIENT_T CLP ON CLP.IDENTIFIER = CLR.FKCLIENT_0 "
           + "\nWHERE CLP.IBMSNAP_LOGMARKER > ? "
      + "\n) x";
