@@ -9,10 +9,8 @@ import org.hibernate.procedure.ProcedureCall;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
-import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
@@ -23,7 +21,7 @@ import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
- * Refreshes a <strong>TEST</strong> transactional schema and its companion replicated schema.
+ * Refreshes a <strong>TEST</strong> transactional schema and its companion, replicated schema.
  * 
  * @author CWDS API Team
  */
@@ -44,9 +42,9 @@ public class SchemaResetRocket
    */
   @Inject
   public SchemaResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
-      @LastRunFile String lastRunFile, FlightPlan flightPlan) {
-    super(dao, esDao, lastRunFile, mapper, flightPlan);
+      // @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
+      final ObjectMapper mapper, @LastRunFile String lastRunFile, FlightPlan flightPlan) {
+    super(dao, null, lastRunFile, mapper, flightPlan);
     LOGGER.warn("CONSTRUCTOR");
   }
 
@@ -74,16 +72,18 @@ public class SchemaResetRocket
       LOGGER.warn("\n\n\n   REFRESH SCHEMA!!\n\n\n");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();
       getOrCreateTransaction(); // HACK
-      final String schema = "CWSNS4"; // TESTING ONLY!!
-      // (String) session.getSessionFactory().getProperties().get("hibernate.default_schema"); // NS
-      // schema, not RS.
 
-      final ProcedureCall proc = session.createStoredProcedureCall(schema + ".SPREFRSNS1");
+      // NS schema, not RS.
+      final String targetSchema = "CWSNS4"; // TESTING ONLY!!
+      // (String) session.getSessionFactory().getProperties().get("hibernate.default_schema");
+
+      // TODO: For now the proc lives only in NS1 but affects the target schema.
+      final ProcedureCall proc = session.createStoredProcedureCall("CWSNS1.SPREFRSNS1");
       proc.registerStoredProcedureParameter("SCHEMANM", String.class, ParameterMode.IN);
       proc.registerStoredProcedureParameter("RETSTATUS", String.class, ParameterMode.OUT);
       proc.registerStoredProcedureParameter("RETMESSAG", String.class, ParameterMode.OUT);
 
-      proc.setParameter("SCHEMANM", schema);
+      proc.setParameter("SCHEMANM", targetSchema);
       proc.execute();
 
       final String returnStatus = (String) proc.getOutputParameterValue("RETSTATUS");
