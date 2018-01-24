@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.persistence.ParameterMode;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.procedure.ProcedureCall;
 
@@ -73,24 +74,26 @@ public class SchemaResetRocket
       getOrCreateTransaction(); // HACK
 
       // Target the NS schema, not RS.
-      final String targetSchema =
+      final String targetTransactionalSchema =
           ((String) session.getSessionFactory().getProperties().get("hibernate.default_schema"))
               .replaceFirst("CWSRS", "CWSNS").replaceAll("\"", "");
 
-      // HACK: The proc currently lives in NS1 but affects the target schema.
-      final ProcedureCall proc = session.createStoredProcedureCall("CWSNS1.SPREFRSNS1");
+      LOGGER.info("CALL SCHEMA REFRESH: target schema: {}", targetTransactionalSchema);
+
+      // HACK: The proc currently lives in NS4 but affects the target schema.
+      final ProcedureCall proc = session.createStoredProcedureCall("CWSNS4.SPREFRSNS1");
       proc.registerStoredProcedureParameter("SCHEMANM", String.class, ParameterMode.IN);
       proc.registerStoredProcedureParameter("RETSTATUS", String.class, ParameterMode.OUT);
       proc.registerStoredProcedureParameter("RETMESSAG", String.class, ParameterMode.OUT);
 
-      proc.setParameter("SCHEMANM", targetSchema);
+      proc.setParameter("SCHEMANM", targetTransactionalSchema);
       proc.execute();
 
       final String returnStatus = (String) proc.getOutputParameterValue("RETSTATUS");
       final String returnMsg = (String) proc.getOutputParameterValue("RETMESSAG");
       LOGGER.info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
 
-      if (returnStatus.charAt(0) != '0') {
+      if (StringUtils.isNotBlank(returnStatus) && returnStatus.charAt(0) != '0') {
         JobLogs.runtime(LOGGER, "SCHEMA REFRESH ERROR! {}", returnMsg);
       } else {
         LOGGER.warn("SCHEMA REFRESH KICKED OFF!!!");
