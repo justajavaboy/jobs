@@ -17,6 +17,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -44,8 +45,8 @@ public class SchemaResetRocket
   @Inject
   public SchemaResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
       @Named("elasticsearch.dao.people") final ElasticsearchDao esDao, final ObjectMapper mapper,
-      FlightPlan flightPlan) {
-    super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
+      @LastRunFile String lastRunFile, FlightPlan flightPlan) {
+    super(dao, esDao, lastRunFile, mapper, flightPlan);
     LOGGER.warn("CONSTRUCTOR");
   }
 
@@ -59,6 +60,7 @@ public class SchemaResetRocket
       JobLogs.checked(LOGGER, e, "SCHEMA REFRESH ERROR!! {}", e.getMessage());
     }
 
+    LOGGER.warn("SCHEMA REFRESH KICKED OFF!!!");
     return lastRunDate;
   }
 
@@ -69,7 +71,7 @@ public class SchemaResetRocket
    */
   protected void refreshSchema() throws NeutronException {
     if (!isLargeDataSet()) {
-      LOGGER.warn("\\n\\n\\n   REFRESH SCHEMA!!\\n\\n\\n");
+      LOGGER.warn("\n\n\n   REFRESH SCHEMA!!\n\n\n");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();
       getOrCreateTransaction(); // HACK
       final String schema = "CWSNS4"; // TESTING ONLY!!
