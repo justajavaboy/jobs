@@ -381,7 +381,7 @@ public class EsIntakeScreening extends CommonScreening
 
   /**
    * Iterate screenings from the perspective of "this" participant. Separate "this" participant from
-   * "other" participant. This job stores person documents in ES, not disconnected or independent
+   * "other" participant. This rocket stores person documents in ES, not disconnected or independent
    * screening documents.
    */
   @Override

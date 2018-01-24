@@ -15,10 +15,10 @@ public final class NeutronThreadUtils {
   }
 
   /**
-   * Calculate the number of reader threads to run from incoming job options and available
+   * Calculate the number of reader threads to run from incoming rocket options and available
    * processors.
    * 
-   * @param flightPlan job options
+   * @param flightPlan flight options
    * @return number of reader threads to run
    */
   public static int calcReaderThreads(final FlightPlan flightPlan) {

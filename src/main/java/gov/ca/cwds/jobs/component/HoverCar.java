@@ -10,11 +10,15 @@ import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.launch.listener.NeutronBulkProcessorListener;
 
 /**
- * Builds and executes Elasticsearch bulk processor for bulk loading.
+ * Builds and executes an Elasticsearch bulk processor for bulk loading.
+ * 
+ * <p>
+ * <a href="http://jimmyneutron.wikia.com/wiki/Hover_Car">Jimmy's Hover Car.</a>
+ * </p>
  * 
  * @author CWDS API Team
  */
-public class BulkProcessorBuilder implements ApiMarker {
+public class HoverCar implements ApiMarker, NeutronBulkProcessorBuilder {
 
   private static final long serialVersionUID = 1L;
 
@@ -38,31 +42,27 @@ public class BulkProcessorBuilder implements ApiMarker {
    * @param esDao ES DAO
    * @param flightLog progress tracker
    */
-  public BulkProcessorBuilder(final ElasticsearchDao esDao, final FlightLog flightLog) {
+  public HoverCar(final ElasticsearchDao esDao, final FlightLog flightLog) {
     this.esDao = esDao;
     this.flightLog = flightLog;
   }
 
-  /**
-   * Instantiate one Elasticsearch BulkProcessor per working thread.
+  /*
+   * (non-Javadoc)
    * 
-   * <p>
-   * ES BulkProcessor is technically thread safe, but you can safely construct an instance per
-   * thread, if desired.
-   * </p>
-   * 
-   * <p>
-   * NEXT: make configurable.
-   * </p>
-   * 
-   * @return an ES bulk processor
+   * @see gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder#buildBulkProcessor()
    */
+  @Override
   public BulkProcessor buildBulkProcessor() {
     return BulkProcessor
         .builder(esDao.getClient(), new NeutronBulkProcessorListener(this.flightLog))
         .setBulkActions(ES_BULK_SIZE).setBulkSize(new ByteSizeValue(ES_BYTES_MB, ByteSizeUnit.MB))
-        .setConcurrentRequests(1).setName("jobs_bp") // disappears in ES 5.6.3
+        .setConcurrentRequests(1).setName("jobs_bp") // WARNING: disappears in ES 5.6.3
         .build();
+  }
+
+  public FlightLog getFlightLog() {
+    return flightLog;
   }
 
 }

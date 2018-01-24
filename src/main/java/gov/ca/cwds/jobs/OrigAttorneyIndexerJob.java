@@ -26,7 +26,7 @@ public class OrigAttorneyIndexerJob
   private static final long serialVersionUID = 1L;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
    * @param dao ReplicatedAttorney DAO
    * @param esDao ElasticSearch DAO

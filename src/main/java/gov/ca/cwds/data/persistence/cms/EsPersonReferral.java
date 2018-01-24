@@ -845,7 +845,7 @@ public class EsPersonReferral
   /**
    * WARNING: Bad idea. Inject or access by other means.
    * 
-   * @param opts job options
+   * @param opts rocket options
    */
   public static void setOpts(FlightPlan opts) {
     EsPersonReferral.opts = opts;

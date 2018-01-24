@@ -83,7 +83,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
 
   public final void launch(final VoxCommandInstruction cmd) throws NeutronException {
     try {
-      LOGGER.info("CONNECT JMX...");
+      LOGGER.info("VOX: CONNECTING JMX...");
       this.setHost(cmd.getHost());
       this.setPort(cmd.getPort());
       this.setRocket(cmd.getRocket());

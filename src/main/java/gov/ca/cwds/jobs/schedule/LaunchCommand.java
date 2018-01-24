@@ -146,7 +146,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * <strong>MOVE</strong> this responsibility to another unit.
    * </p>
    * 
-   * Find the job's time file under the base directory.
+   * Find the rocket's time file under the base directory.
    * 
    * @param flightPlan base options
    * @param fmt reusable date format
@@ -163,7 +163,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
     final String timeFileLoc =
         buf.toString().replaceAll(File.separator + File.separator, File.separator);
     flightPlan.setLastRunLoc(timeFileLoc);
-    LOGGER.debug("base directory: {}, job name: {}, last run loc: {}",
+    LOGGER.debug("base directory: {}, rocket name: {}, last run loc: {}",
         flightPlan.getBaseDirectory(), sched.getRocketName(), flightPlan.getLastRunLoc());
 
     // If timestamp file doesn't exist, create it.
@@ -240,7 +240,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   }
 
   /**
-   * Load all job definitions and continue running after a job completes.
+   * Load all rocket definitions and continue running after a rocket completes.
    * 
    * @return true if running in continuous mode
    */
@@ -346,7 +346,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   @Override
   public void close() throws Exception {
     if (!isTestMode() && (!isSchedulerMode() || fatalError || shutdownRequested)) {
-      // Shutdown all remaining resources, even those not attached to this job.
+      // Shutdown all remaining resources, even those not attached to this rocket.
       final int exitCode = this.fatalError ? -1 : 0;
       LOGGER.warn("\n>>>>>>>>>> SHUT DOWN COMMAND CENTER! Exit code: {}", exitCode);
       System.exit(exitCode); // NOSONAR

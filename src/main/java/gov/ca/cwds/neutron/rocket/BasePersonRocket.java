@@ -45,7 +45,8 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPersonAware;
-import gov.ca.cwds.jobs.component.BulkProcessorBuilder;
+import gov.ca.cwds.jobs.component.HoverCar;
+import gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder;
 import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
@@ -105,7 +106,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    */
   protected ObjectMapper mapper;
 
-  private final BulkProcessorBuilder bulkProcessorBuilder;
+  private final NeutronBulkProcessorBuilder bulkProcessorBuilder;
 
   /**
    * Main DAO for the supported persistence class.
@@ -173,7 +174,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     this.esDao = esDao;
     this.mapper = mapper;
     this.sessionFactory = jobDao.getSessionFactory();
-    this.bulkProcessorBuilder = new BulkProcessorBuilder(esDao, flightLog);
+    this.bulkProcessorBuilder = new HoverCar(esDao, flightLog);
     this.flightLog.setRocketName(getClass().getSimpleName());
   }
 

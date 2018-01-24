@@ -41,7 +41,7 @@ public class AttorneyIndexerJob extends BasePersonRocket<ReplicatedAttorney, Rep
   }
 
   /**
-   * Rocket job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
    * @throws Exception unhandled launch error
