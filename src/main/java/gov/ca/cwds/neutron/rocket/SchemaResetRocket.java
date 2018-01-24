@@ -44,6 +44,7 @@ public class SchemaResetRocket
   public SchemaResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
       final ElasticsearchDao esDao, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, flightPlan.getLastRunLoc(), mapper, flightPlan);
+    LOGGER.warn("CONSTRUCTOR");
   }
 
   @Override
@@ -70,7 +71,8 @@ public class SchemaResetRocket
       final Session session = getJobDao().getSessionFactory().getCurrentSession();
       getOrCreateTransaction(); // HACK
       final String schema = "CWSNS4"; // TESTING ONLY!!
-      // (String) session.getSessionFactory().getProperties().get("hibernate.default_schema");
+      // (String) session.getSessionFactory().getProperties().get("hibernate.default_schema"); // NS
+      // schema, not RS.
 
       final ProcedureCall proc = session.createStoredProcedureCall(schema + ".SPREFRSNS1");
       proc.registerStoredProcedureParameter("SCHEMANM", String.class, ParameterMode.IN);
@@ -98,7 +100,7 @@ public class SchemaResetRocket
    * @param args command line arguments
    * @throws Exception on launch error
    */
-  public static void main(String... args) throws Exception {
+  public static void main(String... args) throws Throwable {
     LaunchCommand.launchOneWayTrip(SchemaResetRocket.class, args);
   }
 

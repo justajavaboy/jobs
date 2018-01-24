@@ -73,7 +73,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
 
   @Override
   public final void run() {
-    LOGGER.warn("run: lastRunTimeFilename: {}", lastRunTimeFilename);
+    LOGGER.warn("last run time file: {}", lastRunTimeFilename);
     final FlightLog flightLog = getFlightLog();
     flightLog.start();
 
@@ -83,7 +83,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
       writeLastSuccessfulRunTime(launch(lastRunTime));
     } catch (Exception e) {
       fail();
-      LOGGER.error("FAIL ROCKET!", e);
+      LOGGER.error("FLIGHT ABORTED!", e);
     }
 
     try {
