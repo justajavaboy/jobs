@@ -20,7 +20,7 @@ import gov.ca.cwds.neutron.launch.LaunchDirector;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 
 /**
- * Exits the initial load job cycle.
+ * Exit the initial load cycle.
  * 
  * @author CWDS API Team
  */

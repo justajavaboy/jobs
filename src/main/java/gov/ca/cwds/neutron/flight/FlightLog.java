@@ -64,7 +64,7 @@ public class FlightLog implements ApiMarker, AtomRocketControl {
   private volatile boolean doneIndex = false;
 
   /**
-   * Completion flag for whole job.
+   * Completion flag for whole rocket.
    */
   private volatile boolean doneJob = false;
 

@@ -39,7 +39,7 @@ public class NeutronTriggerListener implements TriggerListener {
   }
 
   /**
-   * Job instance type is {@link NeutronRocket}.
+   * Quartz Job instance type is {@link NeutronRocket}.
    */
   @Override
   public boolean vetoJobExecution(Trigger trigger, JobExecutionContext context) {
@@ -50,10 +50,11 @@ public class NeutronTriggerListener implements TriggerListener {
     try {
       answer = neutronScheduler.isLaunchVetoed(className);
     } catch (Exception e) {
-      throw JobLogs.runtime(LOGGER, e, "ERROR FINDING JOB FACADE! job class: {}", className, e);
+      throw JobLogs.runtime(LOGGER, e, "ERROR FINDING ROCKET LAUNCH PAD! rocket class: {}",
+          className, e);
     }
 
-    LOGGER.info("veto job execution: {}", answer);
+    LOGGER.warn("veto job execution: {}", answer);
     return answer;
   }
 

@@ -33,13 +33,13 @@ public class OrigAttorneyIndexerJob
    * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
    * @param sessionFactory Hibernate session factory
-   * @param jobHistory job history
+   * @param flightRecorder rocket history
    * @param opts command line options
    */
   @Inject
   public OrigAttorneyIndexerJob(final ReplicatedAttorneyDao dao, final ElasticsearchDao esDao,
       @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
-      @CmsSessionFactory SessionFactory sessionFactory, FlightRecorder jobHistory,
+      @CmsSessionFactory SessionFactory sessionFactory, FlightRecorder flightRecorder,
       FlightPlan opts) {
     super(dao, esDao, lastJobRunTimeFilename, mapper, opts);
   }

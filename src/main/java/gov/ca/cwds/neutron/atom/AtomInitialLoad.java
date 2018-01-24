@@ -44,7 +44,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
   /**
    * Restrict initial load key ranges from flight plan (command line).
    * 
-   * @param allKeyPairs all key ranges for this job
+   * @param allKeyPairs all key ranges for this rocket
    * @return list of key pairs to execute
    */
   default List<Pair<String, String>> limitRange(final List<Pair<String, String>> allKeyPairs) {
@@ -69,7 +69,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
   }
 
   /**
-   * @return true if the job provides its own key ranges
+   * @return true if the rocket provides its own key ranges
    */
   default boolean isInitialLoadJdbc() {
     return false;
@@ -260,7 +260,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
       getLogger().info("refresh MQT proc: status: {}, msg: {}", returnStatus, returnMsg);
 
       if (returnStatus.charAt(0) != '0') {
-        JobLogs.runtime(getLogger(), "REFRESH MQT ERROR! {}", returnMsg);
+        JobLogs.runtime(getLogger(), "MQT REFRESH ERROR! {}", returnMsg);
       }
     }
   }
@@ -291,7 +291,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
       getLogger().info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
 
       if (returnStatus.charAt(0) != '0') {
-        JobLogs.runtime(getLogger(), "REFRESH SCHEMA ERROR! {}", returnMsg);
+        JobLogs.runtime(getLogger(), "SCHEMA REFRESH ERROR! {}", returnMsg);
       }
     }
   }

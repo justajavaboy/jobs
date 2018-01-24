@@ -4,7 +4,7 @@ import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.neutron.flight.FlightLog;
 
 /**
- * Job control interface.
+ * Rocket control interface.
  * 
  * @author CWDS API Team
  * @see FlightLog
@@ -12,14 +12,14 @@ import gov.ca.cwds.neutron.flight.FlightLog;
 public interface AtomRocketControl extends ApiMarker {
 
   /**
-   * Is the job still running?
+   * Is the rocket still running?
    * 
-   * @return true if job has not completed
+   * @return true if rocket has not completed
    */
   boolean isRunning();
 
   /**
-   * Did the job failed?
+   * Did the rocket fail?
    * 
    * @return true if Job has failed
    */
@@ -47,7 +47,7 @@ public interface AtomRocketControl extends ApiMarker {
   boolean isRetrieveDone();
 
   /**
-   * Mark the job as failed and stop the job. Working threads should stop themselves.
+   * Mark the rocket as failed and stop the rocket. Working threads should stop themselves.
    */
   void fail();
 
@@ -57,7 +57,7 @@ public interface AtomRocketControl extends ApiMarker {
   void doneIndex();
 
   /**
-   * Mark the job done. Working threads should stop themselves.
+   * Mark the rocket done. Working threads should stop themselves.
    */
   void done();
 

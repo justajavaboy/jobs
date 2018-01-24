@@ -78,8 +78,9 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
  * 
  * <p>
  * <strong>Auto mode ("smart" mode)</strong> takes the same parameters as last run and determines
- * whether the job has never been run. If the last run date is older than 50 years, then then assume
- * that the job is populating ElasticSearch for the first time and run all initial batch loads.
+ * whether the rocket has never been run. If the last run date is older than 50 years, then then
+ * assume that the rocket is populating ElasticSearch for the first time and run all initial batch
+ * loads.
  * </p>
  * 
  * <h3>Command Line:</h3>
@@ -605,9 +606,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * thread is available.
    * 
    * <p>
-   * Auto mode ("smart" mode) takes the same parameters as last run and determines whether the job
-   * has never been run. If the last run date is older than 50 years, then then assume that the job
-   * is populating ElasticSearch for the first time and run all initial batch loads.
+   * Auto mode ("smart" mode) takes the same parameters as last run and determines whether the
+   * rocket has never been run. If the last run date is older than 50 years, then then assume that
+   * the rocket is populating ElasticSearch for the first time and run all initial batch loads.
    * </p>
    * 
    * {@inheritDoc}
@@ -668,8 +669,8 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * Pull records changed since the last successful run.
    * 
    * <p>
-   * If this job defines a denormalized view entity, then pull from that. Otherwise, pull from the
-   * table entity.
+   * If this rocket defines a denormalized view entity, then pull from that. Otherwise, pull from
+   * the table entity.
    * </p>
    * 
    * @param lastRunTime last successful run date/time

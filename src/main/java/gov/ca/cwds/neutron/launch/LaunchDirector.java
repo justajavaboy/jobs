@@ -82,7 +82,7 @@ public class LaunchDirector implements AtomLaunchDirector {
   /**
    * Create a registered rocket.
    * 
-   * @param rocketName batch job class
+   * @param rocketName batch rocket class
    * @param flightPlan command line arguments
    * @return a fueled rocket
    * @throws NeutronException unexpected runtime error
@@ -95,7 +95,7 @@ public class LaunchDirector implements AtomLaunchDirector {
 
   @Override
   public void prepareLaunchPads() {
-    // TODO Auto-generated method stub
+    // TODO: FINISH ME!
   }
 
   @Override

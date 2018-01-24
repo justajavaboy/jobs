@@ -61,7 +61,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct batch rocket instance with all required dependencies.
    * 
    * @param dao Client DAO
    * @param esDao ElasticSearch DAO

@@ -195,8 +195,8 @@ public class FacilityIndexerJob extends AbstractModule {
     try {
       final File configFile = new ApiFileAssistant().validateFileLocation(args[0]);
       Injector injector = Guice.createInjector(new FacilityIndexerJob(configFile)); // NOSONAR
-      Rocket job = injector.getInstance(Key.get(Rocket.class, Names.named("facility-job")));
-      job.run();
+      Rocket rocket = injector.getInstance(Key.get(Rocket.class, Names.named("facility-job")));
+      rocket.run();
     } catch (Exception e) {
       LOGGER.error("ERROR: {}", e.getMessage(), e);
     }
