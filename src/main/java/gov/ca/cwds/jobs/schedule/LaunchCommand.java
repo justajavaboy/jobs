@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -423,8 +424,11 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   public static <T extends BasePersonRocket<?, ?>> void launchOneWayTrip(final Class<T> klass,
       String... args) throws NeutronException {
     standardFlightPlan = parseCommandLine(args);
+
     System.setProperty("LAUNCH_DIR",
-        NeutronStringUtils.filePath(standardFlightPlan.getLastRunLoc()));
+        StringUtils.isNotBlank(standardFlightPlan.getLastRunLoc())
+            ? NeutronStringUtils.filePath(standardFlightPlan.getLastRunLoc())
+            : "./jobrunner/");
 
     LaunchCommand.settings.setSchedulerMode(false);
     LaunchCommand.settings.setInitialMode(!standardFlightPlan.isLastRunMode());
