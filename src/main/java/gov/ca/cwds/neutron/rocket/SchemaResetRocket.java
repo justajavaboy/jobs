@@ -2,12 +2,19 @@ package gov.ca.cwds.neutron.rocket;
 
 import java.util.Date;
 
+import javax.persistence.ParameterMode;
+
+import org.hibernate.Session;
+import org.hibernate.procedure.ProcedureCall;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
+import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
@@ -50,6 +57,47 @@ public class SchemaResetRocket
     }
 
     return lastRunDate;
+  }
+
+  /**
+   * Refresh a DB2 test schema by calling a stored procedure.
+   * 
+   * @throws NeutronException on database error
+   */
+  protected void refreshSchema() throws NeutronException {
+    if (getFlightPlan().isRefreshMqt() && isLargeDataSet()) {
+      getLogger().warn("\\n\\n\\n   REFRESH SCHEMA!!\\n\\n\\n");
+      final Session session = getJobDao().getSessionFactory().getCurrentSession();
+      getOrCreateTransaction(); // HACK
+      final String schema = "CWSNS4"; // TESTING ONLY!!
+      // (String) session.getSessionFactory().getProperties().get("hibernate.default_schema");
+
+      final ProcedureCall proc = session.createStoredProcedureCall(schema + ".SPREFRSNS1");
+      proc.registerStoredProcedureParameter("SCHEMANM", String.class, ParameterMode.IN);
+      proc.registerStoredProcedureParameter("RETSTATUS", String.class, ParameterMode.OUT);
+      proc.registerStoredProcedureParameter("RETMESSAG", String.class, ParameterMode.OUT);
+
+      proc.setParameter("SCHEMANM", schema);
+      proc.execute();
+
+      final String returnStatus = (String) proc.getOutputParameterValue("RETSTATUS");
+      final String returnMsg = (String) proc.getOutputParameterValue("RETMESSAG");
+      getLogger().info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
+
+      if (returnStatus.charAt(0) != '0') {
+        JobLogs.runtime(getLogger(), "SCHEMA REFRESH ERROR! {}", returnMsg);
+      }
+    }
+  }
+
+  /**
+   * Rocket entry point.
+   * 
+   * @param args command line arguments
+   * @throws Exception on launch error
+   */
+  public static void main(String... args) throws Exception {
+    LaunchCommand.launchOneWayTrip(SchemaResetRocket.class, args);
   }
 
 }

@@ -265,35 +265,4 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
     }
   }
 
-  /**
-   * Refresh a DB2 test schema by calling a stored procedure.
-   * 
-   * @throws NeutronException on database error
-   */
-  default void refreshSchema() throws NeutronException {
-    if (getFlightPlan().isRefreshMqt() && isLargeDataSet()) {
-      getLogger().warn("\\n\\n\\n   REFRESH SCHEMA!!\\n\\n\\n");
-      final Session session = getJobDao().getSessionFactory().getCurrentSession();
-      getOrCreateTransaction(); // HACK
-      final String schema = "CWSNS4"; // TESTING ONLY!!
-      // (String) session.getSessionFactory().getProperties().get("hibernate.default_schema");
-
-      final ProcedureCall proc = session.createStoredProcedureCall(schema + ".SPREFRSNS1");
-      proc.registerStoredProcedureParameter("SCHEMANM", String.class, ParameterMode.IN);
-      proc.registerStoredProcedureParameter("RETSTATUS", String.class, ParameterMode.OUT);
-      proc.registerStoredProcedureParameter("RETMESSAG", String.class, ParameterMode.OUT);
-
-      proc.setParameter("SCHEMANM", schema);
-      proc.execute();
-
-      final String returnStatus = (String) proc.getOutputParameterValue("RETSTATUS");
-      final String returnMsg = (String) proc.getOutputParameterValue("RETMESSAG");
-      getLogger().info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
-
-      if (returnStatus.charAt(0) != '0') {
-        JobLogs.runtime(getLogger(), "SCHEMA REFRESH ERROR! {}", returnMsg);
-      }
-    }
-  }
-
 }

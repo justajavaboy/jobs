@@ -5,7 +5,6 @@ import java.text.MessageFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.exception.NeutronException;
@@ -15,13 +14,13 @@ import gov.ca.cwds.jobs.exception.NeutronException;
  * 
  * @author CWDS API Team
  */
-public final class JobLogs {
+public class JobLogs {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JobLogs.class);
+  private static final ConditionalLogger LOGGER = new JetPackLogger(JobLogs.class);
 
-  private static final int DEFAULT_LOG_EVERY = 5000;
+  protected static final int DEFAULT_LOG_EVERY = 5000;
 
-  private JobLogs() {
+  protected JobLogs() {
     // Static methods only; do not instantiate.
     // Evil singleton, blah, blah, blah ... I can't hear you ...
   }
