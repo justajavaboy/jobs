@@ -65,8 +65,8 @@ public class SchemaResetRocket
    * @throws NeutronException on database error
    */
   protected void refreshSchema() throws NeutronException {
-    if (getFlightPlan().isRefreshMqt() && isLargeDataSet()) {
-      getLogger().warn("\\n\\n\\n   REFRESH SCHEMA!!\\n\\n\\n");
+    if (!isLargeDataSet()) {
+      LOGGER.warn("\\n\\n\\n   REFRESH SCHEMA!!\\n\\n\\n");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();
       getOrCreateTransaction(); // HACK
       final String schema = "CWSNS4"; // TESTING ONLY!!
@@ -82,11 +82,13 @@ public class SchemaResetRocket
 
       final String returnStatus = (String) proc.getOutputParameterValue("RETSTATUS");
       final String returnMsg = (String) proc.getOutputParameterValue("RETMESSAG");
-      getLogger().info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
+      LOGGER.info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
 
       if (returnStatus.charAt(0) != '0') {
-        JobLogs.runtime(getLogger(), "SCHEMA REFRESH ERROR! {}", returnMsg);
+        JobLogs.runtime(LOGGER, "SCHEMA REFRESH ERROR! {}", returnMsg);
       }
+    } else {
+      LOGGER.warn("SAFETY! REFRESH PROHIBITED ON LARGE DATA SETS!");
     }
   }
 
