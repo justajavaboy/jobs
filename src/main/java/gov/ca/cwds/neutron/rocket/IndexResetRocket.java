@@ -74,7 +74,7 @@ public abstract class IndexResetRocket
           : getDocumentMappingLocation();
 
       LOGGER.info(
-          "Create index if missing, effective index name: {}, setting file: {}, mapping file: {}",
+          "Create index if missing: effective index name: {}, setting file: {}, mapping file: {}",
           effectiveIndexName, settingFile, mappingFile);
 
       esDao.createIndexIfNeeded(effectiveIndexName, documentType, settingFile, mappingFile);

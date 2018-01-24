@@ -8,7 +8,7 @@ import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
- * Normalization features for Elasticsearch indexing jobs.
+ * Normalization features and settings for Elasticsearch indexing jobs.
  * 
  * @author CWDS API Team
  * @param <T> normalized type

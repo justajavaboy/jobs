@@ -35,7 +35,7 @@ import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.NeutronStringUtils;
 
 /**
- * Run stand-alone rockets or serve up rockets with Quartz. The master of ceremonies, AKA, Jimmy
+ * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy
  * Neutron.
  * 
  * @author CWDS API Team
@@ -60,7 +60,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private boolean shutdownRequested;
 
   /**
-   * <strong>HACK</strong>: make an interface for DI (dependency injection).
+   * <strong>HACK</strong>: make an interface for dependency injection. Add ability to swap DI
+   * frameworks.
    */
   private Injector injector;
 
@@ -119,6 +120,10 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
   /**
    * Return String output to JMX or other interface.
+   * 
+   * <p>
+   * <strong>MOVE</strong> to another module.
+   * </p>
    * 
    * @return readable output
    */

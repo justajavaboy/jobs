@@ -10,7 +10,7 @@ import org.slf4j.Marker;
 
 /**
  * Adds conditional logging to SLF4J. Supplied arguments are not invoked unless the log level
- * threshold is met. Reduces object churn of optional logging.
+ * threshold is met. Reduces object churn by means of optional logging.
  * 
  * <p>
  * The name refers to Jimmy Neutron's iconic

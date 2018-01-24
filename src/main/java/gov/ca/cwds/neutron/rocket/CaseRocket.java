@@ -161,7 +161,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public String getJdbcOrderBy() {
-    return ""; // sort manually since DB2 might not optimize the sort.
+    return ""; // sort manually, since DB2 might not optimize the sort.
   }
 
   /**
@@ -169,6 +169,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * <p>
    * This approach requires sorted results. Either sort on the database side or here in the
    * application.
+   * </p>
    */
   @Override
   public String getInitialLoadQuery(String dbSchemaName) {
@@ -287,6 +288,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   /**
+   * Reads the current list of staff workers.
+   * 
    * @return complete list of potential case workers
    * @throws NeutronException on database error
    */
