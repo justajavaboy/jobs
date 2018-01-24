@@ -20,7 +20,7 @@ import gov.ca.cwds.neutron.vox.rest.NeutronRestServer;
 
 /**
  * <p>
- * Expose to JMX:
+ * Expose the following to JMX:
  * </p>
  * <ul>
  * <li>Command Center methods</li>

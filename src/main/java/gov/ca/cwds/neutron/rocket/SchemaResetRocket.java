@@ -51,7 +51,7 @@ public class SchemaResetRocket
     LOGGER.warn("REFRESH TEST SCHEMA!!!");
 
     try {
-
+      refreshSchema();
     } catch (Exception e) {
       JobLogs.checked(LOGGER, e, "SCHEMA REFRESH ERROR!! {}", e.getMessage());
     }

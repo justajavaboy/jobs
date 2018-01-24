@@ -1,15 +1,17 @@
 package gov.ca.cwds.jobs.exception;
 
 /**
- * Base class for runtime exceptions. Specialized exceptions should extend this class.
+ * Base class for <strong>runtime</strong> exceptions. Specialized runtime exceptions should extend
+ * this class.
  * 
  * @author CWDS API Team
+ * @see NeutronException
  */
 @SuppressWarnings("serial")
 public class JobsException extends RuntimeException {
 
   /**
-   * Pointless constructor. Use another one.
+   * Pointless constructor. Use another one. Thanks Java.
    */
   @SuppressWarnings("unused")
   private JobsException() {

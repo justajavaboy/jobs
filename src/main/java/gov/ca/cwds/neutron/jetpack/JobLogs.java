@@ -10,7 +10,7 @@ import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.exception.NeutronException;
 
 /**
- * Logging utilities for Neutron.
+ * Neutron logging utilities.
  * 
  * @author CWDS API Team
  */
