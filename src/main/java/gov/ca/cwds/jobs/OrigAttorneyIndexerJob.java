@@ -26,20 +26,20 @@ public class OrigAttorneyIndexerJob
   private static final long serialVersionUID = 1L;
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
    * @param dao ReplicatedAttorney DAO
    * @param esDao ElasticSearch DAO
    * @param lastJobRunTimeFilename last run date in format yyyy-MM-dd HH:mm:ss
    * @param mapper Jackson ObjectMapper
    * @param sessionFactory Hibernate session factory
-   * @param jobHistory job history
+   * @param flightRecorder rocket history
    * @param opts command line options
    */
   @Inject
   public OrigAttorneyIndexerJob(final ReplicatedAttorneyDao dao, final ElasticsearchDao esDao,
       @LastRunFile final String lastJobRunTimeFilename, final ObjectMapper mapper,
-      @CmsSessionFactory SessionFactory sessionFactory, FlightRecorder jobHistory,
+      @CmsSessionFactory SessionFactory sessionFactory, FlightRecorder flightRecorder,
       FlightPlan opts) {
     super(dao, esDao, lastJobRunTimeFilename, mapper, opts);
   }

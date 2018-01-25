@@ -257,11 +257,11 @@ public class HyperCube extends NeutronGuiceModule {
   }
 
   /**
-   * Prepare a batch job with all required dependencies.
+   * Prepare a batch rocket with all required dependencies.
    * 
-   * @param klass batch job class
+   * @param klass batch rocket class
    * @param args command line arguments
-   * @return batch job, ready to run
+   * @return batch rocket, ready to run
    * @param <T> Person persistence type
    * @throws NeutronException checked exception
    */

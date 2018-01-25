@@ -9,7 +9,7 @@ import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 public interface AtomRocketFactory extends JobFactory {
 
   /**
-   * Build a registered rocket.
+   * Prepare a registered rocket.
    * 
    * @param klass rocket class
    * @param flightPlan command line arguments
@@ -21,7 +21,7 @@ public interface AtomRocketFactory extends JobFactory {
       throws NeutronException;
 
   /**
-   * Build a registered rocket.
+   * Prepare a registered rocket. Convenient overload of {@link #fuelRocket(Class, FlightPlan)}.
    * 
    * @param rocketName rocket class
    * @param flightPlan command line arguments

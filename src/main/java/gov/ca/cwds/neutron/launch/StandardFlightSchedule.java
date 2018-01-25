@@ -33,6 +33,7 @@ import gov.ca.cwds.neutron.rocket.CaseRocket;
 import gov.ca.cwds.neutron.rocket.ExitInitialLoadRocket;
 import gov.ca.cwds.neutron.rocket.IndexResetPeopleRocket;
 import gov.ca.cwds.neutron.rocket.IndexResetPeopleSummaryRocket;
+import gov.ca.cwds.neutron.rocket.SchemaResetRocket;
 
 public enum StandardFlightSchedule {
 
@@ -150,7 +151,15 @@ public enum StandardFlightSchedule {
    * Exit the initial load process.
    */
   EXIT_INITIAL_LOAD(ExitInitialLoadRocket.class, "exit_initial_load", 140, 2000000, 10000, null,
-      false, true);
+      false, true),
+
+  /**
+   * Reset test schema. Automatic prevents reset of production-like schemas.
+   */
+  RESET_TEST_SCHEMA(SchemaResetRocket.class, "reset_schema", 2000, 2000000, 10000, null, false,
+      false)
+
+  ;
 
   private static final ConditionalLogger LOGGER = new JetPackLogger(StandardFlightSchedule.class);
 

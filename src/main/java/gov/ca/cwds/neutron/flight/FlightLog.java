@@ -32,9 +32,6 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
  */
 public class FlightLog implements ApiMarker, AtomRocketControl {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   /**
@@ -67,7 +64,7 @@ public class FlightLog implements ApiMarker, AtomRocketControl {
   private volatile boolean doneIndex = false;
 
   /**
-   * Completion flag for whole job.
+   * Completion flag for whole rocket.
    */
   private volatile boolean doneJob = false;
 

@@ -50,7 +50,7 @@ public class ClientCountyRocket extends ClientIndexerJob
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct rocket with all required dependencies.
    * 
    * @param dao Client DAO
    * @param esDao ElasticSearch DAO

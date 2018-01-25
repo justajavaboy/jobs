@@ -29,8 +29,10 @@ public class TestSingletonModule extends AbstractModule {
     void spitItOutAlready();
   }
 
-  // Without the @Singleton annotation, Guice doesn't recognize the singleton.
-  // Appears that you must *both* bind it as a singleton *and* add the @Singleton annotation.
+  /**
+   * Without the {@code @Singleton} annotation, Guice doesn't recognize the singleton. You must bind
+   * it as a singleton <strong>and</strong> add the {@code @Singleton} annotation.
+   */
   @Singleton
   public static class TestMessenger implements X {
 

@@ -17,7 +17,7 @@ import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 
 /**
- * Get key ranges by platform and job size.
+ * Get key ranges by platform and rocket size.
  * 
  * @author CWDS API Team
  */

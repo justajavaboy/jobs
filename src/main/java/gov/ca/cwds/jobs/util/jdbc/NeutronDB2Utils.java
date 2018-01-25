@@ -43,9 +43,9 @@ public final class NeutronDB2Utils {
   }
 
   /**
-   * DB2's ORDER BY clause does <strong>NOT</strong> result set order across platforms.
-   * Unfortunately, character sets differ by operating system, which affect ORDER BY and WHERE
-   * clauses.
+   * DB2's ORDER BY clause does <strong>NOT</strong> enforce result set order across platforms!\
+   * Unfortunately, character sets differ by operating system, which changes CHAR sort order and
+   * make ORDER BY and WHERE clauses problematic.
    * 
    * <p>
    * SELECT statements using range partitions depend on sort order.

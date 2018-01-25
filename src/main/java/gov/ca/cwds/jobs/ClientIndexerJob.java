@@ -254,7 +254,7 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   }
 
   /**
-   * The "extract" part of ETL. Single producer, chained consumers. This job normalizes
+   * The "extract" part of ETL. Single producer, chained consumers. This rocket normalizes
    * <strong>without</strong> the transform thread.
    */
   @Override

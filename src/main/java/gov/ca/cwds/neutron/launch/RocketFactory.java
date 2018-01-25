@@ -48,7 +48,7 @@ public class RocketFactory implements AtomRocketFactory {
   public BasePersonRocket fuelRocket(Class<?> klass, final FlightPlan flightPlan)
       throws NeutronException {
     try {
-      LOGGER.info("Create registered job: {}", klass.getName());
+      LOGGER.info("Fuel registered rocket: {}", klass.getName());
       final BasePersonRocket ret = (BasePersonRocket<?, ?>) injector.getInstance(klass);
       ret.init(flightPlan.getLastRunLoc(), flightPlan);
       return ret;

@@ -61,7 +61,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
 
   /**
-   * Construct batch job instance with all required dependencies.
+   * Construct batch rocket instance with all required dependencies.
    * 
    * @param dao Client DAO
    * @param esDao ElasticSearch DAO
@@ -214,8 +214,8 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   }
 
   /**
-   * The "extract" part of ETL. Single producer, chained consumers. This job normalizes **without**
-   * the transform thread.
+   * The "extract" part of ETL. Single producer, chained consumers. This rocket normalizes
+   * <strong>without</strong> the transform thread.
    */
   @Override
   protected void threadRetrieveByJdbc() {
@@ -257,7 +257,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   }
 
   /**
-   * Batch job entry point.
+   * Rocket entry point.
    * 
    * @param args command line arguments
    * @throws Exception unhandled launch error

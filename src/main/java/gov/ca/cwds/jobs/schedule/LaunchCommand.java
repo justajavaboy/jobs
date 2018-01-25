@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -35,7 +36,7 @@ import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.NeutronStringUtils;
 
 /**
- * Run stand-alone rockets or serve up rockets with Quartz. The master of ceremonies, AKA, Jimmy
+ * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy
  * Neutron.
  * 
  * @author CWDS API Team
@@ -60,7 +61,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private boolean shutdownRequested;
 
   /**
-   * <strong>HACK</strong>: make an interface for DI (dependency injection).
+   * <strong>HACK</strong>: make an interface for dependency injection. Add ability to swap DI
+   * frameworks.
    */
   private Injector injector;
 
@@ -120,6 +122,10 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   /**
    * Return String output to JMX or other interface.
    * 
+   * <p>
+   * <strong>MOVE</strong> to another module.
+   * </p>
+   * 
    * @return readable output
    */
   @Managed(description = "Reset for initial load.")
@@ -146,7 +152,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * <strong>MOVE</strong> this responsibility to another unit.
    * </p>
    * 
-   * Find the job's time file under the base directory.
+   * Find the rocket's time file under the base directory.
    * 
    * @param flightPlan base options
    * @param fmt reusable date format
@@ -163,7 +169,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
     final String timeFileLoc =
         buf.toString().replaceAll(File.separator + File.separator, File.separator);
     flightPlan.setLastRunLoc(timeFileLoc);
-    LOGGER.debug("base directory: {}, job name: {}, last run loc: {}",
+    LOGGER.debug("base directory: {}, rocket name: {}, last run loc: {}",
         flightPlan.getBaseDirectory(), sched.getRocketName(), flightPlan.getLastRunLoc());
 
     // If timestamp file doesn't exist, create it.
@@ -240,7 +246,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   }
 
   /**
-   * Load all job definitions and continue running after a job completes.
+   * Load all rocket definitions and continue running after a rocket completes.
    * 
    * @return true if running in continuous mode
    */
@@ -346,7 +352,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   @Override
   public void close() throws Exception {
     if (!isTestMode() && (!isSchedulerMode() || fatalError || shutdownRequested)) {
-      // Shutdown all remaining resources, even those not attached to this job.
+      // Shutdown all remaining resources, even those not attached to this rocket.
       final int exitCode = this.fatalError ? -1 : 0;
       LOGGER.warn("\n>>>>>>>>>> SHUT DOWN COMMAND CENTER! Exit code: {}", exitCode);
       System.exit(exitCode); // NOSONAR
@@ -418,8 +424,11 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   public static <T extends BasePersonRocket<?, ?>> void launchOneWayTrip(final Class<T> klass,
       String... args) throws NeutronException {
     standardFlightPlan = parseCommandLine(args);
+
     System.setProperty("LAUNCH_DIR",
-        NeutronStringUtils.filePath(standardFlightPlan.getLastRunLoc()));
+        StringUtils.isNotBlank(standardFlightPlan.getLastRunLoc())
+            ? NeutronStringUtils.filePath(standardFlightPlan.getLastRunLoc())
+            : "./jobrunner/");
 
     LaunchCommand.settings.setSchedulerMode(false);
     LaunchCommand.settings.setInitialMode(!standardFlightPlan.isLastRunMode());

@@ -22,9 +22,9 @@ public interface AtomDocumentSecurity extends ApiMarker {
   /**
    * Determine whether to index a sealed or sensitive record.
    * 
-   * @param opts options for current job
+   * @param opts options for current rocket
    * @param indicator CMS client sensitivity or case/referral limited access indicator
-   * @return true if Job is not loading sealed/sensitive OR record is not restricted
+   * @return true if Rocket is not loading sealed/sensitive OR record is not restricted
    */
   static boolean isNotSealedSensitive(final FlightPlan opts, final String indicator) {
     return opts.isLoadSealedAndSensitive()

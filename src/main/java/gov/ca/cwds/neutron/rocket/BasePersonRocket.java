@@ -45,7 +45,8 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPersonAware;
-import gov.ca.cwds.jobs.component.BulkProcessorBuilder;
+import gov.ca.cwds.jobs.component.HoverCar;
+import gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder;
 import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
@@ -77,8 +78,9 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
  * 
  * <p>
  * <strong>Auto mode ("smart" mode)</strong> takes the same parameters as last run and determines
- * whether the job has never been run. If the last run date is older than 50 years, then then assume
- * that the job is populating ElasticSearch for the first time and run all initial batch loads.
+ * whether the rocket has never been run. If the last run date is older than 50 years, then then
+ * assume that the rocket is populating ElasticSearch for the first time and run all initial batch
+ * loads.
  * </p>
  * 
  * <h3>Command Line:</h3>
@@ -105,7 +107,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    */
   protected ObjectMapper mapper;
 
-  private final BulkProcessorBuilder bulkProcessorBuilder;
+  private final NeutronBulkProcessorBuilder bulkProcessorBuilder;
 
   /**
    * Main DAO for the supported persistence class.
@@ -173,7 +175,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     this.esDao = esDao;
     this.mapper = mapper;
     this.sessionFactory = jobDao.getSessionFactory();
-    this.bulkProcessorBuilder = new BulkProcessorBuilder(esDao, flightLog);
+    this.bulkProcessorBuilder = new HoverCar(esDao, flightLog);
     this.flightLog.setRocketName(getClass().getSimpleName());
   }
 
@@ -604,9 +606,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * thread is available.
    * 
    * <p>
-   * Auto mode ("smart" mode) takes the same parameters as last run and determines whether the job
-   * has never been run. If the last run date is older than 50 years, then then assume that the job
-   * is populating ElasticSearch for the first time and run all initial batch loads.
+   * Auto mode ("smart" mode) takes the same parameters as last run and determines whether the
+   * rocket has never been run. If the last run date is older than 50 years, then then assume that
+   * the rocket is populating ElasticSearch for the first time and run all initial batch loads.
    * </p>
    * 
    * {@inheritDoc}
@@ -667,8 +669,8 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * Pull records changed since the last successful run.
    * 
    * <p>
-   * If this job defines a denormalized view entity, then pull from that. Otherwise, pull from the
-   * table entity.
+   * If this rocket defines a denormalized view entity, then pull from that. Otherwise, pull from
+   * the table entity.
    * </p>
    * 
    * @param lastRunTime last successful run date/time

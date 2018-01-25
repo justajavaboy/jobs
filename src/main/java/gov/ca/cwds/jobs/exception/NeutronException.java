@@ -1,7 +1,8 @@
 package gov.ca.cwds.jobs.exception;
 
 /**
- * Base class of batch Neutron job checked exceptions. Checked exceptions should extend this class.
+ * Base class for checked exceptions in Neutron rockets. Custom checked exceptions should extend
+ * this class.
  * 
  * @author CWDS API Team
  */

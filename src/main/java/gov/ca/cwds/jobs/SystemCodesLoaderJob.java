@@ -160,7 +160,7 @@ public class SystemCodesLoaderJob {
   }
 
   /**
-   * Batch job entry point.
+   * Batch rocket entry point.
    * 
    * @param args command line arguments
    */
@@ -168,7 +168,7 @@ public class SystemCodesLoaderJob {
     LOGGER.info("Loading system codes from legacy to new system...");
 
     try {
-      Injector injector = Guice.createInjector(new SystemCodesLoaderModule());
+      final Injector injector = Guice.createInjector(new SystemCodesLoaderModule());
 
       // Initialize system code cache.
       injector.getInstance(SystemCodeCache.class);

@@ -9,4 +9,5 @@ public interface AtomLaunchCommand {
   void startScheduler() throws NeutronException;
 
   void shutdown() throws NeutronException;
+
 }

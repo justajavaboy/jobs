@@ -116,18 +116,6 @@ public final class NeutronJdbcUtils {
     return ret;
   }
 
-  public static List<Pair<String, String>> getPartitionRanges64() {
-    return buildPartitionsRanges(64);
-  }
-
-  public static List<Pair<String, String>> getPartitionRanges16() {
-    return buildPartitionsRanges(16);
-  }
-
-  public static List<Pair<String, String>> getPartitionRanges4() {
-    return buildPartitionsRanges(4);
-  }
-
   @SuppressWarnings("unchecked")
   public static List<Pair<String, String>> getCommonPartitionRanges(
       @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad, int numPartitions)
@@ -155,6 +143,18 @@ public final class NeutronJdbcUtils {
     }
 
     return ret;
+  }
+
+  public static List<Pair<String, String>> getPartitionRanges4() {
+    return buildPartitionsRanges(4);
+  }
+
+  public static List<Pair<String, String>> getPartitionRanges16() {
+    return buildPartitionsRanges(16);
+  }
+
+  public static List<Pair<String, String>> getPartitionRanges64() {
+    return buildPartitionsRanges(64);
   }
 
   public static List<Pair<String, String>> getCommonPartitionRanges4(

@@ -44,7 +44,7 @@ public interface AtomPersonDocPrep<T extends PersistentObject> extends ApiMarker
   }
 
   /**
-   * Get the optional element name populated by this job or null if none.
+   * Get the optional element name populated by this rocket or null if none.
    * 
    * @return optional element name
    */

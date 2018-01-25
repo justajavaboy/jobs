@@ -27,7 +27,7 @@ import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
- * Represents batch job options from the command line.
+ * Represents batch rocket options from the command line.
  * 
  * @author CWDS API Team
  */
@@ -73,8 +73,8 @@ public class FlightPlan implements ApiMarker {
   private boolean simulateLaunch;
 
   /**
-   * Last time job was executed in format 'yyyy-MM-dd HH.mm.ss' If this is provided then time stamp
-   * given in last run time file is ignored.
+   * Last time rocket was executed in format 'yyyy-MM-dd HH.mm.ss' If this is provided then time
+   * stamp given in last run time file is ignored.
    */
   private Date overrideLastRunTime;
 
@@ -90,7 +90,7 @@ public class FlightPlan implements ApiMarker {
 
   /**
    * When running in "initial load" mode, specifies the starting bucket of records to be processed
-   * by this job.
+   * by this rocket.
    * <p>
    * Required for "initial load" mode.
    * </p>
@@ -99,7 +99,7 @@ public class FlightPlan implements ApiMarker {
 
   /**
    * When running in "initial load" mode, specifies the ending bucket of records to be processed by
-   * this job.
+   * this rocket.
    * <p>
    * Required for "initial load" mode.
    * </p>
@@ -146,7 +146,7 @@ public class FlightPlan implements ApiMarker {
    * @param threadCount number of simultaneous threads
    * @param loadSealedAndSensitive If true then load sealed and sensitive data
    * @param rangeGiven initial load -- provided range (full load only)
-   * @param baseDirectory base folder for job execution (full load only)
+   * @param baseDirectory base folder for rocket execution (full load only)
    * @param refreshMqt refresh materialized query tables (full load only)
    * @param dropIndex drop the index before start (full load only)
    * @param simulateLaunch simulate launch (test mode!)
@@ -175,7 +175,7 @@ public class FlightPlan implements ApiMarker {
   /**
    * Copy constructor.
    * 
-   * @param flightPlan other job options
+   * @param flightPlan other rocket options
    */
   public FlightPlan(final FlightPlan flightPlan) {
     this.esConfigPeopleLoc = flightPlan.esConfigPeopleLoc;
@@ -359,7 +359,7 @@ public class FlightPlan implements ApiMarker {
     try (final StringWriter sw = new StringWriter()) {
       final String pad = StringUtils.leftPad("", 90, '=');
       new HelpFormatter().printHelp(new PrintWriter(sw), 100, "Batch loader",
-          pad + "\nUSAGE: java <job class> ...\n" + pad, buildCmdLineOptions(), 4, 8, pad, true);
+          pad + "\nUSAGE: java <rocket class> ...\n" + pad, buildCmdLineOptions(), 4, 8, pad, true);
       LOGGER.error(sw.toString()); // NOSONAR
     } catch (IOException e) {
       throw JobLogs.checked(LOGGER, e, "INCORRECT USAGE! {}", e.getMessage());
@@ -384,23 +384,25 @@ public class FlightPlan implements ApiMarker {
   }
 
   /**
-   * Parse the command line return the job settings.
+   * Parse the command line return the rocket settings.
    * 
    * @param args command line to parse
-   * @return JobOptions defining this job
+   * @return JobOptions defining this rocket
    * @throws NeutronException if unable to parse command line
    */
   public static FlightPlan parseCommandLine(final String[] args) throws NeutronException {
     String esConfigPeopleLoc = null;
     String esConfigPeopleSummaryLoc = null;
     String indexName = null;
-    Date lastRunTime = null;
     String lastRunLoc = null;
-    boolean lastRunMode = true;
+    String baseDirectory = null;
+
+    Date lastRunTime = null;
     long threadCount = 0L;
+
+    boolean lastRunMode = true;
     boolean loadSealedAndSensitive = false;
     boolean rangeGiven = false;
-    String baseDirectory = null;
     boolean refreshMqt = false;
     boolean dropIndex = false;
     boolean simulateLaunch = false;

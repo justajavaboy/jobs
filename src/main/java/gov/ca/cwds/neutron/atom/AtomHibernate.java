@@ -48,7 +48,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   }
 
   /**
-   * @return the job's main DAO.
+   * @return the rocket's main DAO.
    */
   BaseDaoImpl<T> getJobDao();
 
@@ -63,7 +63,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   }
 
   /**
-   * Get the legacy source table for this job, if any.
+   * Get the legacy source table for this rocket, if any.
    * 
    * @return legacy source table
    */
@@ -110,6 +110,8 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   }
 
   /**
+   * Convenient pass-through method for {@link NeutronDB2Utils#isDB2OnZOS(BaseDaoImpl)}.
+   * 
    * @see NeutronDB2Utils#isDB2OnZOS(BaseDaoImpl)
    * @return true if DB2 on mainframe
    * @throws NeutronException on error
@@ -122,7 +124,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
    * Detect large data sets on the mainframe.
    * 
    * <p>
-   * HACK: also checks schema name. Add a "database version" table or something.
+   * <strong>HACK:<strong> also checks schema name. Add a "database version" table or something.
    * </p>
    * 
    * @return true if is large data set on z/OS
