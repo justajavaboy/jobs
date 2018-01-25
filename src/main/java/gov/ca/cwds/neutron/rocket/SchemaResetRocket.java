@@ -43,7 +43,6 @@ public class SchemaResetRocket
    */
   @Inject
   public SchemaResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      // @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
       final ObjectMapper mapper, @LastRunFile String lastRunFile, FlightPlan flightPlan) {
     super(dao, null, lastRunFile, mapper, flightPlan);
     LOGGER.warn("CONSTRUCTOR");
