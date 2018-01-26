@@ -50,11 +50,9 @@ public class StandardFlightScheduleTest extends Goddard {
     expected.add(StandardFlightSchedule.EDUCATION_PROVIDER);
     expected.add(StandardFlightSchedule.OTHER_ADULT_IN_HOME);
     expected.add(StandardFlightSchedule.OTHER_CHILD_IN_HOME);
-    expected.add(StandardFlightSchedule.OTHER_CLIENT_NAME);
     expected.add(StandardFlightSchedule.CASES);
     expected.add(StandardFlightSchedule.RELATIONSHIP);
     expected.add(StandardFlightSchedule.REFERRAL);
-    expected.add(StandardFlightSchedule.SAFETY_ALERT);
     expected.add(StandardFlightSchedule.INTAKE_SCREENING);
     expected.add(StandardFlightSchedule.EXIT_INITIAL_LOAD);
 
@@ -75,11 +73,9 @@ public class StandardFlightScheduleTest extends Goddard {
     expected.add(StandardFlightSchedule.EDUCATION_PROVIDER);
     expected.add(StandardFlightSchedule.OTHER_ADULT_IN_HOME);
     expected.add(StandardFlightSchedule.OTHER_CHILD_IN_HOME);
-    expected.add(StandardFlightSchedule.OTHER_CLIENT_NAME);
     expected.add(StandardFlightSchedule.CASES);
     expected.add(StandardFlightSchedule.RELATIONSHIP);
     expected.add(StandardFlightSchedule.REFERRAL);
-    expected.add(StandardFlightSchedule.SAFETY_ALERT);
     expected.add(StandardFlightSchedule.INTAKE_SCREENING);
 
     assertThat(actual, is(equalTo(expected)));

@@ -18,12 +18,10 @@ import gov.ca.cwds.jobs.EducationProviderContactIndexerJob;
 import gov.ca.cwds.jobs.IntakeScreeningJob;
 import gov.ca.cwds.jobs.OtherAdultInPlacemtHomeIndexerJob;
 import gov.ca.cwds.jobs.OtherChildInPlacemtHomeIndexerJob;
-import gov.ca.cwds.jobs.OtherClientNameIndexerJob;
 import gov.ca.cwds.jobs.ParentCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ReferralHistoryIndexerJob;
 import gov.ca.cwds.jobs.RelationshipIndexerJob;
 import gov.ca.cwds.jobs.ReporterIndexerJob;
-import gov.ca.cwds.jobs.SafetyAlertIndexerJob;
 import gov.ca.cwds.jobs.ServiceProviderIndexerJob;
 import gov.ca.cwds.jobs.SubstituteCareProviderIndexJob;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
@@ -113,12 +111,6 @@ public enum StandardFlightSchedule {
   //
 
   /**
-   * Client name aliases.
-   */
-  OTHER_CLIENT_NAME(OtherClientNameIndexerJob.class, "other_client_name", 90, 45, 300, "akas", true,
-      true),
-
-  /**
    * Combines child and parent case. {@link ParentCaseHistoryIndexerJob} and
    * {@link ChildCaseHistoryIndexerJob} are obsolete.
    */
@@ -134,12 +126,6 @@ public enum StandardFlightSchedule {
    * Referrals.
    */
   REFERRAL(ReferralHistoryIndexerJob.class, "referral", 45, 30, 700, "referrals", true, true),
-
-  /**
-   * Safety alerts.
-   */
-  SAFETY_ALERT(SafetyAlertIndexerJob.class, "safety_alert", 90, 45, 800, "safety_alerts", true,
-      true),
 
   /**
    * Screenings.
