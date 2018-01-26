@@ -7,7 +7,6 @@ import gov.ca.cwds.data.std.ApiAddressAware;
 
 public interface ApiClientAddressAware {
 
-
   /**
    * Getter for client address start date.
    * 

@@ -36,8 +36,8 @@ import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
@@ -54,7 +54,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class ReferralHistoryIndexerJob
     extends BasePersonRocket<ReplicatedPersonReferrals, EsPersonReferral>
-    implements NeutronRowMapper<EsPersonReferral> {
+    implements AtomRowMapper<EsPersonReferral> {
 
   private static final long serialVersionUID = 1L;
 

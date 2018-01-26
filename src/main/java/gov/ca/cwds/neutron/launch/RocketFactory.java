@@ -21,6 +21,11 @@ import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.shrinkray.NeutronClassFinder;
 
+/**
+ * Neutron implementation of Quartz JobFactory.
+ * 
+ * @author CWDS API Team
+ */
 @Singleton
 public class RocketFactory implements AtomRocketFactory {
 

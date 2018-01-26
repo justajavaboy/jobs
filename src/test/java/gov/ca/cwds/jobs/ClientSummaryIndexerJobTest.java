@@ -256,7 +256,7 @@ public class ClientSummaryIndexerJobTest extends Goddard<ReplicatedClient, EsCli
   @Test
   public void main_Args__StringArray() throws Exception {
     final String[] args = new String[] {"-c", "config/local.yaml", "-l",
-        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+        "/Users/mylittlepony/client_indexer_time.txt", "-S"};
     ClientIndexerJob.main(args);
   }
 

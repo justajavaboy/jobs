@@ -28,7 +28,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
@@ -43,7 +43,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  * @author CWDS API Team
  */
 public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, EsClientPerson>
-    implements NeutronRowMapper<EsClientPerson>, AtomValidateDocument {
+    implements AtomRowMapper<EsClientPerson>, AtomValidateDocument {
 
   private static final long serialVersionUID = 1L;
 

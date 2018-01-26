@@ -326,6 +326,14 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
     return ret;
   }
 
+  /**
+   * Neutron even constructs and inject dependencies into LaunchCommand itself, though this may be
+   * confusing.
+   * 
+   * @param standardFlightPlan
+   * @return
+   * @throws NeutronException
+   */
   protected static LaunchCommand buildCommandCenter(final FlightPlan standardFlightPlan)
       throws NeutronException {
     Injector injector;

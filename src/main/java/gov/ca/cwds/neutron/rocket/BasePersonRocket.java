@@ -69,7 +69,7 @@ import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 
 /**
- * Base person rocket to documents from CMS into ElasticSearch.
+ * Base class to index person documents from CMS into ElasticSearch.
  * 
  * <p>
  * This class implements {@link AutoCloseable} and automatically closes common resources, such as
@@ -78,7 +78,7 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
  * 
  * <p>
  * <strong>Auto mode ("smart" mode)</strong> takes the same parameters as last run and determines
- * whether the rocket has never been run. If the last run date is older than 50 years, then then
+ * whether the rocket has never been run. If the last run date is older than 25 years, then then
  * assume that the rocket is populating ElasticSearch for the first time and run all initial batch
  * loads.
  * </p>
@@ -86,7 +86,7 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
  * <h3>Command Line:</h3>
  * 
  * <pre>
- * {@code java gov.ca.cwds.jobs.ClientIndexerJob -c config/local.yaml -l /Users/CWS-NS3/client_indexer_time.txt}
+ * {@code java gov.ca.cwds.jobs.ClientIndexerJob -c config/local.yaml -l /Users/mylittlepony/client_indexer_time.txt}
  * </pre>
  * 
  * @author CWDS API Team
@@ -520,7 +520,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
   }
 
   /**
-   * Forcibly remove sealed or sensitive documents.
+   * If not running in sealed/sensitive mode, forcibly remove sealed or sensitive documents.
    * 
    * @param deletionResults documents to remove from Elasticsearch
    * @param bp bulk processor

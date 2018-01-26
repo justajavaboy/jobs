@@ -14,6 +14,12 @@ public final class NeutronStreamUtils {
     return path.substring(0, path.lastIndexOf(File.separatorChar));
   }
 
+  /**
+   * Split a stream every Nth element.
+   * 
+   * @param n split size
+   * @return element at that location
+   */
   public static <T> Function<T, Stream<T>> everyNth(int n) {
     return new Function<T, Stream<T>>() {
       int i = 0;

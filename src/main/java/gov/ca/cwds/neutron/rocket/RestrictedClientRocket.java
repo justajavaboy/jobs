@@ -8,7 +8,7 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
@@ -19,7 +19,7 @@ import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
  * @author CWDS API Team
  */
 public class RestrictedClientRocket extends ClientIndexerJob
-    implements NeutronRowMapper<EsClientAddress>, AtomValidateDocument {
+    implements AtomRowMapper<EsClientAddress>, AtomValidateDocument {
 
   private static final long serialVersionUID = 1L;
 

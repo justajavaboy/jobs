@@ -8,6 +8,11 @@ import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 
+/**
+ * Neutron implementation of Elasticsearch BulkProcessor.Listener.
+ * 
+ * @author CWDS API Team
+ */
 public class NeutronBulkProcessorListener implements BulkProcessor.Listener {
 
   private static final ConditionalLogger LOGGER =
@@ -40,7 +45,7 @@ public class NeutronBulkProcessorListener implements BulkProcessor.Listener {
 
     if (response.hasFailures()) {
       // NEXT: use CindyBulkResponse for per record error details instead of toString().
-      String failure = response.buildFailureMessage();
+      final String failure = response.buildFailureMessage();
       LOGGER.error("\n\t\t >>>>>> BULK FAILURES??? status: {}, errors: {}\n", response.status(),
           failure);
       flightLog.trackBulkError();

@@ -29,8 +29,8 @@ import gov.ca.cwds.data.persistence.cms.SonarQubeMemoryBloatComplaintCache;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -45,7 +45,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class RelationshipIndexerJob
     extends InitialLoadJdbcRocket<ReplicatedRelationships, EsRelationship>
-    implements NeutronRowMapper<EsRelationship> {
+    implements AtomRowMapper<EsRelationship> {
 
   private static final long serialVersionUID = 1L;
 

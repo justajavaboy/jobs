@@ -23,7 +23,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -36,7 +36,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class OtherClientNameIndexerJob
     extends BasePersonRocket<ReplicatedAkas, ReplicatedOtherClientName>
-    implements NeutronRowMapper<ReplicatedOtherClientName> {
+    implements AtomRowMapper<ReplicatedOtherClientName> {
 
   private static final long serialVersionUID = 1L;
 

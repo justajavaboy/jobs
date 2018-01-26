@@ -13,8 +13,7 @@ import gov.ca.cwds.data.persistence.cms.EsChildPersonCase;
 import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
 
-public class ChildCaseHistoryIndexerJobTest
-    extends Goddard<ReplicatedPersonCases, EsPersonCase> {
+public class ChildCaseHistoryIndexerJobTest extends Goddard<ReplicatedPersonCases, EsPersonCase> {
 
   ReplicatedPersonCasesDao dao;
   ChildCaseHistoryIndexerJob target;
@@ -24,8 +23,7 @@ public class ChildCaseHistoryIndexerJobTest
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedPersonCasesDao(this.sessionFactory);
-    target = new ChildCaseHistoryIndexerJob(dao, esDao, lastRunFile, MAPPER,
-        flightPlan);
+    target = new ChildCaseHistoryIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
   }
 
   @Test
@@ -68,7 +66,7 @@ public class ChildCaseHistoryIndexerJobTest
   @Test
   public void main_Args__StringArray() throws Exception {
     final String[] args = new String[] {"-c", "config/local.yaml", "-l",
-        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+        "/Users/mylittlepony/client_indexer_time.txt", "-S"};
     ChildCaseHistoryIndexerJob.main(args);
   }
 
