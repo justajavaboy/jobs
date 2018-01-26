@@ -18,11 +18,11 @@ import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.TriggerKey;
 
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.test.TestIndexerJob;
 import gov.ca.cwds.jobs.test.TestNormalizedEntityDao;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.launch.LaunchDirector;
 import gov.ca.cwds.neutron.launch.NeutronRocket;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
@@ -101,9 +101,9 @@ public class NeutronTriggerListenerTest extends Goddard {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void vetoJobExecution__boom() throws Exception {
-    when(neutronScheduler.isLaunchVetoed(any(String.class))).thenThrow(NeutronException.class);
+    when(neutronScheduler.isLaunchVetoed(any(String.class))).thenThrow(NeutronCheckedException.class);
 
     boolean actual = target.vetoJobExecution(trigger, context_);
     boolean expected = false;

@@ -18,8 +18,8 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.inject.CmsSessionFactory;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.launch.FlightRecorder;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
@@ -94,7 +94,7 @@ public class TestIndexerJob extends BasePersonRocket<TestNormalizedEntity, TestD
   @Override
   public void done() {
     if (isFakeMarkDone()) {
-      throw new JobsException("fake error");
+      throw new NeutronRuntimeException("fake error");
     }
 
     super.done();
@@ -110,21 +110,21 @@ public class TestIndexerJob extends BasePersonRocket<TestNormalizedEntity, TestD
   @Override
   public void nameThread(String title) {
     if (blowUpNameThread) {
-      throw new JobsException("test bombing");
+      throw new NeutronRuntimeException("test bombing");
     }
 
     super.nameThread(title);
   }
 
   @Override
-  public synchronized void finish() throws NeutronException {
+  public synchronized void finish() throws NeutronCheckedException {
     if (!fakeFinish) {
       super.finish();
     }
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     if (baseRanges) {
       return super.getPartitionRanges();
     }

@@ -19,9 +19,9 @@ import org.quartz.TriggerKey;
 
 import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 
@@ -64,7 +64,7 @@ public class LaunchPadTest extends Goddard {
     target.schedule();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void schedule_Args___T__SchedulerException() throws Exception {
     when(scheduler.getJobDetail(any(JobKey.class))).thenThrow(SchedulerException.class);
     when(launchDirector.launch(any(Class.class), any(FlightPlan.class)))
@@ -78,7 +78,7 @@ public class LaunchPadTest extends Goddard {
     target.unschedule();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void unschedule_Args___T__SchedulerException() throws Exception {
     doThrow(SchedulerException.class).when(scheduler).pauseTrigger(any(TriggerKey.class));
     when(scheduler.unscheduleJob(any(TriggerKey.class))).thenThrow(SchedulerException.class);
@@ -104,7 +104,7 @@ public class LaunchPadTest extends Goddard {
     target.stop();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void stop_Args___T__SchedulerException() throws Exception {
     doThrow(SchedulerException.class).when(scheduler).pauseTrigger(any(TriggerKey.class));
     when(scheduler.interrupt(any(JobKey.class))).thenThrow(SchedulerException.class);

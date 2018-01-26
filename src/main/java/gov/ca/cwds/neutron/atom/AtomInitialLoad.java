@@ -23,10 +23,10 @@ import org.slf4j.Logger;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicatedEntity;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
@@ -183,9 +183,9 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
    * Return partition keys for initial load. Supports native named query, "findPartitionedBuckets".
    * 
    * @return list of partition key pairs
-   * @throws NeutronException on parse or dynamic error
+   * @throws NeutronCheckedException on parse or dynamic error
    */
-  default List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  default List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return new ArrayList<>();
   }
 

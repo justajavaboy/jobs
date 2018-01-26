@@ -2,7 +2,7 @@ package gov.ca.cwds.neutron.atom;
 
 import org.quartz.spi.JobFactory;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 
@@ -14,11 +14,11 @@ public interface AtomRocketFactory extends JobFactory {
    * @param klass rocket class
    * @param flightPlan command line arguments
    * @return the rocket
-   * @throws NeutronException unexpected runtime error
+   * @throws NeutronCheckedException unexpected runtime error
    */
   @SuppressWarnings("rawtypes")
   BasePersonRocket fuelRocket(final Class<?> klass, final FlightPlan flightPlan)
-      throws NeutronException;
+      throws NeutronCheckedException;
 
   /**
    * Prepare a registered rocket. Convenient overload of {@link #fuelRocket(Class, FlightPlan)}.
@@ -26,10 +26,10 @@ public interface AtomRocketFactory extends JobFactory {
    * @param rocketName rocket class
    * @param flightPlan command line arguments
    * @return the rocket
-   * @throws NeutronException unexpected runtime error
+   * @throws NeutronCheckedException unexpected runtime error
    */
   @SuppressWarnings("rawtypes")
   public BasePersonRocket fuelRocket(final String rocketName, final FlightPlan flightPlan)
-      throws NeutronException;
+      throws NeutronCheckedException;
 
 }

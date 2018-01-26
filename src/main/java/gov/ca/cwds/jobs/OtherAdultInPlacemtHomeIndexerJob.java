@@ -11,8 +11,8 @@ import com.google.inject.name.Named;
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
@@ -45,7 +45,7 @@ public class OtherAdultInPlacemtHomeIndexerJob
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges4(this);
   }
 

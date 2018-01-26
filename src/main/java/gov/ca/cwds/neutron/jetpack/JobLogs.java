@@ -6,8 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 /**
  * Neutron logging utilities.
@@ -64,7 +64,7 @@ public class JobLogs {
   }
 
   /**
-   * Format message and return a runtime {@link JobsException}.
+   * Format message and return a runtime {@link NeutronRuntimeException}.
    * 
    * @param log class logger
    * @param e any Throwable
@@ -72,9 +72,9 @@ public class JobLogs {
    * @param args error message, excluding throwable message
    * @return JobsException runtime exception
    */
-  public static JobsException buildRuntimeException(final Logger log, Throwable e, String pattern,
+  public static NeutronRuntimeException buildRuntimeException(final Logger log, Throwable e, String pattern,
       Object... args) {
-    JobsException ret;
+    NeutronRuntimeException ret;
     final boolean hasArgs = args == null || args.length == 0;
     final boolean hasPattern = !StringUtils.isEmpty(pattern);
     final Logger logger = log != null ? log : LOGGER;
@@ -86,17 +86,17 @@ public class JobLogs {
 
     if (e != null) {
       logger.error(msg, e);
-      ret = new JobsException(msg, e);
+      ret = new NeutronRuntimeException(msg, e);
     } else {
       logger.error(msg);
-      ret = new JobsException(msg);
+      ret = new NeutronRuntimeException(msg);
     }
 
     return ret;
   }
 
   /**
-   * Format message and return a runtime {@link JobsException}.
+   * Format message and return a runtime {@link NeutronRuntimeException}.
    * 
    * @param log class logger
    * @param e any Throwable
@@ -104,7 +104,7 @@ public class JobLogs {
    * @param args error message, excluding throwable message
    * @return NeutronException checked exception
    */
-  public static NeutronException buildCheckedException(final Logger log, Throwable e,
+  public static NeutronCheckedException buildCheckedException(final Logger log, Throwable e,
       String pattern, Object... args) {
     final boolean hasArgs = args == null || args.length == 0;
     final boolean hasPattern = !StringUtils.isEmpty(pattern);
@@ -116,20 +116,20 @@ public class JobLogs {
     final String msg = hasPattern && hasArgs ? MessageFormat.format(pat, objs) : "";
 
     logger.error(msg, e);
-    return new NeutronException(msg, e);
+    return new NeutronCheckedException(msg, e);
   }
 
-  public static NeutronException checked(final Logger log, Throwable e, String pattern,
+  public static NeutronCheckedException checked(final Logger log, Throwable e, String pattern,
       Object... args) {
     return buildCheckedException(log, e, pattern, args);
   }
 
-  public static JobsException runtime(final Logger log, Throwable e, String pattern,
+  public static NeutronRuntimeException runtime(final Logger log, Throwable e, String pattern,
       Object... args) {
     return buildRuntimeException(log, e, pattern, args);
   }
 
-  public static JobsException runtime(final Logger log, String pattern, Object... args) {
+  public static NeutronRuntimeException runtime(final Logger log, String pattern, Object... args) {
     return buildRuntimeException(log, null, pattern, args);
   }
 

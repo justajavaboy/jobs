@@ -18,12 +18,12 @@ import org.quartz.SchedulerException;
 import org.quartz.TriggerKey;
 
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.test.Mach1TestRocket;
 import gov.ca.cwds.neutron.atom.AtomFlightPlanManager;
 import gov.ca.cwds.neutron.atom.AtomLaunchPad;
 import gov.ca.cwds.neutron.atom.AtomRocketFactory;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.launch.FlightPlanRegistry;
@@ -91,7 +91,7 @@ public class LaunchDirectorTest extends Goddard {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void runScheduledJob_Args__Class__FlightPlan() throws Exception {
     Class<?> klass = Mach1TestRocket.class;
     FlightLog actual = target.launch(klass, flightPlan);
@@ -105,11 +105,11 @@ public class LaunchDirectorTest extends Goddard {
     try {
       target.launch(klass, flightPlan);
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void runScheduledJob_Args__String__FlightPlan() throws Exception {
     String jobName = Mach1TestRocket.class.getName();
     FlightLog actual = target.launch(jobName, flightPlan);
@@ -131,7 +131,7 @@ public class LaunchDirectorTest extends Goddard {
     target.stopScheduler(waitForJobsToComplete);
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void stopScheduler_Args__boolean__boom() throws Exception {
     doThrow(new SchedulerException()).when(scheduler).shutdown();
     doThrow(new SchedulerException()).when(scheduler).shutdown(any(Boolean.class));
@@ -143,7 +143,7 @@ public class LaunchDirectorTest extends Goddard {
     target.startScheduler();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void startScheduler_Args__boom() throws Exception {
     doThrow(new SchedulerException()).when(scheduler).start();
     target.startScheduler();
@@ -203,7 +203,7 @@ public class LaunchDirectorTest extends Goddard {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void isJobVetoed_Args__boom() throws Exception {
     String className = "quibblescibblerazzerfrazzer";
     boolean actual = target.isLaunchVetoed(className);

@@ -1,7 +1,7 @@
 package gov.ca.cwds.neutron.vox.jmx;
 
 import gov.ca.cwds.data.std.ApiMarker;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -17,7 +17,7 @@ public final class VoxCommandFactory implements ApiMarker {
   }
 
   public static VoxJMXCommandClient build(final VoxCommandType cmdType,
-      final VoxCommandInstruction cmd) throws NeutronException {
+      final VoxCommandInstruction cmd) throws NeutronCheckedException {
     VoxJMXCommandClient ret;
     try {
       ret = (VoxJMXCommandClient) cmdType.getKlass().newInstance();
@@ -29,7 +29,7 @@ public final class VoxCommandFactory implements ApiMarker {
     return ret;
   }
 
-  public static void launch(String[] args) throws NeutronException {
+  public static void launch(String[] args) throws NeutronCheckedException {
     final VoxCommandInstruction cmd = VoxCommandInstruction.parseCommandLine(args);
     final VoxCommandType cmdType = VoxCommandType.lookup(cmd.getCommand());
     build(cmdType, cmd).launch(cmd);

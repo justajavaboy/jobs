@@ -53,8 +53,8 @@ import gov.ca.cwds.data.std.ApiMultipleLanguagesAware;
 import gov.ca.cwds.data.std.ApiMultiplePhonesAware;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.data.std.ApiPhoneAware;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomPersonDocPrep;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.rest.api.domain.DomainChef;
@@ -139,11 +139,11 @@ public final class ElasticTransformer {
    * @param t target ApiPersonAware instance
    * @return left = insert JSON, right = update JSON throws JsonProcessingException on JSON parse
    *         error
-   * @throws NeutronException on Elasticsearch disconnect or JSON parse error
+   * @throws NeutronCheckedException on Elasticsearch disconnect or JSON parse error
    */
   public static <T extends PersistentObject> UpdateRequest prepareUpsertRequest(
       AtomPersonDocPrep<T> docPrep, String alias, String docType, final ElasticSearchPerson esp,
-      T t) throws NeutronException {
+      T t) throws NeutronCheckedException {
     String id = esp.getId();
 
     // Set id and legacy id.

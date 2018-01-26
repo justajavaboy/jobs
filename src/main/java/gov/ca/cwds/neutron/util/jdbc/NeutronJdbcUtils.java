@@ -19,12 +19,12 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.jdbc.Work;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.jobs.util.jdbc.NeutronStreamUtils;
 import gov.ca.cwds.jobs.util.jdbc.WorkPrepareLastChange;
 import gov.ca.cwds.neutron.atom.AtomInitialLoad;
 import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 
@@ -119,7 +119,7 @@ public final class NeutronJdbcUtils {
   @SuppressWarnings("unchecked")
   public static List<Pair<String, String>> getCommonPartitionRanges(
       @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad, int numPartitions)
-      throws NeutronException {
+      throws NeutronCheckedException {
     List<Pair<String, String>> ret = new ArrayList<>(numPartitions);
     if (initialLoad.isLargeDataSet()) {
       // ----------------------------
@@ -158,17 +158,17 @@ public final class NeutronJdbcUtils {
   }
 
   public static List<Pair<String, String>> getCommonPartitionRanges4(
-      @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad) throws NeutronException {
+      @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad) throws NeutronCheckedException {
     return getCommonPartitionRanges(initialLoad, 4);
   }
 
   public static List<Pair<String, String>> getCommonPartitionRanges16(
-      @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad) throws NeutronException {
+      @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad) throws NeutronCheckedException {
     return getCommonPartitionRanges(initialLoad, 16);
   }
 
   public static List<Pair<String, String>> getCommonPartitionRanges64(
-      @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad) throws NeutronException {
+      @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad) throws NeutronCheckedException {
     return getCommonPartitionRanges(initialLoad, 64);
   }
 

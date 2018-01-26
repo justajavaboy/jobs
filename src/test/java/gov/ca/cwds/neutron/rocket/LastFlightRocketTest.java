@@ -20,11 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.test.TestDenormalizedEntity;
 import gov.ca.cwds.jobs.test.TestNormalizedEntity;
 import gov.ca.cwds.jobs.test.TestNormalizedEntityDao;
 import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.launch.FlightRecorder;
@@ -109,7 +109,7 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void determineLastSuccessfulRunTime_error__() throws Exception {
     target.setLastRunTimeFilename("zugzug_oompa_loompa");
     final Date actual = target.determineLastSuccessfulRunTime();
@@ -130,7 +130,7 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     target.writeLastSuccessfulRunTime(datetime);
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void writeLastSuccessfulRunTime_Args__bomb() throws Exception {
     FlightLog track = mock(FlightLog.class);
     when(track.isFailed()).thenReturn(false);

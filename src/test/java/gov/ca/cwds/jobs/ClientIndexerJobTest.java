@@ -23,7 +23,7 @@ import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClientAddress;
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 /**
  * 
@@ -147,7 +147,7 @@ public class ClientIndexerJobTest extends Goddard<ReplicatedClient, EsClientAddr
     target.pullRange(p);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void pullRange_Args__Pair__Exception() throws Exception {
     when(con.createStatement()).thenThrow(SQLException.class);
     final Pair<String, String> p = pair;

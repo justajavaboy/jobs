@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomFlightPlanManager;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
 import gov.ca.cwds.neutron.atom.AtomLaunchPad;
 import gov.ca.cwds.neutron.atom.AtomRocketFactory;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -71,11 +71,11 @@ public class LaunchDirector implements AtomLaunchDirector {
    * @param klass rocket class
    * @param flightPlan command line arguments
    * @return a fueled rocket
-   * @throws NeutronException unexpected runtime error
+   * @throws NeutronCheckedException unexpected runtime error
    */
   @SuppressWarnings("rawtypes")
   public BasePersonRocket fuelRocket(final Class<?> klass, final FlightPlan flightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return this.rocketFactory.fuelRocket(klass, flightPlan);
   }
 
@@ -85,11 +85,11 @@ public class LaunchDirector implements AtomLaunchDirector {
    * @param rocketName batch rocket class
    * @param flightPlan command line arguments
    * @return a fueled rocket
-   * @throws NeutronException unexpected runtime error
+   * @throws NeutronCheckedException unexpected runtime error
    */
   @SuppressWarnings("rawtypes")
   public BasePersonRocket fuelRocket(final String rocketName, final FlightPlan flightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return this.rocketFactory.fuelRocket(rocketName, flightPlan);
   }
 
@@ -99,7 +99,7 @@ public class LaunchDirector implements AtomLaunchDirector {
   }
 
   @Override
-  public FlightLog launch(Class<?> klass, final FlightPlan flightPlan) throws NeutronException {
+  public FlightLog launch(Class<?> klass, final FlightPlan flightPlan) throws NeutronCheckedException {
     try {
       LOGGER.info("LAUNCH SCHEDULED ROCKET! {}", klass.getName());
       final BasePersonRocket<?, ?> rocket = fuelRocket(klass, flightPlan);
@@ -111,13 +111,13 @@ public class LaunchDirector implements AtomLaunchDirector {
   }
 
   @Override
-  public FlightLog launch(String rocketName, final FlightPlan flightPlan) throws NeutronException {
+  public FlightLog launch(String rocketName, final FlightPlan flightPlan) throws NeutronCheckedException {
     return launch(NeutronClassFinder.classForName(rocketName), flightPlan);
   }
 
   @Override
   public AtomLaunchPad scheduleLaunch(StandardFlightSchedule sched, FlightPlan flightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     final LaunchPad pad = new LaunchPad(this, sched, flightPlan);
     final Class<?> klass = sched.getRocketClass();
     launchPads.put(klass, pad);
@@ -128,7 +128,7 @@ public class LaunchDirector implements AtomLaunchDirector {
   }
 
   @Override
-  public void stopScheduler(boolean waitForJobsToComplete) throws NeutronException {
+  public void stopScheduler(boolean waitForJobsToComplete) throws NeutronCheckedException {
     LOGGER.warn("STOP SCHEDULER! wait for jobs to complete: {}", waitForJobsToComplete);
     try {
       this.getScheduler().shutdown(waitForJobsToComplete);
@@ -138,7 +138,7 @@ public class LaunchDirector implements AtomLaunchDirector {
   }
 
   @Override
-  public void startScheduler() throws NeutronException {
+  public void startScheduler() throws NeutronCheckedException {
     LOGGER.warn("START SCHEDULER!");
     try {
       this.getScheduler().start();
@@ -195,7 +195,7 @@ public class LaunchDirector implements AtomLaunchDirector {
   }
 
   @Override
-  public boolean isLaunchVetoed(String className) throws NeutronException {
+  public boolean isLaunchVetoed(String className) throws NeutronCheckedException {
     return this.getLaunchPads().get(NeutronClassFinder.classForName(className)).isVetoExecution();
   }
 

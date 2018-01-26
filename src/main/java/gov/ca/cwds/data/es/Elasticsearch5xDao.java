@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import gov.ca.cwds.data.std.ApiMarker;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
@@ -126,9 +126,9 @@ public class Elasticsearch5xDao implements Closeable, ApiMarker {
    * </p>
    *
    * @param index index name or alias
-   * @throws NeutronException on thread interrupt, disconnect, hang, etc.
+   * @throws NeutronCheckedException on thread interrupt, disconnect, hang, etc.
    */
-  public synchronized void createIndexIfNeeded(final String index) throws NeutronException {
+  public synchronized void createIndexIfNeeded(final String index) throws NeutronCheckedException {
     try {
       if (!doesIndexExist(index)) {
         LOGGER.warn("ES INDEX {} DOES NOT EXIST!!", index);

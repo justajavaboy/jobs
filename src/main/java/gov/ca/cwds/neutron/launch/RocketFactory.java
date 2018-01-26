@@ -12,10 +12,10 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomRocketFactory;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
@@ -51,7 +51,7 @@ public class RocketFactory implements AtomRocketFactory {
   @SuppressWarnings("rawtypes")
   @Override
   public BasePersonRocket fuelRocket(Class<?> klass, final FlightPlan flightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     try {
       LOGGER.info("Fuel registered rocket: {}", klass.getName());
       final BasePersonRocket ret = (BasePersonRocket<?, ?>) injector.getInstance(klass);
@@ -65,7 +65,7 @@ public class RocketFactory implements AtomRocketFactory {
   @SuppressWarnings("rawtypes")
   @Override
   public BasePersonRocket fuelRocket(String rocketName, final FlightPlan flightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return fuelRocket(NeutronClassFinder.classForName(rocketName), flightPlan);
   }
 
@@ -78,7 +78,7 @@ public class RocketFactory implements AtomRocketFactory {
     try {
       klazz = NeutronClassFinder
           .classForName(jd.getJobDataMap().getString(NeutronSchedulerConstants.ROCKET_CLASS));
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
       throw new SchedulerException("NO SUCH ROCKET CLASS!", e);
     }
 
@@ -88,7 +88,7 @@ public class RocketFactory implements AtomRocketFactory {
       final FlightPlan flightPlan = flightPlanRegistry.getFlightPlan(klazz);
       ret = new NeutronRocket(fuelRocket(klazz, flightPlan),
           StandardFlightSchedule.lookupByRocketClass(klazz), flightRecorder);
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
       throw new SchedulerException("NO ROCKET SETTINGS!", e);
     }
 

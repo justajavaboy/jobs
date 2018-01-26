@@ -43,8 +43,6 @@ import gov.ca.cwds.data.ApiTypedIdentifier;
 import gov.ca.cwds.data.DaoException;
 import gov.ca.cwds.data.es.ElasticSearchPerson.ESOptionalCollection;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.test.TestDenormalizedEntity;
 import gov.ca.cwds.jobs.test.TestIndexerJob;
@@ -52,6 +50,8 @@ import gov.ca.cwds.jobs.test.TestNormalizedEntity;
 import gov.ca.cwds.jobs.test.TestNormalizedEntityDao;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
@@ -325,11 +325,11 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     target.finish();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void finish_Args__error() throws Exception {
     target.setFakeMarkDone(true);
     target.setFakeFinish(false);
-    doThrow(new JobsException("whatever")).when(esDao).close();
+    doThrow(new NeutronRuntimeException("whatever")).when(esDao).close();
     target.finish();
   }
 
@@ -427,10 +427,10 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     markTestDone();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void doLastRun_Args__Date__error() throws Exception {
     final NativeQuery<TestDenormalizedEntity> qn = mock(NativeQuery.class);
-    when(session.getNamedNativeQuery(any(String.class))).thenThrow(JobsException.class);
+    when(session.getNamedNativeQuery(any(String.class))).thenThrow(NeutronRuntimeException.class);
     final Date actual = target.doLastRun(lastRunTime);
     markTestDone();
   }
@@ -466,11 +466,11 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     markTestDone();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void _run_Args__Date__error() throws Exception {
     final javax.persistence.Query q = mock(javax.persistence.Query.class);
     when(em.createNativeQuery(any(String.class), any(Class.class))).thenReturn(q);
-    when(esDao.getConfig()).thenThrow(JobsException.class);
+    when(esDao.getConfig()).thenThrow(NeutronRuntimeException.class);
 
     final Date actual = target.launch(lastRunTime);
     markTestDone();
@@ -486,7 +486,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     markTestDone();
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void threadRetrieveByJdbc_Args__bomb() throws Exception {
     when(rs.next()).thenReturn(true, false);
     when(con.createStatement()).thenThrow(SQLException.class);
@@ -544,7 +544,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     target.addToIndexQueue(norm);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void addToIndexQueue_Args__interrupt() throws Exception {
     TestNormalizedEntity norm = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
 
@@ -570,7 +570,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     markTestDone();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void doInitialLoadJdbc_Args__error() throws Exception {
     when(rs.next()).thenReturn(true, false);
     target.setBlowUpNameThread(true);
@@ -616,7 +616,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     markTestDone();
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void threadIndex_Args__error() throws Exception {
     final FlightLog track = mock(FlightLog.class);
     when(track.isFailed()).thenThrow(IllegalStateException.class);
@@ -634,7 +634,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     target.prepareDocumentTrapException(bp, p);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void prepareDocumentTrapIO__error() throws Exception {
     final BulkProcessor bp = mock(BulkProcessor.class);
     final TestNormalizedEntity p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
@@ -676,7 +676,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     assertThat(actual, notNullValue());
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void extractLastRunRecsFromView_Args__sql_error() throws Exception {
     final NativeQuery<TestDenormalizedEntity> qn = mock(NativeQuery.class);
     when(session.getNamedNativeQuery(any())).thenThrow(SQLException.class);
@@ -711,9 +711,9 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void isDB2OnZOS_Args__() throws Exception {
-    when(con.getMetaData()).thenThrow(JobsException.class);
+    when(con.getMetaData()).thenThrow(NeutronRuntimeException.class);
     boolean actual = target.isDB2OnZOS();
     boolean expected = true;
     assertThat(actual, is(equalTo(expected)));
@@ -866,7 +866,7 @@ public class BasePersonRocketTest extends Goddard<TestNormalizedEntity, TestDeno
     target.awaitBulkProcessorClose(bp);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void awaitBulkProcessorClose_error() throws Exception {
     final BulkProcessor bp = mock(BulkProcessor.class);
     when(bp.awaitClose(any(Integer.class), any(TimeUnit.class)));

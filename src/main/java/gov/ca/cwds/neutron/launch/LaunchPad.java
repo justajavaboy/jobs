@@ -17,11 +17,11 @@ import org.weakref.jmx.Managed;
 
 import com.google.inject.Inject;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -77,7 +77,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Launch rocket now, show results immediately")
-  public String run(String cmdLine) throws NeutronException {
+  public String run(String cmdLine) throws NeutronCheckedException {
     try {
       LOGGER.info("RUN JOB: {}", flightSchedule.getRocketName());
       final FlightPlan plan =
@@ -95,7 +95,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Schedule rocket launch")
-  public void schedule() throws NeutronException {
+  public void schedule() throws NeutronCheckedException {
     try {
       if (scheduler.checkExists(this.jobKey)) {
         LOGGER.warn("ROCKET ALREADY SCHEDULED! rocket: {}", rocketName);
@@ -142,7 +142,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Unschedule rocket")
-  public void unschedule() throws NeutronException {
+  public void unschedule() throws NeutronCheckedException {
     try {
       LOGGER.warn("unschedule launch");
       scheduler.unscheduleJob(triggerKey);
@@ -190,7 +190,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Abort flying rocket")
-  public void stop() throws NeutronException {
+  public void stop() throws NeutronCheckedException {
     try {
       LOGGER.warn("Abort flying rocket {}", rocketName);
       unschedule();
@@ -206,7 +206,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Pause rocket")
-  public void pause() throws NeutronException {
+  public void pause() throws NeutronCheckedException {
     try {
       LOGGER.warn("Pause rocket {}", rocketName);
       scheduler.pauseTrigger(triggerKey);
@@ -220,7 +220,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Resume rocket")
-  public void resume() throws NeutronException {
+  public void resume() throws NeutronCheckedException {
     try {
       LOGGER.warn("Resume rocket {}", rocketName);
       scheduler.resumeTrigger(triggerKey);
@@ -233,7 +233,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
     try {
       Thread.sleep(1000);
       LaunchCommand.getInstance().shutdown();
-    } catch (InterruptedException | NeutronException e) {
+    } catch (InterruptedException | NeutronCheckedException e) {
       Thread.currentThread().interrupt();
     }
   }
@@ -243,7 +243,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
    */
   @Override
   @Managed(description = "Shutdown command center")
-  public String shutdown() throws NeutronException {
+  public String shutdown() throws NeutronCheckedException {
     LOGGER.warn("Shutting down command center!");
     new Thread(this::threadShutdownLaunchCommand).start();
     return "Requested shutdown!";

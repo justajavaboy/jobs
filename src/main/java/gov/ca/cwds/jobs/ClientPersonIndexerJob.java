@@ -26,10 +26,10 @@ import gov.ca.cwds.data.persistence.cms.EsClientPerson;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -199,7 +199,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   }
 
   @Override
-  public boolean validateDocument(final ElasticSearchPerson person) throws NeutronException {
+  public boolean validateDocument(final ElasticSearchPerson person) throws NeutronCheckedException {
     final String clientId = person.getId();
     LOGGER.info("Validate client: {}", clientId);
 
@@ -228,7 +228,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges64(this);
   }
 

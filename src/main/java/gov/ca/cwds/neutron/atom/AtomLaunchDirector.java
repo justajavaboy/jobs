@@ -5,7 +5,7 @@ import java.util.Map;
 import org.quartz.Scheduler;
 import org.quartz.TriggerKey;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.launch.NeutronRocket;
@@ -19,24 +19,24 @@ public interface AtomLaunchDirector {
    * @param klass rocket class
    * @param flightPlan command line arguments
    * @return rocket flight progress
-   * @throws NeutronException unexpected runtime error
+   * @throws NeutronCheckedException unexpected runtime error
    */
-  FlightLog launch(Class<?> klass, FlightPlan flightPlan) throws NeutronException;
+  FlightLog launch(Class<?> klass, FlightPlan flightPlan) throws NeutronCheckedException;
 
-  FlightLog launch(String jobName, FlightPlan flightPlan) throws NeutronException;
+  FlightLog launch(String jobName, FlightPlan flightPlan) throws NeutronCheckedException;
 
   void prepareLaunchPads();
 
   void markRocketAsInFlight(TriggerKey key, NeutronRocket rocket);
 
   AtomLaunchPad scheduleLaunch(StandardFlightSchedule sched, FlightPlan flightPlan)
-      throws NeutronException;
+      throws NeutronCheckedException;
 
-  boolean isLaunchVetoed(String className) throws NeutronException;
+  boolean isLaunchVetoed(String className) throws NeutronCheckedException;
 
-  void stopScheduler(boolean waitForJobsToComplete) throws NeutronException;
+  void stopScheduler(boolean waitForJobsToComplete) throws NeutronCheckedException;
 
-  void startScheduler() throws NeutronException;
+  void startScheduler() throws NeutronCheckedException;
 
   Scheduler getScheduler();
 

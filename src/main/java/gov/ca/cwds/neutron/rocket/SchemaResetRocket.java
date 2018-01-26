@@ -13,8 +13,8 @@ import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
@@ -64,9 +64,9 @@ public class SchemaResetRocket
   /**
    * Refresh a DB2 test schema by calling a stored procedure.
    * 
-   * @throws NeutronException on database error
+   * @throws NeutronCheckedException on database error
    */
-  protected void refreshSchema() throws NeutronException {
+  protected void refreshSchema() throws NeutronCheckedException {
     if (!isLargeDataSet()) {
       LOGGER.warn("\n\n\n   REFRESH SCHEMA!!\n\n\n");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();

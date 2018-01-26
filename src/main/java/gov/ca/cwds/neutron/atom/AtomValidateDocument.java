@@ -10,12 +10,12 @@ import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
 
 import gov.ca.cwds.data.es.ElasticSearchPerson;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 public interface AtomValidateDocument extends AtomShared {
 
-  default ElasticSearchPerson readPerson(String json) throws NeutronException {
+  default ElasticSearchPerson readPerson(String json) throws NeutronCheckedException {
     try {
       return ElasticSearchPerson.MAPPER.readValue(json, ElasticSearchPerson.class);
     } catch (Exception e) {
@@ -23,7 +23,7 @@ public interface AtomValidateDocument extends AtomShared {
     }
   }
 
-  default void processDocumentHits(final SearchHits hits) throws NeutronException {
+  default void processDocumentHits(final SearchHits hits) throws NeutronCheckedException {
     int docId = 0;
     String json;
     ElasticSearchPerson person;
@@ -47,11 +47,11 @@ public interface AtomValidateDocument extends AtomShared {
     }
   }
 
-  default boolean validateDocument(final ElasticSearchPerson person) throws NeutronException {
+  default boolean validateDocument(final ElasticSearchPerson person) throws NeutronCheckedException {
     return true;
   }
 
-  default void validateDocuments() throws NeutronException {
+  default void validateDocuments() throws NeutronCheckedException {
     final String[] docIds = getFlightLog().getAffectedDocumentIds();
     long totalHits = 0;
 

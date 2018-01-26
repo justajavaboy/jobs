@@ -23,8 +23,8 @@ import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsPersonCase;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
@@ -216,7 +216,7 @@ public abstract class CaseHistoryIndexerJob
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedPersonCases p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getCases(), true);
   }
 
@@ -241,7 +241,7 @@ public abstract class CaseHistoryIndexerJob
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges64(this);
   }
 

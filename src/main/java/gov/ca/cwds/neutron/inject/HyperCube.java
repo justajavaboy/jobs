@@ -80,7 +80,6 @@ import gov.ca.cwds.data.persistence.ns.EsIntakeScreening;
 import gov.ca.cwds.data.persistence.ns.IntakeScreening;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.inject.NsSessionFactory;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.elastic.XPackUtils;
 import gov.ca.cwds.neutron.atom.AtomCommandCenterConsole;
@@ -89,6 +88,7 @@ import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
 import gov.ca.cwds.neutron.atom.AtomRocketFactory;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -203,7 +203,7 @@ public class HyperCube extends NeutronGuiceModule {
   public static synchronized Injector buildInjectorFunctional(final FlightPlan flightPlan) {
     try {
       return buildInjector(flightPlan);
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
       throw JobLogs.runtime(LOGGER, e, "FAILED TO BUILD INJECTOR! {}", e.getMessage());
     }
   }
@@ -214,10 +214,10 @@ public class HyperCube extends NeutronGuiceModule {
    * 
    * @param flightPlan command line options
    * @return Guice Injector
-   * @throws NeutronException if unable to construct dependencies
+   * @throws NeutronCheckedException if unable to construct dependencies
    */
   public static synchronized Injector buildInjector(final FlightPlan flightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     if (injector == null) {
       try {
         injector = Guice.createInjector(cubeMaker.apply(flightPlan));
@@ -243,10 +243,10 @@ public class HyperCube extends NeutronGuiceModule {
    * @param flightPlan command line options
    * @return batch rocket, ready to run
    * @param <T> Person persistence type
-   * @throws NeutronException checked exception
+   * @throws NeutronCheckedException checked exception
    */
   public static <T extends BasePersonRocket<?, ?>> T newRocket(final Class<T> klass,
-      final FlightPlan flightPlan) throws NeutronException {
+      final FlightPlan flightPlan) throws NeutronCheckedException {
     try {
       final T ret = buildInjector(flightPlan).getInstance(klass);
       ret.setFlightPlan(flightPlan);
@@ -263,10 +263,10 @@ public class HyperCube extends NeutronGuiceModule {
    * @param args command line arguments
    * @return batch rocket, ready to run
    * @param <T> Person persistence type
-   * @throws NeutronException checked exception
+   * @throws NeutronCheckedException checked exception
    */
   public static <T extends BasePersonRocket<?, ?>> T newRocket(final Class<T> klass, String... args)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return newRocket(klass, FlightPlan.parseCommandLine(args));
   }
 
@@ -439,7 +439,7 @@ public class HyperCube extends NeutronGuiceModule {
   }
 
   protected TransportClient buildElasticsearchClient(final ElasticsearchConfiguration config)
-      throws NeutronException {
+      throws NeutronCheckedException {
     TransportClient client = null;
     LOGGER.debug("Create NEW ES client");
     try {
@@ -463,12 +463,12 @@ public class HyperCube extends NeutronGuiceModule {
    * security.
    * 
    * @return initialized singleton ElasticSearch client, people index
-   * @throws NeutronException on ES connection error
+   * @throws NeutronCheckedException on ES connection error
    */
   @Provides
   @Singleton
   @Named("elasticsearch.client.people")
-  public Client elasticsearchClientPeople() throws NeutronException {
+  public Client elasticsearchClientPeople() throws NeutronCheckedException {
     TransportClient client = null;
     if (esConfigPeople != null) {
       client = buildElasticsearchClient(elasticSearchConfigPeople());
@@ -481,19 +481,19 @@ public class HyperCube extends NeutronGuiceModule {
    * security.
    * 
    * @return initialized singleton ElasticSearch client, people summary index
-   * @throws NeutronException on ES connection error
+   * @throws NeutronCheckedException on ES connection error
    */
   @Provides
   @Singleton
   @Named("elasticsearch.client.people-summary")
-  public Client elasticsearchClientPeopleSummary() throws NeutronException {
+  public Client elasticsearchClientPeopleSummary() throws NeutronCheckedException {
     return buildElasticsearchClient(elasticSearchConfigPeopleSummary());
   }
 
   @Provides
   @Singleton
   @Named("elasticsearch.dao.people")
-  public ElasticsearchDao makeElasticsearchDaoPeople() throws NeutronException {
+  public ElasticsearchDao makeElasticsearchDaoPeople() throws NeutronCheckedException {
     return new ElasticsearchDao(elasticsearchClientPeople(), elasticSearchConfigPeople());
   }
 
@@ -503,12 +503,12 @@ public class HyperCube extends NeutronGuiceModule {
   public ElasticsearchDao makeElasticsearchDaoPeopleSummary(
       @Named("elasticsearch.client.people-summary") Client client,
       @Named("elasticsearch.config.people-summary") ElasticsearchConfiguration config)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return new ElasticsearchDao(client, config);
   }
 
   protected ElasticsearchConfiguration loadElasticSearchConfig(File esConfig)
-      throws NeutronException {
+      throws NeutronCheckedException {
     ElasticsearchConfiguration ret = null;
     try {
       ret =
@@ -523,11 +523,11 @@ public class HyperCube extends NeutronGuiceModule {
    * Read Elasticsearch configuration for the People index.
    * 
    * @return ES configuration for the People index
-   * @throws NeutronException on error
+   * @throws NeutronCheckedException on error
    */
   @Provides
   @Named("elasticsearch.config.people")
-  public ElasticsearchConfiguration elasticSearchConfigPeople() throws NeutronException {
+  public ElasticsearchConfiguration elasticSearchConfigPeople() throws NeutronCheckedException {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeople != null) {
       LOGGER.debug("Create NEW ES configuration: people");
@@ -540,11 +540,11 @@ public class HyperCube extends NeutronGuiceModule {
    * Read Elasticsearch configuration for the People Summary index.
    * 
    * @return ES configuration for the People Summary index
-   * @throws NeutronException on error
+   * @throws NeutronCheckedException on error
    */
   @Provides
   @Named("elasticsearch.config.people-summary")
-  public ElasticsearchConfiguration elasticSearchConfigPeopleSummary() throws NeutronException {
+  public ElasticsearchConfiguration elasticSearchConfigPeopleSummary() throws NeutronCheckedException {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeopleSummary != null) {
       LOGGER.debug("Create NEW ES configuration: people summary");

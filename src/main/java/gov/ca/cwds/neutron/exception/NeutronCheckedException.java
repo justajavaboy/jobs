@@ -1,34 +1,33 @@
-package gov.ca.cwds.jobs.exception;
+package gov.ca.cwds.neutron.exception;
 
 /**
- * Base class for <strong>runtime</strong> exceptions. Specialized runtime exceptions should extend
+ * Base class for checked exceptions in Neutron rockets. Custom checked exceptions should extend
  * this class.
  * 
  * @author CWDS API Team
- * @see NeutronException
  */
 @SuppressWarnings("serial")
-public class JobsException extends RuntimeException {
+public class NeutronCheckedException extends Exception {
 
   /**
-   * Pointless constructor. Use another one. Thanks Java.
+   * Pointless constructor. Use another one.
    */
   @SuppressWarnings("unused")
-  private JobsException() {
+  private NeutronCheckedException() {
     // Default, no-op.
   }
 
   /**
    * @param message error message
    */
-  public JobsException(String message) {
+  public NeutronCheckedException(String message) {
     super(message);
   }
 
   /**
    * @param cause original Throwable
    */
-  public JobsException(Throwable cause) {
+  public NeutronCheckedException(Throwable cause) {
     super(cause);
   }
 
@@ -36,7 +35,7 @@ public class JobsException extends RuntimeException {
    * @param message error message
    * @param cause original Throwable
    */
-  public JobsException(String message, Throwable cause) {
+  public NeutronCheckedException(String message, Throwable cause) {
     super(message, cause);
   }
 
@@ -46,7 +45,7 @@ public class JobsException extends RuntimeException {
    * @param enableSuppression whether or not suppression is enabled or disabled
    * @param writableStackTrace whether or not the stack trace should be writable
    */
-  public JobsException(String message, Throwable cause, boolean enableSuppression,
+  public NeutronCheckedException(String message, Throwable cause, boolean enableSuppression,
       boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }

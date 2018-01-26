@@ -27,10 +27,10 @@ import gov.ca.cwds.data.persistence.cms.EsRelationship;
 import gov.ca.cwds.data.persistence.cms.ReplicatedRelationships;
 import gov.ca.cwds.data.persistence.cms.SonarQubeMemoryBloatComplaintCache;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -246,7 +246,7 @@ public class RelationshipIndexerJob
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges64(this);
   }
 
@@ -257,7 +257,7 @@ public class RelationshipIndexerJob
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedRelationships p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getRelations(), true);
   }
 

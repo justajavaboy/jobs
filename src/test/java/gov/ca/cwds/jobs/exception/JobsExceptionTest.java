@@ -5,32 +5,34 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
+
 public class JobsExceptionTest {
 
   @Test
   public void type() throws Exception {
-    assertThat(JobsException.class, notNullValue());
+    assertThat(NeutronRuntimeException.class, notNullValue());
   }
 
   @Test
   public void instantiation1() throws Exception {
     String message = null;
-    JobsException target = new JobsException(message);
+    NeutronRuntimeException target = new NeutronRuntimeException(message);
     assertThat(target, notNullValue());
   }
 
   @Test
   public void instantiation2() throws Exception {
     String message = null;
-    JobsException target = new JobsException(message, new IllegalArgumentException("whatever"));
+    NeutronRuntimeException target = new NeutronRuntimeException(message, new IllegalArgumentException("whatever"));
     assertThat(target, notNullValue());
   }
 
   @Test
   public void instantiation4() throws Exception {
     String message = null;
-    JobsException target =
-        new JobsException(message, new IllegalArgumentException("whatever"), false, false);
+    NeutronRuntimeException target =
+        new NeutronRuntimeException(message, new IllegalArgumentException("whatever"), false, false);
     assertThat(target, notNullValue());
   }
 

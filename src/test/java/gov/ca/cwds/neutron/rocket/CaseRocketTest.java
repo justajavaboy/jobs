@@ -37,7 +37,7 @@ import gov.ca.cwds.data.persistence.cms.ReplicatedPersonCases;
 import gov.ca.cwds.data.persistence.cms.StaffPerson;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.rocket.cases.FocusChildParent;
 
 public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelatedPerson> {
@@ -178,7 +178,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   // assertThat(actual, is(equalTo(expected)));
   // }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void readStaffWorkers_Args___T__NeutronException() throws Exception {
     target = new CaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
     target.readStaffWorkers();
@@ -229,7 +229,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   // assertThat(actual, is(equalTo(expected)));
   // }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void pullNextRange_Args__Pair_T__NeutronException() throws Exception {
     final Pair<String, String> p = pair;
     target.pullNextRange(p);
@@ -344,7 +344,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     try {
       target.prepareUpsertRequest(esp, p);
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 
@@ -452,7 +452,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
       target = new CaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
       target.readStaffWorkers();
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 
@@ -520,7 +520,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
       doThrow(new SQLException("uh oh")).when(rs).getString(any(String.class));
       target.readClients(stmtSelClient, mapClients);
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 
@@ -619,7 +619,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     try {
       target.verify(mapReadyClientCases);
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 
@@ -635,7 +635,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     try {
       target.pullNextRange(pair);
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 

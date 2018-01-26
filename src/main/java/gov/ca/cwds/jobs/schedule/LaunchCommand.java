@@ -20,13 +20,13 @@ import org.weakref.jmx.Managed;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomCommandCenterConsole;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchCommand;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
 import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.HyperCube;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -185,13 +185,13 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
   @Override
   @Managed(description = "Stop the scheduler")
-  public void stopScheduler(boolean waitForJobsToComplete) throws NeutronException {
+  public void stopScheduler(boolean waitForJobsToComplete) throws NeutronCheckedException {
     this.launchDirector.stopScheduler(waitForJobsToComplete);
   }
 
   @Override
   @Managed(description = "Start the scheduler")
-  public void startScheduler() throws NeutronException {
+  public void startScheduler() throws NeutronCheckedException {
     this.launchDirector.startScheduler();
   }
 
@@ -206,9 +206,9 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   /**
    * Prepare launch pads and start the scheduler.
    * 
-   * @throws NeutronException on initialization error
+   * @throws NeutronCheckedException on initialization error
    */
-  protected void initScheduler() throws NeutronException {
+  protected void initScheduler() throws NeutronCheckedException {
     try {
       // NOTE: make last change window configurable.
       final DateFormat fmt =
@@ -315,7 +315,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
     return instance;
   }
 
-  protected static FlightPlan parseCommandLine(String... args) throws NeutronException {
+  protected static FlightPlan parseCommandLine(String... args) throws NeutronCheckedException {
     FlightPlan ret;
     try {
       ret = FlightPlan.parseCommandLine(args);
@@ -332,10 +332,10 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * 
    * @param standardFlightPlan
    * @return
-   * @throws NeutronException
+   * @throws NeutronCheckedException
    */
   protected static LaunchCommand buildCommandCenter(final FlightPlan standardFlightPlan)
-      throws NeutronException {
+      throws NeutronCheckedException {
     Injector injector;
     try {
       injector = injectorMaker.apply(standardFlightPlan);
@@ -368,7 +368,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   }
 
   @Override
-  public void shutdown() throws NeutronException {
+  public void shutdown() throws NeutronCheckedException {
     LOGGER.info("\n>>>>>>>>>> SHUTDOWN REQUESTED!");
     try {
       this.shutdownRequested = true;
@@ -383,9 +383,9 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * Run continuous, scheduler mode.
    * 
    * @return launch command instance with dependencies injected
-   * @throws NeutronException on launch error
+   * @throws NeutronCheckedException on launch error
    */
-  protected static synchronized LaunchCommand startSchedulerMode() throws NeutronException {
+  protected static synchronized LaunchCommand startSchedulerMode() throws NeutronCheckedException {
     LOGGER.info("STARTING COMMAND CENTER ...");
 
     // HACK: inject a mock scheduler instead.
@@ -427,10 +427,10 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * @param klass rocket class
    * @param args command line arguments
    * @param <T> Person persistence type
-   * @throws NeutronException rocket failure
+   * @throws NeutronCheckedException rocket failure
    */
   public static <T extends BasePersonRocket<?, ?>> void launchOneWayTrip(final Class<T> klass,
-      String... args) throws NeutronException {
+      String... args) throws NeutronCheckedException {
     standardFlightPlan = parseCommandLine(args);
 
     System.setProperty("LAUNCH_DIR",
