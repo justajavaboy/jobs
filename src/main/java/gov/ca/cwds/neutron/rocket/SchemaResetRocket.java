@@ -37,8 +37,8 @@ public class SchemaResetRocket
    * Construct rocket with all required dependencies.
    * 
    * @param dao arbitrary DAO to fulfill interface
-   * @param esDao ElasticSearch DAO for the target index
    * @param mapper Jackson ObjectMapper
+   * @param lastRunFile last run date in format yyyy-MM-dd HH:mm:ss
    * @param flightPlan command line options
    */
   @Inject

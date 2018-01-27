@@ -19,6 +19,7 @@ public final class NeutronStreamUtils {
    * 
    * @param n split size
    * @return element at that location
+   * @param <T> stream element type
    */
   public static <T> Function<T, Stream<T>> everyNth(int n) {
     return new Function<T, Stream<T>>() {
