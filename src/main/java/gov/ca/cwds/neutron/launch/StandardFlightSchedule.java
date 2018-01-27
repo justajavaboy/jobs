@@ -127,7 +127,7 @@ public enum StandardFlightSchedule {
    */
   REFERRAL(ReferralHistoryIndexerJob.class, "referral", 45, 30, 700, "referrals", true, true),
 
-  // TODO: add SystemCodesLoaderJob.
+  // TODO: add SystemCodesLoaderJob to Initial Load.
 
   /**
    * Screenings.
