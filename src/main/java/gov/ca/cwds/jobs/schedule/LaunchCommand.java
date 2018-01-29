@@ -332,7 +332,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * 
    * @param flightPlan rocket flight plan
    * @return LaunchCommand instance with all dependencies injected
-   * @throws NeutronCheckedException
+   * @throws NeutronCheckedException on general error
    */
   protected static LaunchCommand buildCommandCenter(final FlightPlan flightPlan)
       throws NeutronCheckedException {

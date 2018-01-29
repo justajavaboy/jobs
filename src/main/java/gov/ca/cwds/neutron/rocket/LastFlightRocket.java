@@ -162,7 +162,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * @param datetime date and time to store
    * @throws NeutronCheckedException I/O or parse error
    */
-  protected void writeLastSuccessfulRunTime(Date datetime) throws NeutronCheckedException {
+  public void writeLastSuccessfulRunTime(Date datetime) throws NeutronCheckedException {
     if (!isFailed()) {
       try (BufferedWriter w = new BufferedWriter(new FileWriter(lastRunTimeFilename))) { // NOSONAR
         w.write(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.formatter().format(datetime));
