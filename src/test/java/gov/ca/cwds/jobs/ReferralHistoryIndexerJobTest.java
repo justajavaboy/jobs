@@ -35,10 +35,10 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
 import gov.ca.cwds.neutron.flight.FlightPlanTest;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 
@@ -65,9 +65,9 @@ public class ReferralHistoryIndexerJobTest
     }
 
     @Override
-    public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+    public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
       if (throwOnRanges) {
-        throw new NeutronException("test");
+        throw new NeutronCheckedException("test");
       }
 
       return super.getPartitionRanges();
@@ -181,7 +181,7 @@ public class ReferralHistoryIndexerJobTest
   public void prepareUpsertRequest_Args__ElasticSearchPerson__ReplicatedPersonReferrals_T__Exception()
       throws Exception {
     final ReplicatedPersonReferrals referrals = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
-    when(esDao.getConfig().getElasticsearchAlias()).thenThrow(new JobsException("test"));
+    when(esDao.getConfig().getElasticsearchAlias()).thenThrow(new NeutronRuntimeException("test"));
     try {
       target.prepareUpsertRequest(esp, referrals);
       fail("Expected exception was not thrown!");
@@ -190,7 +190,7 @@ public class ReferralHistoryIndexerJobTest
 
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void prepareUpsertRequest_Args__boom() throws Exception {
     final ReplicatedPersonReferrals referrals = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
     final ElasticSearchPersonReferral ref = new ElasticSearchPersonReferral();
@@ -393,7 +393,7 @@ public class ReferralHistoryIndexerJobTest
     target.pullNextRange(p);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void pullNextRange_Args__Pair__boom() throws Exception {
     final String schema = target.getDBSchemaName();
     final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
@@ -437,11 +437,11 @@ public class ReferralHistoryIndexerJobTest
     target.pullNextRange(p);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void pullRange_Args__Pair_throw() throws Exception {
     final String schema = target.getDBSchemaName();
-    when(con.prepareStatement(any())).thenThrow(JobsException.class);
-    when(con.prepareStatement(any())).thenThrow(JobsException.class);
+    when(con.prepareStatement(any())).thenThrow(NeutronRuntimeException.class);
+    when(con.prepareStatement(any())).thenThrow(NeutronRuntimeException.class);
     doThrow(SQLException.class).when(con).setAutoCommit(false);
     final Pair<String, String> p = pair;
     target.fakePull = false;
@@ -453,7 +453,7 @@ public class ReferralHistoryIndexerJobTest
     target.threadRetrieveByJdbc();
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void threadExtractJdbc_Args__throw() throws Exception {
     target.throwOnRanges = true;
     target.threadRetrieveByJdbc();

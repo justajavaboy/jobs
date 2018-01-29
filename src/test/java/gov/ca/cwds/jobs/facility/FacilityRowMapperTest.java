@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 public class FacilityRowMapperTest {
 
@@ -34,14 +34,14 @@ public class FacilityRowMapperTest {
     assertThat(target, notNullValue());
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void mapRow_Args__ResultSet() throws Exception {
     ResultSet rs = mock(ResultSet.class);
     FacilityRow actual = target.mapRow(rs);
     assertThat(actual, is(notNullValue()));
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void mapRow_Args__ResultSet_T__SQLException() throws Exception {
     ResultSet rs = mock(ResultSet.class);
     when(rs.next()).thenThrow(SQLException.class);

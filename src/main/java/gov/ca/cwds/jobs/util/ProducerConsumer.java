@@ -5,7 +5,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 public abstract class ProducerConsumer<T> implements Serializable {
 
@@ -39,7 +39,7 @@ public abstract class ProducerConsumer<T> implements Serializable {
       }
 
     } catch (Exception e) {
-      throw new JobsException(e);
+      throw new NeutronRuntimeException(e);
     } finally {
       producer.interrupt();
     }
@@ -53,7 +53,7 @@ public abstract class ProducerConsumer<T> implements Serializable {
           queue.put(o);
         }
       } catch (Exception e) {
-        throw new JobsException(e);
+        throw new NeutronRuntimeException(e);
       }
     } finally {
       producerDone = true;

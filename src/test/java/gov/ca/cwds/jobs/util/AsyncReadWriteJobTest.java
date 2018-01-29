@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.jobs.exception.JobsException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 public class AsyncReadWriteJobTest {
 
@@ -154,7 +154,7 @@ public class AsyncReadWriteJobTest {
 
   @Test
   public void init_Args___T__Exception() throws Exception {
-    doThrow(new JobsException("bozhe miy!")).when(reader).init();
+    doThrow(new NeutronRuntimeException("bozhe miy!")).when(reader).init();
     try {
       target.init();
       fail("Expected exception was not thrown!");
@@ -170,7 +170,7 @@ public class AsyncReadWriteJobTest {
 
   @Test
   public void destroy_Args___T__Exception() throws Exception {
-    doThrow(new JobsException("bozhe miy!")).when(reader).destroy();
+    doThrow(new NeutronRuntimeException("bozhe miy!")).when(reader).destroy();
     try {
       target.destroy();
       fail("Expected exception was not thrown!");

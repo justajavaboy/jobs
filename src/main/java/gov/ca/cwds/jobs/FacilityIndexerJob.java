@@ -34,7 +34,6 @@ import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.model.facility.es.ESFacility;
 import gov.ca.cwds.jobs.component.Rocket;
 import gov.ca.cwds.jobs.config.JobConfiguration;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.facility.FacilityProcessor;
 import gov.ca.cwds.jobs.facility.FacilityRowMapper;
 import gov.ca.cwds.jobs.util.AsyncReadWriteJob;
@@ -44,6 +43,7 @@ import gov.ca.cwds.jobs.util.JobWriter;
 import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
 import gov.ca.cwds.jobs.util.jdbc.JdbcJobReader;
 import gov.ca.cwds.jobs.util.jdbc.RowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
@@ -94,7 +94,7 @@ public class FacilityIndexerJob extends AbstractModule {
 
   @Provides
   @Inject
-  public Client elasticsearchClient(JobConfiguration config) throws NeutronException {
+  public Client elasticsearchClient(JobConfiguration config) throws NeutronCheckedException {
     TransportClient client = null;
     if (config != null) {
       LOGGER.warn("Create NEW ES client");
@@ -120,7 +120,7 @@ public class FacilityIndexerJob extends AbstractModule {
   }
 
   @Provides
-  public JobConfiguration config() throws NeutronException {
+  public JobConfiguration config() throws NeutronCheckedException {
     JobConfiguration configuration = null;
     if (config != null) {
       try {

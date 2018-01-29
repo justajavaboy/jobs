@@ -21,9 +21,9 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -36,7 +36,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class OtherClientNameIndexerJob
     extends BasePersonRocket<ReplicatedAkas, ReplicatedOtherClientName>
-    implements NeutronRowMapper<ReplicatedOtherClientName> {
+    implements AtomRowMapper<ReplicatedOtherClientName> {
 
   private static final long serialVersionUID = 1L;
 
@@ -109,7 +109,7 @@ public class OtherClientNameIndexerJob
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedAkas p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getAkas(), true);
   }
 
@@ -134,7 +134,7 @@ public class OtherClientNameIndexerJob
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges16(this);
   }
 

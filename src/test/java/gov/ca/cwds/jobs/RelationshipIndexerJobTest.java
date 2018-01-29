@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import gov.ca.cwds.dao.cms.ReplicatedRelationshipsDao;
 import gov.ca.cwds.data.es.ElasticSearchPersonRelationship;
 import gov.ca.cwds.data.persistence.cms.EsRelationship;
 import gov.ca.cwds.data.persistence.cms.ReplicatedRelationships;
+import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 
 public class RelationshipIndexerJobTest extends Goddard<ReplicatedRelationships, EsRelationship> {
 
@@ -31,8 +33,10 @@ public class RelationshipIndexerJobTest extends Goddard<ReplicatedRelationships,
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedRelationshipsDao(sessionFactory);
-    target =
-        new RelationshipIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
+    target = new RelationshipIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
+    target.writeLastSuccessfulRunTime(
+        new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat())
+            .parse("2018-01-22 10:53:20"));
   }
 
   @Test
@@ -124,8 +128,8 @@ public class RelationshipIndexerJobTest extends Goddard<ReplicatedRelationships,
 
   @Test
   public void getPrepLastChangeSQL() throws Exception {
-    assertThat(target.getPrepLastChangeSQL(),
-        is(equalTo(RelationshipIndexerJob.INSERT_CLIENT_LAST_CHG)));
+    assertThat(target.getPrepLastChangeSQL(), is(equalTo(
+        "INSERT INTO GT_ID (IDENTIFIER)\nWITH LAST_CHG AS (\n SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID\n FROM CLN_RELT CLNR \n WHERE CLNR.IBMSNAP_LOGMARKER > '2018-01-22 10:53:20.000' \n UNION \n SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID \n FROM CLN_RELT CLNR\n JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n WHERE CLNS.IBMSNAP_LOGMARKER > '2018-01-22 10:53:20.000' \n UNION \n SELECT DISTINCT CLNR.IDENTIFIER  AS REL_ID\n FROM CLN_RELT CLNR\n JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n WHERE CLNP.IBMSNAP_LOGMARKER > '2018-01-22 10:53:20.000' \n),\nCHG_CLIENTS AS (\n SELECT DISTINCT CLNP.IDENTIFIER AS CLIENT_ID\n FROM LAST_CHG LC\n JOIN CLN_RELT CLNR ON CLNR.IDENTIFIER = LC.REL_ID\n JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n UNION\n SELECT DISTINCT CLNS.IDENTIFIER AS CLIENT_ID\n FROM LAST_CHG LC\n JOIN CLN_RELT CLNR ON CLNR.IDENTIFIER = LC.REL_ID\n JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n)\nSELECT chg.CLIENT_ID FROM CHG_CLIENTS chg\n")));
   }
 
   @Test

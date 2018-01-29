@@ -33,12 +33,12 @@ import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -54,7 +54,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class ReferralHistoryIndexerJob
     extends BasePersonRocket<ReplicatedPersonReferrals, EsPersonReferral>
-    implements NeutronRowMapper<EsPersonReferral> {
+    implements AtomRowMapper<EsPersonReferral> {
 
   private static final long serialVersionUID = 1L;
 
@@ -609,7 +609,7 @@ public class ReferralHistoryIndexerJob
    * @see ReferralJobRanges
    */
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return new ReferralJobRanges().getPartitionRanges(this);
   }
 
@@ -629,7 +629,7 @@ public class ReferralHistoryIndexerJob
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedPersonReferrals p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getReferrals(), true);
   }
 

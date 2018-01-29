@@ -20,9 +20,9 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsSafetyAlert;
 import gov.ca.cwds.data.persistence.cms.ReplicatedSafetyAlerts;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.rocket.InitialLoadJdbcRocket;
@@ -36,7 +36,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class SafetyAlertIndexerJob
     extends InitialLoadJdbcRocket<ReplicatedSafetyAlerts, EsSafetyAlert>
-    implements NeutronRowMapper<EsSafetyAlert> {
+    implements AtomRowMapper<EsSafetyAlert> {
 
   private static final long serialVersionUID = 1L;
 
@@ -92,7 +92,7 @@ public class SafetyAlertIndexerJob
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedSafetyAlerts p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getSafetyAlerts(), true);
   }
 
@@ -124,7 +124,7 @@ public class SafetyAlertIndexerJob
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges16(this);
   }
 

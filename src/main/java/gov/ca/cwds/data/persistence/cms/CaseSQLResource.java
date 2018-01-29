@@ -78,7 +78,7 @@ public class CaseSQLResource implements ApiMarker {
 
   //@formatter:off
   public static final String SELECT_CASE =
-          "WITH driver AS ( \n"
+          "WITH DRIVER AS ( \n"
         + "   SELECT DISTINCT rc.FKREFERL_T AS CASE_ID FROM GT_REFR_CLT rc \n"
         + ") \n"
         + "SELECT DISTINCT    \n"
@@ -97,7 +97,7 @@ public class CaseSQLResource implements ApiMarker {
         +   " CAS.LST_UPD_TS          AS CASE_LAST_UPDATED, \n"
         +   " CAS.GVR_ENTC            AS COUNTY, \n"
         +   " CAS.APV_STC  \n"
-        + "FROM driver d  \n"
+        + "FROM DRIVER d  \n"
         + "JOIN CASE_T CAS ON CAS.IDENTIFIER = d.CASE_ID \n"
         + "WHERE CAS.IBMSNAP_OPERATION IN ('I','U')  \n"
         + "WITH UR ";

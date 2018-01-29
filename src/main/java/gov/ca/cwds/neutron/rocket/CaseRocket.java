@@ -49,12 +49,12 @@ import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.EmbeddableStaffWorker;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -73,7 +73,7 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  * @author CWDS API Team
  */
 public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsCaseRelatedPerson>
-    implements NeutronRowMapper<EsCaseRelatedPerson> {
+    implements AtomRowMapper<EsCaseRelatedPerson> {
 
   private static final long serialVersionUID = 1L;
 
@@ -141,7 +141,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return new ReferralJobRanges().getPartitionRanges(this); // Cases takes a long time ...
   }
 
@@ -196,7 +196,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedPersonCases p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getCases(), true);
   }
 
@@ -291,16 +291,16 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * Reads the current list of staff workers.
    * 
    * @return complete list of potential case workers
-   * @throws NeutronException on database error
+   * @throws NeutronCheckedException on database error
    */
-  protected Map<String, StaffPerson> readStaffWorkers() throws NeutronException {
+  protected Map<String, StaffPerson> readStaffWorkers() throws NeutronCheckedException {
     LOGGER.info("readStaffWorkers");
     try {
       return staffPersonDao.findAll().stream()
           .collect(Collectors.toMap(StaffPerson::getId, w -> w));
     } catch (Exception e) {
       fail();
-      throw new NeutronException("ERROR READING STAFF WORKERS", e);
+      throw new NeutronCheckedException("ERROR READING STAFF WORKERS", e);
     }
   }
 
@@ -364,7 +364,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   protected Map<String, ReplicatedClient> readClients(final PreparedStatement stmtSelClient,
-      final Map<String, ReplicatedClient> mapClients) throws NeutronException {
+      final Map<String, ReplicatedClient> mapClients) throws NeutronCheckedException {
     try {
       stmtSelClient.setMaxRows(0);
       stmtSelClient.setQueryTimeout(0);
@@ -381,7 +381,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     } catch (Exception e) {
       fail();
-      throw new NeutronException("ERROR READING CLIENTS", e);
+      throw new NeutronCheckedException("ERROR READING CLIENTS", e);
     }
 
     return mapClients;
@@ -570,7 +570,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   protected int assemblePieces(final List<FocusChildParent> listFocusChildParents,
       List<Pair<String, String>> listCaseClients, final Map<String, EsCaseRelatedPerson> mapCases,
       final Map<String, ReplicatedClient> mapClients, final Map<String, Set<String>> mapClientCases)
-      throws NeutronException {
+      throws NeutronCheckedException {
     LOGGER.info("assemble pieces");
     int countNormalized = 0;
 
@@ -616,7 +616,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   protected boolean verify(final Map<String, ReplicatedPersonCases> mapReadyClientCases)
-      throws NeutronException {
+      throws NeutronCheckedException {
     if (!isLargeDataSet()) {
       LOGGER.info("Validate test data ...");
       final List<Pair<String, String>> tests = new ArrayList<>();
@@ -654,9 +654,9 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * 
    * @param keyRange partition (key) range to read
    * @return number of client documents affected
-   * @throws NeutronException on general error
+   * @throws NeutronCheckedException on general error
    */
-  protected int pullNextRange(final Pair<String, String> keyRange) throws NeutronException {
+  protected int pullNextRange(final Pair<String, String> keyRange) throws NeutronCheckedException {
     final String threadName = "case_" + nextThreadNum.incrementAndGet() + "_" + keyRange.getLeft()
         + "_" + keyRange.getRight();
     nameThread(threadName);
@@ -705,7 +705,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     try {
       recordsProcessed = assemblePieces(listFocusChildParents, listCaseClients, mapCasesById,
           mapClients, new HashMap<>(HASH_SIZE_LARGE));
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
       fail();
       throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());

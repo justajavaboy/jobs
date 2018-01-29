@@ -27,10 +27,10 @@ import gov.ca.cwds.data.persistence.cms.EsRelationship;
 import gov.ca.cwds.data.persistence.cms.ReplicatedRelationships;
 import gov.ca.cwds.data.persistence.cms.SonarQubeMemoryBloatComplaintCache;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -45,7 +45,7 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  */
 public class RelationshipIndexerJob
     extends InitialLoadJdbcRocket<ReplicatedRelationships, EsRelationship>
-    implements NeutronRowMapper<EsRelationship> {
+    implements AtomRowMapper<EsRelationship> {
 
   private static final long serialVersionUID = 1L;
 
@@ -61,17 +61,17 @@ public class RelationshipIndexerJob
           + "WITH LAST_CHG AS (\n"
              + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID\n"
              + " FROM CLN_RELT CLNR \n"
-             + " WHERE CLNR.IBMSNAP_LOGMARKER > ?\n"
+             + " WHERE CLNR.IBMSNAP_LOGMARKER > 'XYZ' \n"
            + " UNION \n"
              + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID \n"
              + " FROM CLN_RELT CLNR\n"
              + " JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
-             + " WHERE CLNS.IBMSNAP_LOGMARKER > ?\n"
+             + " WHERE CLNS.IBMSNAP_LOGMARKER > 'XYZ' \n"
            + " UNION \n"
              + " SELECT DISTINCT CLNR.IDENTIFIER  AS REL_ID\n"
              + " FROM CLN_RELT CLNR\n"
              + " JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
-             + " WHERE CLNP.IBMSNAP_LOGMARKER > ?\n"
+             + " WHERE CLNP.IBMSNAP_LOGMARKER > 'XYZ' \n"
              + "),\n"
          + "CHG_CLIENTS AS (\n"
              + " SELECT DISTINCT CLNP.IDENTIFIER AS CLIENT_ID\n"
@@ -108,7 +108,12 @@ public class RelationshipIndexerJob
 
   @Override
   public String getPrepLastChangeSQL() {
-    return INSERT_CLIENT_LAST_CHG;
+    try {
+      return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
+          NeutronJdbcUtils.makeSimpleTimestampString(determineLastSuccessfulRunTime()));
+    } catch (NeutronCheckedException e) {
+      throw JobLogs.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+    }
   }
 
   @Override
@@ -246,7 +251,7 @@ public class RelationshipIndexerJob
   }
 
   @Override
-  public List<Pair<String, String>> getPartitionRanges() throws NeutronException {
+  public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges64(this);
   }
 
@@ -257,7 +262,7 @@ public class RelationshipIndexerJob
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedRelationships p)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, p.getRelations(), true);
   }
 

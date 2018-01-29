@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.util.jdbc;
+package gov.ca.cwds.neutron.atom;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,7 +12,7 @@ import gov.ca.cwds.data.std.ApiGroupNormalizer;
  * @param <D> de-normalized entity class instance
  */
 @FunctionalInterface
-public interface NeutronRowMapper<D extends ApiGroupNormalizer<?>> {
+public interface AtomRowMapper<D extends ApiGroupNormalizer<?>> {
 
   /**
    * Read from a JDBC ResultSet into an entity bean.

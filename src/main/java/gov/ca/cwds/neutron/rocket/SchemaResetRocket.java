@@ -13,8 +13,8 @@ import com.google.inject.Inject;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
@@ -37,13 +37,12 @@ public class SchemaResetRocket
    * Construct rocket with all required dependencies.
    * 
    * @param dao arbitrary DAO to fulfill interface
-   * @param esDao ElasticSearch DAO for the target index
    * @param mapper Jackson ObjectMapper
+   * @param lastRunFile last run date in format yyyy-MM-dd HH:mm:ss
    * @param flightPlan command line options
    */
   @Inject
   public SchemaResetRocket(final ReplicatedOtherAdultInPlacemtHomeDao dao,
-      // @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
       final ObjectMapper mapper, @LastRunFile String lastRunFile, FlightPlan flightPlan) {
     super(dao, null, lastRunFile, mapper, flightPlan);
     LOGGER.warn("CONSTRUCTOR");
@@ -65,9 +64,9 @@ public class SchemaResetRocket
   /**
    * Refresh a DB2 test schema by calling a stored procedure.
    * 
-   * @throws NeutronException on database error
+   * @throws NeutronCheckedException on database error
    */
-  protected void refreshSchema() throws NeutronException {
+  protected void refreshSchema() throws NeutronCheckedException {
     if (!isLargeDataSet()) {
       LOGGER.warn("\n\n\n   REFRESH SCHEMA!!\n\n\n");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();

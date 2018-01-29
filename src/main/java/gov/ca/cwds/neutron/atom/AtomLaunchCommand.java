@@ -1,13 +1,13 @@
 package gov.ca.cwds.neutron.atom;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 
 public interface AtomLaunchCommand {
 
-  void stopScheduler(boolean waitForJobsToComplete) throws NeutronException;
+  void stopScheduler(boolean waitForJobsToComplete) throws NeutronCheckedException;
 
-  void startScheduler() throws NeutronException;
+  void startScheduler() throws NeutronCheckedException;
 
-  void shutdown() throws NeutronException;
+  void shutdown() throws NeutronCheckedException;
 
 }

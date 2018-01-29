@@ -14,7 +14,7 @@ import gov.ca.cwds.data.es.ElasticSearchPerson.ESOptionalCollection;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.data.std.ApiPersonAware;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
@@ -82,11 +82,11 @@ public interface AtomPersonDocPrep<T extends PersistentObject> extends ApiMarker
    * @param elements elements to send
    * @param updateOnly update only, no upsert (i.e., don't create a new document)
    * @return upsert request
-   * @throws NeutronException general error
+   * @throws NeutronCheckedException general error
    * @param <E> Element type
    */
   default <E> UpdateRequest prepareUpdateRequest(ElasticSearchPerson esp, T p, List<E> elements,
-      boolean updateOnly) throws NeutronException {
+      boolean updateOnly) throws NeutronCheckedException {
     final StringBuilder buf = new StringBuilder();
     String insertJson;
     try {
@@ -122,11 +122,11 @@ public interface AtomPersonDocPrep<T extends PersistentObject> extends ApiMarker
    * @param p normalized person doc
    * @param elements elements to send
    * @return upsert request
-   * @throws NeutronException general error
+   * @throws NeutronCheckedException general error
    * @param <E> Element type
    */
   default <E> UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, T p, List<E> elements)
-      throws NeutronException {
+      throws NeutronCheckedException {
     return prepareUpdateRequest(esp, p, elements, false);
   }
 

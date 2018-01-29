@@ -198,7 +198,8 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
     proc = mock(ProcedureCall.class);
     client = mock(Client.class);
 
-    TestNormalizedEntityDao testNormalizedEntityDao = new TestNormalizedEntityDao(sessionFactory);
+    final TestNormalizedEntityDao testNormalizedEntityDao =
+        new TestNormalizedEntityDao(sessionFactory);
     mach1Rocket = new Mach1TestRocket(testNormalizedEntityDao, esDao, lastRunFile, MAPPER);
     flightPlanRegistry = new FlightPlanRegistry(flightPlan);
     flightSchedule = StandardFlightSchedule.CLIENT;
@@ -334,7 +335,6 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
         .thenReturn(mach1Rocket);
 
     when(scheduler.getListenerManager()).thenReturn(listenerManager);
-
     markTestDone();
   }
 

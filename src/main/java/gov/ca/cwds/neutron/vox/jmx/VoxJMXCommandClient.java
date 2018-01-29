@@ -10,7 +10,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -53,7 +53,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
     this.port = port;
   }
 
-  public final void connect() throws NeutronException {
+  public final void connect() throws NeutronCheckedException {
     try {
       jmxConnector = makeConnector.apply(host, port);
       mbeanServerConnection = jmxConnector.getMBeanServerConnection();
@@ -71,7 +71,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
     }
   }
 
-  public final VoxLaunchPadMBean proxy(String rocketName) throws NeutronException {
+  public final VoxLaunchPadMBean proxy(String rocketName) throws NeutronCheckedException {
     try {
       final ObjectName mbeanName = new ObjectName("Neutron:rocket=" + rocketName);
       return MBeanServerInvocationHandler.newProxyInstance(mbeanServerConnection, mbeanName,
@@ -81,7 +81,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
     }
   }
 
-  public final void launch(final VoxCommandInstruction cmd) throws NeutronException {
+  public final void launch(final VoxCommandInstruction cmd) throws NeutronCheckedException {
     try {
       LOGGER.info("VOX: CONNECTING JMX...");
       this.setHost(cmd.getHost());

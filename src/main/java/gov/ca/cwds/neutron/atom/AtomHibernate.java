@@ -15,9 +15,8 @@ import org.hibernate.Session;
 import gov.ca.cwds.data.BaseDaoImpl;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -31,7 +30,7 @@ import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
  * @param <M> de-normalized type or same as normalized type if normalization not needed
  */
 public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNormalizer<?>>
-    extends AtomShared, NeutronRowMapper<M> {
+    extends AtomShared, AtomRowMapper<M> {
 
   /**
    * @return default CMS schema name
@@ -114,9 +113,9 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
    * 
    * @see NeutronDB2Utils#isDB2OnZOS(BaseDaoImpl)
    * @return true if DB2 on mainframe
-   * @throws NeutronException on error
+   * @throws NeutronCheckedException on error
    */
-  default boolean isDB2OnZOS() throws NeutronException {
+  default boolean isDB2OnZOS() throws NeutronCheckedException {
     return NeutronDB2Utils.isDB2OnZOS(getJobDao());
   }
 
@@ -124,13 +123,13 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
    * Detect large data sets on the mainframe.
    * 
    * <p>
-   * <strong>HACK:<strong> also checks schema name. Add a "database version" table or something.
+   * <strong>HACK:</strong> also checks schema name. Add a "database version" table or something.
    * </p>
    * 
    * @return true if is large data set on z/OS
-   * @throws NeutronException on error
+   * @throws NeutronCheckedException on error
    */
-  default boolean isLargeDataSet() throws NeutronException {
+  default boolean isLargeDataSet() throws NeutronCheckedException {
     final String schema = getDBSchemaName().toUpperCase().trim();
     return isDB2OnZOS() && (schema.endsWith("RSQ") || schema.endsWith("REP")); // Not the best idea
   }

@@ -5,4 +5,4 @@
  * @author CWDS API Team
  *
  */
-package gov.ca.cwds.neutron.rocket;
+package gov.ca.cwds.neutron.exception;

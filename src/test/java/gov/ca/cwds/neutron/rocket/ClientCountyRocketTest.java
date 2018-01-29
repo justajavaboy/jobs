@@ -19,8 +19,8 @@ import gov.ca.cwds.dao.cms.ReplicatedClientDao;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.JobsException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 public class ClientCountyRocketTest extends Goddard<ReplicatedClient, EsClientAddress> {
 
@@ -110,7 +110,7 @@ public class ClientCountyRocketTest extends Goddard<ReplicatedClient, EsClientAd
     target.pullRange(pair);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void pullRange_Args__Pair__boom() throws Exception {
     doThrow(new SQLException()).when(con).commit();
     target.pullRange(pair);
@@ -121,13 +121,13 @@ public class ClientCountyRocketTest extends Goddard<ReplicatedClient, EsClientAd
     target.callProc();
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void callProc_Args__2() throws Exception {
     when(proc.getOutputParameterValue(any(String.class))).thenReturn(null);
     target.callProc();
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void callProc_Args__3() throws Exception {
     when(proc.getOutputParameterValue(any(String.class))).thenReturn(new Integer(255));
     target.callProc();

@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 public class JobLogsTest {
 
@@ -38,7 +38,7 @@ public class JobLogsTest {
     JobLogs.logEvery(cntr, action, args);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void throwFatalError_Args__Logger__Throwable__String__ObjectArray4() throws Exception {
     Logger log = mock(Logger.class);
     Throwable e = new IllegalStateException("hello world");
@@ -47,7 +47,7 @@ public class JobLogsTest {
     throw JobLogs.buildRuntimeException(log, e, pattern, args);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void throwFatalError_Args__Logger__Throwable__String() throws Exception {
     Logger log = mock(Logger.class);
     Throwable e = new IllegalStateException("error message");
@@ -55,7 +55,7 @@ public class JobLogsTest {
     throw JobLogs.buildRuntimeException(log, e, message);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void logEvery_Args__Logger__int__String__ObjectArray1() throws Exception {
     Exception e = new Exception();
     throw JobLogs.buildRuntimeException(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
@@ -69,7 +69,7 @@ public class JobLogsTest {
     JobLogs.logEvery(cntr, action, args);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void raiseError_Args__Logger__Throwable__String__ObjectArray2() throws Exception {
     Logger log = mock(Logger.class);
     Throwable e = null;
@@ -78,7 +78,7 @@ public class JobLogsTest {
     throw JobLogs.buildRuntimeException(log, e, pattern, args);
   }
 
-  @Test(expected = JobsException.class)
+  @Test(expected = NeutronRuntimeException.class)
   public void raiseError_Args__Logger__Throwable__ObjectArray3() throws Exception {
     Logger log = mock(Logger.class);
     Throwable e = null;
@@ -113,7 +113,7 @@ public class JobLogsTest {
     Throwable e = null;
     String pattern = null;
     Object[] args = new Object[] {};
-    JobsException actual = JobLogs.buildRuntimeException(log, e, pattern, args);
+    NeutronRuntimeException actual = JobLogs.buildRuntimeException(log, e, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -123,7 +123,7 @@ public class JobLogsTest {
     Throwable e = null;
     String pattern = "uh oh: {}";
     Object[] args = new Object[] {"oops!"};
-    JobsException actual = JobLogs.buildRuntimeException(log, e, pattern, args);
+    NeutronRuntimeException actual = JobLogs.buildRuntimeException(log, e, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -133,7 +133,7 @@ public class JobLogsTest {
     Throwable e = null;
     String pattern = "uh oh: {}";
     Object[] args = new Object[] {"oops!"};
-    JobsException actual = JobLogs.buildRuntimeException(log, e, pattern, args);
+    NeutronRuntimeException actual = JobLogs.buildRuntimeException(log, e, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -144,7 +144,7 @@ public class JobLogsTest {
     Throwable e = null;
     String pattern = null;
     Object[] args = new Object[] {};
-    NeutronException actual = JobLogs.buildCheckedException(log, e, pattern, args);
+    NeutronCheckedException actual = JobLogs.buildCheckedException(log, e, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -154,7 +154,7 @@ public class JobLogsTest {
     Throwable e = null;
     String pattern = null;
     Object[] args = new Object[] {};
-    NeutronException actual = JobLogs.checked(log, e, pattern, args);
+    NeutronCheckedException actual = JobLogs.checked(log, e, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -164,7 +164,7 @@ public class JobLogsTest {
     Throwable e = null;
     String pattern = null;
     Object[] args = new Object[] {};
-    JobsException actual = JobLogs.runtime(log, e, pattern, args);
+    NeutronRuntimeException actual = JobLogs.runtime(log, e, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -180,7 +180,7 @@ public class JobLogsTest {
     Logger log = mock(Logger.class);
     String pattern = null;
     Object[] args = new Object[] {};
-    JobsException actual = JobLogs.runtime(log, pattern, args);
+    NeutronRuntimeException actual = JobLogs.runtime(log, pattern, args);
     assertThat(actual, is(notNullValue()));
   }
 

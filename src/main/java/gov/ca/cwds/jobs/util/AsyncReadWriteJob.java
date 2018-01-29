@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import gov.ca.cwds.jobs.component.Rocket;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
 /**
  * @author CWDS Elasticsearch Team
@@ -66,7 +66,7 @@ public class AsyncReadWriteJob<I extends Serializable, O extends Serializable>
     try {
       return reader.read();
     } catch (Exception e) {
-      throw new JobsException(e);
+      throw new NeutronRuntimeException(e);
     }
   }
 
@@ -80,7 +80,7 @@ public class AsyncReadWriteJob<I extends Serializable, O extends Serializable>
       }
     } catch (Exception e) {
       chunk.clear();
-      throw new JobsException("ERROR CONSUMING CHUNK!", e);
+      throw new NeutronRuntimeException("ERROR CONSUMING CHUNK!", e);
     }
   }
 
@@ -98,24 +98,24 @@ public class AsyncReadWriteJob<I extends Serializable, O extends Serializable>
         flush();
       }
     } catch (Exception e) {
-      throw new JobsException(e);
+      throw new NeutronRuntimeException(e);
     } finally {
       try {
         destroy();
       } catch (Exception e) {
-        throw new JobsException(e); // NOSONAR
+        throw new NeutronRuntimeException(e); // NOSONAR
       }
     }
   }
 
   @Override
-  public void init() throws NeutronException {
+  public void init() throws NeutronCheckedException {
     reader.init();
     writer.init();
   }
 
   @Override
-  public void destroy() throws NeutronException {
+  public void destroy() throws NeutronCheckedException {
     reader.destroy();
     writer.destroy();
   }

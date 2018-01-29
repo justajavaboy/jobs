@@ -47,8 +47,6 @@ import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.jobs.component.HoverCar;
 import gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.atom.AtomDocumentSecurity;
@@ -59,6 +57,8 @@ import gov.ca.cwds.neutron.atom.AtomValidateDocument;
 import gov.ca.cwds.neutron.enums.NeutronColumn;
 import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
@@ -69,7 +69,7 @@ import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 
 /**
- * Base person rocket to documents from CMS into ElasticSearch.
+ * Base class to index person documents from CMS into ElasticSearch.
  * 
  * <p>
  * This class implements {@link AutoCloseable} and automatically closes common resources, such as
@@ -78,7 +78,7 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
  * 
  * <p>
  * <strong>Auto mode ("smart" mode)</strong> takes the same parameters as last run and determines
- * whether the rocket has never been run. If the last run date is older than 50 years, then then
+ * whether the rocket has never been run. If the last run date is older than 25 years, then then
  * assume that the rocket is populating ElasticSearch for the first time and run all initial batch
  * loads.
  * </p>
@@ -86,7 +86,7 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
  * <h3>Command Line:</h3>
  * 
  * <pre>
- * {@code java gov.ca.cwds.jobs.ClientIndexerJob -c config/local.yaml -l /Users/CWS-NS3/client_indexer_time.txt}
+ * {@code java gov.ca.cwds.jobs.ClientIndexerJob -c config/local.yaml -l /Users/mylittlepony/client_indexer_time.txt}
  * </pre>
  * 
  * @author CWDS API Team
@@ -238,7 +238,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
   /**
    * Prepare an "upsert" request <strong>without a checked exception</strong> and throw a runtime
-   * {@link JobsException} on error.
+   * {@link NeutronRuntimeException} on error.
    * 
    * <p>
    * This method's signature is easier to use in functional lambda and stream calls than method
@@ -275,12 +275,12 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * @param t target ApiPersonAware instance
    * @return left = insert JSON, right = update JSON throws JsonProcessingException on JSON parse
    *         error
-   * @throws NeutronException on Elasticsearch disconnect
+   * @throws NeutronCheckedException on Elasticsearch disconnect
    * @see ElasticTransformer#prepareUpsertRequest(AtomPersonDocPrep, String, String,
    *      ElasticSearchPerson, PersistentObject)
    */
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, T t)
-      throws NeutronException {
+      throws NeutronCheckedException {
     if (StringUtils.isNotBlank(getLegacySourceTable())) {
       esp.setLegacySourceTable(getLegacySourceTable());
     }
@@ -306,9 +306,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * Run threads to extract, transform, and index.
    * </p>
    * 
-   * @throws NeutronException bombed
+   * @throws NeutronCheckedException bombed
    */
-  protected void doInitialLoadJdbc() throws NeutronException {
+  protected void doInitialLoadJdbc() throws NeutronCheckedException {
     final List<Thread> threads = new ArrayList<>();
 
     try {
@@ -520,7 +520,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
   }
 
   /**
-   * Forcibly remove sealed or sensitive documents.
+   * If not running in sealed/sensitive mode, forcibly remove sealed or sensitive documents.
    * 
    * @param deletionResults documents to remove from Elasticsearch
    * @param bp bulk processor
@@ -555,10 +555,10 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * 
    * @param lastRunDt last time the batch ran successfully.
    * @return List of results to process
-   * @throws NeutronException oops!
+   * @throws NeutronCheckedException oops!
    * @see gov.ca.cwds.neutron.rocket.LastFlightRocket#launch(java.util.Date)
    */
-  protected Date doLastRun(Date lastRunDt) throws NeutronException {
+  protected Date doLastRun(Date lastRunDt) throws NeutronCheckedException {
     LOGGER.info("LAST RUN MODE!");
 
     try {
@@ -616,7 +616,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * @see gov.ca.cwds.neutron.rocket.LastFlightRocket#launch(java.util.Date)
    */
   @Override
-  public Date launch(Date lastSuccessfulRunTime) throws NeutronException {
+  public Date launch(Date lastSuccessfulRunTime) throws NeutronCheckedException {
     LOGGER.info("LAUNCH ROCKET! {}", getClass().getName());
     Date ret;
 
@@ -650,7 +650,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       }
       // CHECKSTYLE:ON
       ret = new Date(flightLog.getStartTime());
-    } catch (NeutronException | RuntimeException e) {
+    } catch (NeutronCheckedException | RuntimeException e) {
       fail();
       throw JobLogs.checked(LOGGER, e, "ROCKET EXPLODED! {}", e.getMessage());
     } finally {
@@ -823,7 +823,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
   }
 
   @Override
-  protected synchronized void finish() throws NeutronException {
+  protected synchronized void finish() throws NeutronCheckedException {
     final String rocketName = this.getClass().getName();
     LOGGER.info("FINISH JOB! {}", rocketName);
     try {
@@ -905,7 +905,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       bp.awaitClose(NeutronIntegerDefaults.WAIT_BULK_PROCESSOR.getValue(), TimeUnit.SECONDS);
     } catch (Exception e2) {
       fail();
-      throw new JobsException("ERROR CLOSING BULK PROCESSOR!", e2);
+      throw new NeutronRuntimeException("ERROR CLOSING BULK PROCESSOR!", e2);
     } finally {
       doneRetrieve();
     }
@@ -920,10 +920,10 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    * </p>
    * 
    * @return number of records processed
-   * @throws NeutronException on general error
+   * @throws NeutronCheckedException on general error
    * @see #pullBucketRange(String, String)
    */
-  protected int extractHibernate() throws NeutronException {
+  protected int extractHibernate() throws NeutronCheckedException {
     LOGGER.info("INITIAL LOAD WITH HIBERNATE!");
     final List<Pair<String, String>> buckets = getPartitionRanges();
 

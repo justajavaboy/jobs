@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.jobs.config.CmdLineOption;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
@@ -353,9 +353,9 @@ public class FlightPlan implements ApiMarker {
   /**
    * Pretty print usage.
    * 
-   * @throws NeutronException on IO exception
+   * @throws NeutronCheckedException on IO exception
    */
-  protected static void printUsage() throws NeutronException {
+  protected static void printUsage() throws NeutronCheckedException {
     try (final StringWriter sw = new StringWriter()) {
       final String pad = StringUtils.leftPad("", 90, '=');
       new HelpFormatter().printHelp(new PrintWriter(sw), 100, "Batch loader",
@@ -388,9 +388,9 @@ public class FlightPlan implements ApiMarker {
    * 
    * @param args command line to parse
    * @return JobOptions defining this rocket
-   * @throws NeutronException if unable to parse command line
+   * @throws NeutronCheckedException if unable to parse command line
    */
-  public static FlightPlan parseCommandLine(final String[] args) throws NeutronException {
+  public static FlightPlan parseCommandLine(final String[] args) throws NeutronCheckedException {
     String esConfigPeopleLoc = null;
     String esConfigPeopleSummaryLoc = null;
     String indexName = null;

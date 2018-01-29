@@ -15,9 +15,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.util.JobWriter;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
@@ -67,14 +67,14 @@ public class ElasticJobWriter<T extends PersistentObject> implements JobWriter<T
       try {
         return esDao.bulkAdd(objectMapper, String.valueOf(item.getPrimaryKey()), item);
       } catch (JsonProcessingException e) {
-        throw new JobsException(e);
+        throw new NeutronRuntimeException(e);
       }
     }).forEach(bulkProcessor::add);
     bulkProcessor.flush();
   }
 
   @Override
-  public void destroy() throws NeutronException {
+  public void destroy() throws NeutronCheckedException {
     try {
       bulkProcessor.awaitClose(3000, TimeUnit.MILLISECONDS);
       esDao.close();

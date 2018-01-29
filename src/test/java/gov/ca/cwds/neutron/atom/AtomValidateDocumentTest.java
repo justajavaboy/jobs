@@ -14,11 +14,11 @@ import org.junit.Test;
 
 import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.jobs.test.Mach1TestRocket;
 import gov.ca.cwds.jobs.test.TestDenormalizedEntity;
 import gov.ca.cwds.jobs.test.TestNormalizedEntity;
 import gov.ca.cwds.jobs.test.TestNormalizedEntityDao;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 
 public class AtomValidateDocumentTest
@@ -54,7 +54,7 @@ public class AtomValidateDocumentTest
     assertThat(actual, is(notNullValue()));
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void readPerson_Args__String_T__NeutronException() throws Exception {
     final String json = null;
     target.readPerson(json);
@@ -65,9 +65,9 @@ public class AtomValidateDocumentTest
     target.processDocumentHits(hits);
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void processDocumentHits_Args__SearchHits_T__NeutronException() throws Exception {
-    when(hits.getHits()).thenThrow(NeutronException.class);
+    when(hits.getHits()).thenThrow(NeutronCheckedException.class);
     target.processDocumentHits(hits);
   }
 
@@ -89,10 +89,10 @@ public class AtomValidateDocumentTest
     final FlightLog flightLog = mock(FlightLog.class);
     try {
       target.setFlightLog(flightLog);
-      when(flightLog.getAffectedDocumentIds()).thenThrow(NeutronException.class);
+      when(flightLog.getAffectedDocumentIds()).thenThrow(NeutronCheckedException.class);
       target.validateDocuments();
       fail("Expected exception was not thrown!");
-    } catch (NeutronException e) {
+    } catch (NeutronCheckedException e) {
     }
   }
 

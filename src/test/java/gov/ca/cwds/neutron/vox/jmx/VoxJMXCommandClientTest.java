@@ -16,7 +16,7 @@ import javax.management.remote.JMXConnector;
 import org.junit.Before;
 import org.junit.Test;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.vox.VoxCommandInstruction;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandLastRunStatus;
 
@@ -65,7 +65,7 @@ public class VoxJMXCommandClientTest {
     target.connect();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void connect_Args___T__NeutronException() throws Exception {
     doThrow(new IllegalStateException()).when(jmxConnector).getMBeanServerConnection();
     target.connect();
@@ -83,14 +83,14 @@ public class VoxJMXCommandClientTest {
     target.close();
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void proxy_Args__String() throws Exception {
     Object actual = target.proxy(rocket);
     Object expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = NeutronException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void proxy_Args__String_T__NeutronException() throws Exception {
     target.proxy(rocket);
   }

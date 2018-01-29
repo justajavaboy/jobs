@@ -1,7 +1,7 @@
 package gov.ca.cwds.neutron.atom;
 
 import gov.ca.cwds.data.std.ApiMarker;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 
@@ -12,17 +12,17 @@ public interface AtomLaunchPad extends ApiMarker {
    * 
    * @param cmdLine command line
    * @return JXM output
-   * @throws NeutronException on error
+   * @throws NeutronCheckedException on error
    */
-  String run(String cmdLine) throws NeutronException;
+  String run(String cmdLine) throws NeutronCheckedException;
 
   // ==============
   // COMMANDS:
   // ==============
 
-  void schedule() throws NeutronException;
+  void schedule() throws NeutronCheckedException;
 
-  void unschedule() throws NeutronException;
+  void unschedule() throws NeutronCheckedException;
 
   /**
    * Show last flight status.
@@ -48,31 +48,31 @@ public interface AtomLaunchPad extends ApiMarker {
   /**
    * Abort a rocket <strong>in flight</strong>.
    * 
-   * @throws NeutronException general error
+   * @throws NeutronCheckedException general error
    */
-  void stop() throws NeutronException;
+  void stop() throws NeutronCheckedException;
 
   /**
    * Pause a rocket's schedule.
    * 
-   * @throws NeutronException general error
+   * @throws NeutronCheckedException general error
    */
-  void pause() throws NeutronException;
+  void pause() throws NeutronCheckedException;
 
   /**
    * Resume a rocket's schedule.
    * 
-   * @throws NeutronException general error
+   * @throws NeutronCheckedException general error
    */
-  void resume() throws NeutronException;
+  void resume() throws NeutronCheckedException;
 
   /**
    * Abort all rockets, shutdown command center, and exit JVM.
    * 
    * @return readable result string
-   * @throws NeutronException general error
+   * @throws NeutronCheckedException general error
    */
-  String shutdown() throws NeutronException;
+  String shutdown() throws NeutronCheckedException;
 
 
   FlightPlan getFlightPlan();

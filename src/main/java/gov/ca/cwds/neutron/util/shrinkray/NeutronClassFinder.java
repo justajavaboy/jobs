@@ -3,7 +3,7 @@ package gov.ca.cwds.neutron.util.shrinkray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 public class NeutronClassFinder {
@@ -14,7 +14,7 @@ public class NeutronClassFinder {
     // static methods only
   }
 
-  public static Class<?> classForName(String className) throws NeutronException {
+  public static Class<?> classForName(String className) throws NeutronCheckedException {
     try {
       return Class.forName(className);
     } catch (ClassNotFoundException e) {

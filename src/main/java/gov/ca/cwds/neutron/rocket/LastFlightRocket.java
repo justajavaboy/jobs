@@ -14,12 +14,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import gov.ca.cwds.jobs.component.Rocket;
-import gov.ca.cwds.jobs.exception.JobsException;
-import gov.ca.cwds.jobs.exception.NeutronException;
 import gov.ca.cwds.neutron.atom.AtomRocketControl;
 import gov.ca.cwds.neutron.atom.AtomShared;
 import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
@@ -88,8 +88,8 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
 
     try {
       finish(); // Close resources, notify listeners, or even close JVM in standalone mode.
-    } catch (NeutronException e) {
-      throw new JobsException("ABORT LANDING!", e);
+    } catch (NeutronCheckedException e) {
+      throw new NeutronRuntimeException("ABORT LANDING!", e);
     }
 
     // SLF4J does not yet support conditional invocation.
@@ -141,9 +141,9 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * Reads the last run file and returns the last run date.
    * 
    * @return last successful run date/time as a Java Date.
-   * @throws NeutronException I/O or parse error
+   * @throws NeutronCheckedException I/O or parse error
    */
-  protected Date determineLastSuccessfulRunTime() throws NeutronException {
+  public Date determineLastSuccessfulRunTime() throws NeutronCheckedException {
     Date ret = null;
     try (BufferedReader br = new BufferedReader(new FileReader(lastRunTimeFilename))) { // NOSONAR
       ret = new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat())
@@ -160,9 +160,9 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * Write the time stamp <strong>IF</strong> the rocket succeeded.
    * 
    * @param datetime date and time to store
-   * @throws NeutronException I/O or parse error
+   * @throws NeutronCheckedException I/O or parse error
    */
-  protected void writeLastSuccessfulRunTime(Date datetime) throws NeutronException {
+  public void writeLastSuccessfulRunTime(Date datetime) throws NeutronCheckedException {
     if (!isFailed()) {
       try (BufferedWriter w = new BufferedWriter(new FileWriter(lastRunTimeFilename))) { // NOSONAR
         w.write(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.formatter().format(datetime));
@@ -178,16 +178,16 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * 
    * @param lastSuccessfulRunTime The last successful run
    * @return The time of the latest run if successful.
-   * @throws NeutronException if rocket fails
+   * @throws NeutronCheckedException if rocket fails
    */
-  public abstract Date launch(Date lastSuccessfulRunTime) throws NeutronException;
+  public abstract Date launch(Date lastSuccessfulRunTime) throws NeutronCheckedException;
 
   /**
    * Marks the rocket as completed. Close resources, notify listeners, or even close JVM.
    * 
-   * @throws NeutronException rocket landing failure
+   * @throws NeutronCheckedException rocket landing failure
    */
-  protected abstract void finish() throws NeutronException;
+  protected abstract void finish() throws NeutronCheckedException;
 
   /**
    * Getter for last run time.

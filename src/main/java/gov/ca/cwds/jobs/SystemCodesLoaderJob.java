@@ -18,7 +18,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.syscode.NsSystemCode;
 import gov.ca.cwds.neutron.rocket.syscode.NsSystemCodeDao;
@@ -87,9 +87,9 @@ public class SystemCodesLoaderJob {
    * Delete and load system codes into new system.
    * 
    * @return Map of newly loaded system codes.
-   * @throws NeutronException oops!
+   * @throws NeutronCheckedException oops!
    */
-  public Map<Integer, NsSystemCode> load() throws NeutronException {
+  public Map<Integer, NsSystemCode> load() throws NeutronCheckedException {
     Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>();
 
     Set<SystemMeta> allSystemMetas = SystemCodeCache.global().getAllSystemMetas();

@@ -11,7 +11,7 @@ import com.ibm.db2.jcc.DB2Connection;
 import com.ibm.db2.jcc.DB2SystemMonitor;
 
 import gov.ca.cwds.data.BaseDaoImpl;
-import gov.ca.cwds.jobs.exception.NeutronException;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
@@ -85,9 +85,9 @@ public final class NeutronDB2Utils {
    * @param dao DAO
    * 
    * @return true if DB2 is running on a mainframe
-   * @throws NeutronException on general error
+   * @throws NeutronCheckedException on general error
    */
-  public static boolean isDB2OnZOS(final BaseDaoImpl<?> dao) throws NeutronException {
+  public static boolean isDB2OnZOS(final BaseDaoImpl<?> dao) throws NeutronCheckedException {
     boolean ret = false;
 
     try (final Connection con = dao.getSessionFactory().getSessionFactoryOptions()

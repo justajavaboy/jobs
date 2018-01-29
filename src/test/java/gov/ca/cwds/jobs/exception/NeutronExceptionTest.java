@@ -5,46 +5,48 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+
 public class NeutronExceptionTest {
 
   @Test
   public void type() throws Exception {
-    assertThat(NeutronException.class, notNullValue());
+    assertThat(NeutronCheckedException.class, notNullValue());
   }
 
   @Test
   public void instantiation1() throws Exception {
     String message = "test";
-    NeutronException target = new NeutronException(message);
+    NeutronCheckedException target = new NeutronCheckedException(message);
     assertThat(target, notNullValue());
   }
 
   @Test
   public void instantiation2() throws Exception {
     String message = null;
-    NeutronException target =
-        new NeutronException(message, new IllegalArgumentException("whatever"));
+    NeutronCheckedException target =
+        new NeutronCheckedException(message, new IllegalArgumentException("whatever"));
     assertThat(target, notNullValue());
   }
 
   @Test
   public void instantiation4() throws Exception {
     String message = null;
-    NeutronException target =
-        new NeutronException(message, new IllegalArgumentException("whatever"), false, false);
+    NeutronCheckedException target =
+        new NeutronCheckedException(message, new IllegalArgumentException("whatever"), false, false);
     assertThat(target, notNullValue());
   }
 
   @Test
   public void instantiation5() throws Exception {
-    NeutronException target = new NeutronException(new IllegalArgumentException("whatever"));
+    NeutronCheckedException target = new NeutronCheckedException(new IllegalArgumentException("whatever"));
     assertThat(target, notNullValue());
   }
 
   @Test
   public void instantiation() throws Exception {
     String message = null;
-    NeutronException target = new NeutronException(message);
+    NeutronCheckedException target = new NeutronCheckedException(message);
     assertThat(target, notNullValue());
   }
 

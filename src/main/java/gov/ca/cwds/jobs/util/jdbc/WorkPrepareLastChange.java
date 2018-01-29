@@ -69,6 +69,7 @@ public class WorkPrepareLastChange implements Work {
     NeutronDB2Utils.enableParallelism(con);
 
     final String strLastRunTime = NeutronJdbcUtils.makeSimpleTimestampString(lastRunTime);
+    LOGGER.info("strLastRunTime: {}", strLastRunTime);
     try (final PreparedStatement stmt = createPreparedStatement(con)) {
       for (int i = 1; i <= StringUtils.countMatches(sql, "?"); i++) {
         stmt.setString(i, strLastRunTime); // String or Timestamp, that is the question.

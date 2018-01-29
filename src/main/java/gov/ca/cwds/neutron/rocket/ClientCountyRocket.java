@@ -21,7 +21,7 @@ import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.inject.CmsSessionFactory;
 import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronRowMapper;
+import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.flight.FlightPlan;
@@ -37,7 +37,7 @@ import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
  * @author CWDS API Team
  */
 public class ClientCountyRocket extends ClientIndexerJob
-    implements NeutronRowMapper<EsClientAddress>, AtomValidateDocument {
+    implements AtomRowMapper<EsClientAddress>, AtomValidateDocument {
 
   private static final long serialVersionUID = 1L;
 
