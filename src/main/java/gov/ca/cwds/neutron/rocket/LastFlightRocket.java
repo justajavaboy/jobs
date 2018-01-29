@@ -143,7 +143,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * @return last successful run date/time as a Java Date.
    * @throws NeutronCheckedException I/O or parse error
    */
-  protected Date determineLastSuccessfulRunTime() throws NeutronCheckedException {
+  public Date determineLastSuccessfulRunTime() throws NeutronCheckedException {
     Date ret = null;
     try (BufferedReader br = new BufferedReader(new FileReader(lastRunTimeFilename))) { // NOSONAR
       ret = new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat())
