@@ -5,6 +5,11 @@ import org.quartz.JobKey;
 
 import gov.ca.cwds.neutron.atom.AtomLaunchPad;
 
+/**
+ * JMX exposed methods from {@link AtomLaunchPad}.
+ * 
+ * @author CWDS API Team
+ */
 public interface VoxLaunchPadMBean extends AtomLaunchPad {
 
   String getRocketName();
