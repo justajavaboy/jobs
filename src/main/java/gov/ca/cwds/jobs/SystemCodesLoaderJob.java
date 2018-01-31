@@ -90,20 +90,20 @@ public class SystemCodesLoaderJob {
    * @throws NeutronCheckedException oops!
    */
   public Map<Integer, NsSystemCode> load() throws NeutronCheckedException {
-    Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>();
+    final Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>();
 
-    Set<SystemMeta> allSystemMetas = SystemCodeCache.global().getAllSystemMetas();
+    final Set<SystemMeta> allSystemMetas = SystemCodeCache.global().getAllSystemMetas();
     LOGGER.info("Found total {} system metas in legacy", allSystemMetas.size());
 
-    Set<SystemCode> allSystemCodes = SystemCodeCache.global().getAllSystemCodes();
+    final Set<SystemCode> allSystemCodes = SystemCodeCache.global().getAllSystemCodes();
     LOGGER.info("Found total {} system codes in legacy", allSystemCodes.size());
 
-    Map<String, SystemMeta> systemMetaMap = new HashMap<>();
+    final Map<String, SystemMeta> systemMetaMap = new HashMap<>();
     for (SystemMeta systemMeta : allSystemMetas) {
       systemMetaMap.put(StringUtils.trim(systemMeta.getLogicalTableDsdName()), systemMeta);
     }
 
-    Map<Short, SystemCode> systemCodeMap = new HashMap<>();
+    final Map<Short, SystemCode> systemCodeMap = new HashMap<>();
     for (SystemCode systemCode : allSystemCodes) {
       systemCodeMap.put(systemCode.getSystemId(), systemCode);
     }
@@ -124,12 +124,12 @@ public class SystemCodesLoaderJob {
             StringUtils.equalsIgnoreCase("N", systemCode.getInactiveIndicator().trim());
 
         if (active) {
-          NsSystemCode nsc = new NsSystemCode();
+          final NsSystemCode nsc = new NsSystemCode();
           nsc.setId(systemCode.getSystemId().intValue());
           nsc.setDescription(systemCode.getShortDescription());
           nsc.setOtherCode(StringUtils.trim(systemCode.getOtherCd()));
 
-          String categoryId = StringUtils.trim(systemCode.getForeignKeyMetaTable());
+          final String categoryId = StringUtils.trim(systemCode.getForeignKeyMetaTable());
           nsc.setCategoryId(categoryId);
 
           handleSystemMeta(systemMetaMap, nsc, categoryId, systemCode);

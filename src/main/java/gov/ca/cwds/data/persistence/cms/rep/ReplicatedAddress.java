@@ -30,6 +30,9 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReplicatedAddress extends BaseAddress implements CmsReplicatedEntity {
 
+  /**
+   * Java doesn't allow multiple inheritance. Redeclare here.
+   */
   private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
 
   public ReplicatedAddress() {

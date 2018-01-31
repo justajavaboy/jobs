@@ -33,6 +33,10 @@ public class MinClientReferral implements ApiMarker {
         rs.getString("SENSTV_IND"), rs.getString("CLT_IBMSNAP_OPERATION"));
   }
 
+  public boolean isActive() {
+    return clientReplicationOperation != CmsReplicationOperation.D;
+  }
+
   public String getClientId() {
     return clientId;
   }

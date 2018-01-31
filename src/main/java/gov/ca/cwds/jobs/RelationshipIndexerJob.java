@@ -33,6 +33,7 @@ import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.InitialLoadJdbcRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -112,7 +113,7 @@ public class RelationshipIndexerJob
       return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
           NeutronJdbcUtils.makeSimpleTimestampString(determineLastSuccessfulRunTime()));
     } catch (NeutronCheckedException e) {
-      throw JobLogs.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
     }
   }
 
@@ -165,7 +166,8 @@ public class RelationshipIndexerJob
    * @param grpRecs records for same client id
    */
   protected void normalizeAndQueueIndex(final List<EsRelationship> grpRecs) {
-    grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2)).sequential().sorted()
+    grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2))
+        .filter(EsRelationship::isActive).sequential().sorted()
         .collect(Collectors.groupingBy(EsRelationship::getThisLegacyId)).entrySet().stream()
         .map(e -> normalizeSingle(e.getValue())).forEach(this::addToIndexQueue);
   }
@@ -231,7 +233,7 @@ public class RelationshipIndexerJob
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "RELATIONSHIP BATCH ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "RELATIONSHIP BATCH ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
       SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
@@ -239,6 +241,10 @@ public class RelationshipIndexerJob
 
     LOGGER.info("DONE: relationship extract thread");
   }
+
+  // =====================
+  // FIXED SPECS:
+  // =====================
 
   @Override
   public boolean useTransformThread() {
@@ -259,6 +265,10 @@ public class RelationshipIndexerJob
   public String getOptionalElementName() {
     return "relationships";
   }
+
+  // =====================
+  // TRANSFORM:
+  // =====================
 
   @Override
   protected UpdateRequest prepareUpsertRequest(ElasticSearchPerson esp, ReplicatedRelationships p)

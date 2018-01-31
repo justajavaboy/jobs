@@ -18,9 +18,6 @@ import gov.ca.cwds.neutron.util.shrinkray.RetrovillePerson;
  */
 public class ReplicatedAkas implements RetrovillePerson {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   /**
