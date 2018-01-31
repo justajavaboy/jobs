@@ -212,7 +212,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
     return sw.toString();
   }
 
-  protected void resetTimestamps(boolean initialMode, int hoursInPast) throws IOException {
+  protected void resetTimestamp(boolean initialMode, int hoursInPast) throws IOException {
     final DateFormat fmt =
         new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat());
     final Date now = new DateTime().minusHours(initialMode ? 876000 : hoursInPast).toDate();
@@ -221,20 +221,22 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
     final StringBuilder buf = new StringBuilder();
     buf.append(flightPlan.getBaseDirectory()).append(File.separatorChar)
         .append(flightSchedule.getRocketName()).append(".time");
-    flightPlan.setLastRunLoc(buf.toString());
 
-    final File f = new File(flightPlan.getLastRunLoc()); // NOSONAR
+    final String timestampFileName = buf.toString();
+    final File f = new File(timestampFileName);
     final boolean fileExists = f.exists();
 
-    if (!fileExists) {
+    if (fileExists) {
       FileUtils.writeStringToFile(f, fmt.format(now));
+    } else {
+      LOGGER.warn("MISSING TIMESTAMP FILE?? {}", timestampFileName);
     }
   }
 
   @Managed(description = "Move timestamp file back in time")
-  public void timeMachine(int hoursInPast) {
+  public void wayback(int hoursInPast) {
     try {
-      resetTimestamps(false, hoursInPast);
+      resetTimestamp(false, hoursInPast);
     } catch (Exception e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR RESETTING TIMESTAMP! {}",
           flightSchedule.getRocketName());
@@ -248,7 +250,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
   @Managed(description = "Abort flying rocket")
   public void stop() throws NeutronCheckedException {
     try {
-      LOGGER.warn("Abort flying rocket {}", rocketName);
+      LOGGER.warn("ABORT ROCKET IN FLIGHT! {}", rocketName);
       unschedule();
       final JobKey key = new JobKey(rocketName, NeutronSchedulerConstants.GRP_LST_CHG);
       scheduler.interrupt(key);
