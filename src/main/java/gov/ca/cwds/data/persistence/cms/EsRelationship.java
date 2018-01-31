@@ -474,10 +474,10 @@ public class EsRelationship
     return this.thisLegacyId;
   }
 
-  public boolean isActiveRelationship() {
-    return thisClientReplicationOperation == CmsReplicationOperation.D
-        || relatedClientReplicationOperation == CmsReplicationOperation.D
-        || relationshipReplicationOperation == CmsReplicationOperation.D;
+  public boolean isActive() {
+    return thisClientReplicationOperation != CmsReplicationOperation.D
+        && relatedClientReplicationOperation != CmsReplicationOperation.D
+        && relationshipReplicationOperation != CmsReplicationOperation.D;
   }
 
   public String getThisLegacyId() {

@@ -167,7 +167,7 @@ public class RelationshipIndexerJob
    */
   protected void normalizeAndQueueIndex(final List<EsRelationship> grpRecs) {
     grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2))
-        .filter(EsRelationship::isActiveRelationship).sequential().sorted()
+        .filter(EsRelationship::isActive).sequential().sorted()
         .collect(Collectors.groupingBy(EsRelationship::getThisLegacyId)).entrySet().stream()
         .map(e -> normalizeSingle(e.getValue())).forEach(this::addToIndexQueue);
   }
