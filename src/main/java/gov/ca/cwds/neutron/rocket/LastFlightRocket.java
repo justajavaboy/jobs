@@ -22,9 +22,9 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
  * Abstract base class for all Neutron rockets that rely on a last <strong>successful</strong> run
@@ -59,7 +59,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
   }
 
   /**
-   * HACK for dependency injection issue. (re-?) initialize the rocket.
+   * HACK for dependency injection issue. (Re-?) initialize the rocket.
    * 
    * @param lastGoodRunTimeFilename last run file location
    * @param flightPlan flight plan
@@ -103,7 +103,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * lastSuccessfulRunTime.
    * 
    * <p>
-   * NOTE: make the look-back period configurable.
+   * NEXT: make the look-back period configurable.
    * </p>
    * 
    * @param lastSuccessfulRunTime last successful run
@@ -111,19 +111,12 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
    * @return appropriate date to detect changes
    */
   protected Date calcLastRunDate(final Date lastSuccessfulRunTime, final FlightPlan opts) {
-    Date ret;
     final Date lastSuccessfulRunTimeOverride = opts.getOverrideLastRunTime();
-
-    if (lastSuccessfulRunTimeOverride != null) {
-      ret = lastSuccessfulRunTimeOverride;
-    } else {
-      final Calendar cal = Calendar.getInstance();
-      cal.setTime(lastSuccessfulRunTime);
-      cal.add(Calendar.MINUTE, NeutronIntegerDefaults.LOOKBACK_MINUTES.getValue());
-      ret = cal.getTime();
-    }
-
-    return ret;
+    final Calendar cal = Calendar.getInstance();
+    cal.setTime((lastSuccessfulRunTimeOverride != null) ? lastSuccessfulRunTimeOverride
+        : lastSuccessfulRunTime);
+    cal.add(Calendar.MINUTE, NeutronIntegerDefaults.LOOKBACK_MINUTES.getValue());
+    return cal.getTime();
   }
 
   /**
@@ -150,7 +143,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
           .parse(br.readLine().trim()); // NOSONAR
     } catch (IOException | ParseException e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR FINDING LAST RUN TIME: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "ERROR FINDING LAST RUN TIME: {}", e.getMessage());
     }
 
     return ret;
@@ -168,7 +161,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
         w.write(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.formatter().format(datetime));
       } catch (IOException e) {
         fail();
-        throw JobLogs.checked(LOGGER, e, "ERROR WRITING TIMESTAMP FILE: {}", e.getMessage());
+        throw CheeseRay.checked(LOGGER, e, "ERROR WRITING TIMESTAMP FILE: {}", e.getMessage());
       }
     }
   }
