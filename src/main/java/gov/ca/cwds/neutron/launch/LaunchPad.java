@@ -5,13 +5,18 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.quartz.JobDetail;
@@ -29,6 +34,7 @@ import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
 import gov.ca.cwds.neutron.atom.AtomLaunchPad;
+import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
@@ -200,10 +206,39 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       w.flush();
       w.close();
     } catch (Exception e) {
-      throw CheeseRay.runtime(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR READING LOGS! {}", flightSchedule.getRocketName());
     }
 
     return sw.toString();
+  }
+
+  protected void resetTimestamps(boolean initialMode, int hoursInPast) throws IOException {
+    final DateFormat fmt =
+        new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat());
+    final Date now = new DateTime().minusHours(initialMode ? 876000 : hoursInPast).toDate();
+
+    // Find the rocket's time file under the base directory:
+    final StringBuilder buf = new StringBuilder();
+    buf.append(flightPlan.getBaseDirectory()).append(File.separatorChar)
+        .append(flightSchedule.getRocketName()).append(".time");
+    flightPlan.setLastRunLoc(buf.toString());
+
+    final File f = new File(flightPlan.getLastRunLoc()); // NOSONAR
+    final boolean fileExists = f.exists();
+
+    if (!fileExists) {
+      FileUtils.writeStringToFile(f, fmt.format(now));
+    }
+  }
+
+  @Managed(description = "Move timestamp file back in time")
+  public void timeMachine(int hoursInPast) {
+    try {
+      resetTimestamps(false, hoursInPast);
+    } catch (Exception e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR RESETTING TIMESTAMP! {}",
+          flightSchedule.getRocketName());
+    }
   }
 
   /**

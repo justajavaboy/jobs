@@ -31,7 +31,7 @@ import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.HyperCube;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
@@ -148,7 +148,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       resetTimestamps(true, 0);
     } catch (IOException e) {
       LOGGER.error("FAILED TO RESET TIMESTAMPS! {}", e.getMessage(), e);
-      return JobLogs.stackToString(e);
+      return CheeseRay.stackToString(e);
     }
 
     return "Reset timestamp files for initial load!";
@@ -253,7 +253,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       } catch (SchedulerException e2) {
         LOGGER.warn("SCHEDULER FALSE START! {}", e2.getMessage(), e2);
       }
-      throw JobLogs.checked(LOGGER, e, "INIT ERROR: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "INIT ERROR: {}", e.getMessage());
     }
   }
 
@@ -332,7 +332,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
     try {
       ret = FlightPlan.parseCommandLine(args);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "COMMAND LINE ERROR! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "COMMAND LINE ERROR! {}", e.getMessage());
     }
 
     return ret;
@@ -369,7 +369,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       instance = injector.getInstance(LaunchCommand.class);
       instance.commonFlightPlan = flightPlan;
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "COMMAND CENTER FAILURE! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "COMMAND CENTER FAILURE! {}", e.getMessage());
     }
 
     return instance;
@@ -402,7 +402,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       launchDirector.stopScheduler(false);
       close();
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO SHUTDOWN!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO SHUTDOWN!: {}", e.getMessage());
     }
   }
 
@@ -435,7 +435,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       // Intentionally catch a Throwable, not an Exception.
       // Forcibly close orphaned resources, if necessary, by system exit.
       instance.fatalError = true;
-      throw JobLogs.checked(LOGGER, e, "COMMAND CENTER CRITICAL ERROR!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "COMMAND CENTER CRITICAL ERROR!: {}", e.getMessage());
     }
 
     LOGGER.info("LAUNCH COMMAND STARTED!");
@@ -483,7 +483,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       // Intentionally catch a Throwable, not an Exception.
       // Forcibly close orphaned resources, if necessary, by system exit.
       instance.fatalError = true;
-      throw JobLogs.runtime(LOGGER, e, "ROCKET EXPLODED!: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ROCKET EXPLODED!: {}", e.getMessage());
     }
   }
 
