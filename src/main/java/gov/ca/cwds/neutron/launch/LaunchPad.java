@@ -5,6 +5,12 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -184,10 +190,20 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
   public String logs() {
     final StringBuilder buf = new StringBuilder();
     buf.append(this.getFlightPlan().getBaseDirectory()).append(File.separator).append("rocketlog")
-        .append(File.separator);
+        .append(File.separator).append(flightSchedule.getRocketName()).append(".log");
 
+    String ret;
+    final Path pathIn = Paths.get(buf.toString());
+    try (final Stream<String> lines = Files.lines(pathIn)) {
+      final PrintWriter w = new PrintWriter(new StringWriter());
+      lines.sequential().forEach(w::println);
+      w.flush();
+      ret = w.toString();
+    } catch (Exception e) {
+      throw CheeseRay.runtime(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
+    }
 
-    return buf.toString();
+    return ret;
   }
 
   /**
