@@ -31,7 +31,7 @@ import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 /**
- * Entity bean for Materialized Query Table (MQT), VW_BI_DIR_RELATION.
+ * Entity bean for bi-directional relationships.
  * 
  * <p>
  * By request of the Intake team, it only reads relationships from CLN_RELT, for now.
@@ -474,6 +474,12 @@ public class EsRelationship
     return this.thisLegacyId;
   }
 
+  public boolean isActiveRelationship() {
+    return thisClientReplicationOperation == CmsReplicationOperation.D
+        || relatedClientReplicationOperation == CmsReplicationOperation.D
+        || relationshipReplicationOperation == CmsReplicationOperation.D;
+  }
+
   public String getThisLegacyId() {
     return thisLegacyId;
   }
@@ -585,7 +591,6 @@ public class EsRelationship
   public void setRelatedReplicationDate(Date relatedReplicationDate) {
     this.relatedClientReplicationDate = NeutronDateUtils.freshDate(relatedReplicationDate);
   }
-
 
   public CmsReplicationOperation getRelationshipReplicationOperation() {
     return relationshipReplicationOperation;
