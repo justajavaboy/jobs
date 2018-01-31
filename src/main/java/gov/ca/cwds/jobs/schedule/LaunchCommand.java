@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
@@ -34,6 +35,8 @@ import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.NeutronStringUtils;
+
+import static java.util.Arrays.asList;
 
 /**
  * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy
@@ -73,6 +76,15 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
+  private static final List<String> dbPropList = asList(
+            "DB_NS_USER"
+          , "DB_NS_PASSWORD"
+          , "DB_NS_JDBC_URL"
+          , "DB_CMS_USER"
+          , "DB_CMS_PASSWORD"
+          , "DB_CMS_JDBC_URL"
+          , "DB_CMS_SCHEMA"
+  );
 
   private LaunchCommand() {
     // no-op
@@ -327,6 +339,20 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   }
 
   /**
+   * Populates list of System properties from corresponding Env Variables.
+   * Puts property names instead of nulls.
+   *
+   */
+  public static void setSysPropsFromEnvVars(List<String> props) {
+    for (String propName : props){
+      //Get from Env Variables by Prop Name.
+      String envVarValue = System.getenv(propName);
+      // If no Env Var - default to PropName
+      System.setProperty(propName, envVarValue == null  ? propName : envVarValue);
+    }
+  }
+
+  /**
    * Neutron even constructs and inject dependencies into LaunchCommand itself, though this may be
    * confusing.
    * 
@@ -431,6 +457,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    */
   public static <T extends BasePersonRocket<?, ?>> void launchOneWayTrip(final Class<T> klass,
       String... args) throws NeutronCheckedException {
+    setSysPropsFromEnvVars(dbPropList);
     standardFlightPlan = parseCommandLine(args);
 
     System.setProperty("LAUNCH_DIR",
