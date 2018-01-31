@@ -192,18 +192,18 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
     buf.append(this.getFlightPlan().getBaseDirectory()).append(File.separator).append("rocketlog")
         .append(File.separator).append(flightSchedule.getRocketName()).append(".log");
 
-    String ret;
+    final StringWriter sw = new StringWriter();
     final Path pathIn = Paths.get(buf.toString());
     try (final Stream<String> lines = Files.lines(pathIn)) {
-      final PrintWriter w = new PrintWriter(new StringWriter());
+      final PrintWriter w = new PrintWriter(sw);
       lines.sequential().forEach(w::println);
       w.flush();
-      ret = w.toString();
+      w.close();
     } catch (Exception e) {
       throw CheeseRay.runtime(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
     }
 
-    return ret;
+    return sw.toString();
   }
 
   /**
