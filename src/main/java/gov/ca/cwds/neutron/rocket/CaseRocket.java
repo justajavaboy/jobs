@@ -227,7 +227,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     } else {
       LOGGER.debug("LAST RUN");
       final String strTimestamp =
-          NeutronJdbcUtils.makeSimpleTimestampString(getFlightLog().getLastChangeSince());
+          NeutronJdbcUtils.makeTimestampStringLookBack(getFlightLog().getLastChangeSince());
       for (int i = 1; i <= 5; i++) {
         stmtInsClient.setString(i, strTimestamp);
       }
