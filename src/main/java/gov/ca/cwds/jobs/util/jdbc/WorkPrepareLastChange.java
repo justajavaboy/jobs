@@ -68,7 +68,7 @@ public class WorkPrepareLastChange implements Work {
     con.setAutoCommit(false);
     NeutronDB2Utils.enableParallelism(con);
 
-    final String strLastRunTime = NeutronJdbcUtils.makeSimpleTimestampString(lastRunTime);
+    final String strLastRunTime = NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime);
     LOGGER.info("strLastRunTime: {}", strLastRunTime);
     try (final PreparedStatement stmt = createPreparedStatement(con)) {
       for (int i = 1; i <= StringUtils.countMatches(sql, "?"); i++) {

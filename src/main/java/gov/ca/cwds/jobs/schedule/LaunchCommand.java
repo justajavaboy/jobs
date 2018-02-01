@@ -1,5 +1,7 @@
 package gov.ca.cwds.jobs.schedule;
 
+import static java.util.Arrays.asList;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -31,13 +33,11 @@ import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.HyperCube;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.NeutronStringUtils;
-
-import static java.util.Arrays.asList;
 
 /**
  * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy
@@ -77,15 +77,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
-  private static final List<String> dbPropList = asList(
-            "DB_NS_USER"
-          , "DB_NS_PASSWORD"
-          , "DB_NS_JDBC_URL"
-          , "DB_CMS_USER"
-          , "DB_CMS_PASSWORD"
-          , "DB_CMS_JDBC_URL"
-          , "DB_CMS_SCHEMA"
-  );
+  private static final List<String> dbPropList = asList("DB_NS_USER", "DB_NS_PASSWORD",
+      "DB_NS_JDBC_URL", "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA");
 
   private LaunchCommand() {
     // no-op
@@ -119,8 +112,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
       // Find the rocket's time file under the base directory:
       final StringBuilder buf = new StringBuilder();
-      buf.append(Paths.get(opts.getBaseDirectory()).toString()).append(File.separatorChar).append(sched.getRocketName())
-          .append(".time");
+      buf.append(Paths.get(opts.getBaseDirectory()).toString()).append(File.separatorChar)
+          .append(sched.getRocketName()).append(".time");
       opts.setLastRunLoc(buf.toString());
 
       final File f = new File(opts.getLastRunLoc()); // NOSONAR
@@ -148,7 +141,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       resetTimestamps(true, 0);
     } catch (IOException e) {
       LOGGER.error("FAILED TO RESET TIMESTAMPS! {}", e.getMessage(), e);
-      return JobLogs.stackToString(e);
+      return CheeseRay.stackToString(e);
     }
 
     return "Reset timestamp files for initial load!";
@@ -253,7 +246,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       } catch (SchedulerException e2) {
         LOGGER.warn("SCHEDULER FALSE START! {}", e2.getMessage(), e2);
       }
-      throw JobLogs.checked(LOGGER, e, "INIT ERROR: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "INIT ERROR: {}", e.getMessage());
     }
   }
 
@@ -332,20 +325,21 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
     try {
       ret = FlightPlan.parseCommandLine(args);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "COMMAND LINE ERROR! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "COMMAND LINE ERROR! {}", e.getMessage());
     }
 
     return ret;
   }
 
   /**
-   * Populates list of System properties from corresponding Env Variables.
-   * Will not create/update property if null.
-   *
+   * Populates list of System properties from corresponding Env Variables. Will not create/update
+   * property if null.
+   * 
+   * @param props list of system properties
    */
   public static void setSysPropsFromEnvVars(List<String> props) {
-    for (String propName : props){
-      //Get from Env Variables by Prop Name.
+    for (String propName : props) {
+      // Get from Env Variables by Prop Name.
       String envVarValue = System.getenv(propName);
       if (envVarValue != null) {
         System.setProperty(propName, envVarValue);
@@ -369,7 +363,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       instance = injector.getInstance(LaunchCommand.class);
       instance.commonFlightPlan = flightPlan;
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "COMMAND CENTER FAILURE! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "COMMAND CENTER FAILURE! {}", e.getMessage());
     }
 
     return instance;
@@ -402,7 +396,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       launchDirector.stopScheduler(false);
       close();
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO SHUTDOWN!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO SHUTDOWN!: {}", e.getMessage());
     }
   }
 
@@ -435,7 +429,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       // Intentionally catch a Throwable, not an Exception.
       // Forcibly close orphaned resources, if necessary, by system exit.
       instance.fatalError = true;
-      throw JobLogs.checked(LOGGER, e, "COMMAND CENTER CRITICAL ERROR!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "COMMAND CENTER CRITICAL ERROR!: {}", e.getMessage());
     }
 
     LOGGER.info("LAUNCH COMMAND STARTED!");
@@ -483,7 +477,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       // Intentionally catch a Throwable, not an Exception.
       // Forcibly close orphaned resources, if necessary, by system exit.
       instance.fatalError = true;
-      throw JobLogs.runtime(LOGGER, e, "ROCKET EXPLODED!: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ROCKET EXPLODED!: {}", e.getMessage());
     }
   }
 

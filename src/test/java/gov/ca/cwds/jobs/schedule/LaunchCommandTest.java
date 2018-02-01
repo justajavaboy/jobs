@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,8 +18,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.quartz.Scheduler;
 import org.quartz.TriggerKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 
@@ -38,8 +37,6 @@ import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 
 public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenormalizedEntity> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LaunchCommandTest.class);
-
   Injector injector;
   LaunchCommand target;
   TriggerKey key;
@@ -51,7 +48,9 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
 
     flightPlan = new FlightPlan();
     flightPlan.setEsConfigLoc("config/local.yaml");
-    flightPlan.setBaseDirectory("/var/lib/jenkins/");
+
+    final File fakeBaseDir = tempFolder.newFolder();
+    flightPlan.setBaseDirectory(fakeBaseDir.getAbsolutePath());
     flightPlan.setLastRunLoc(lastRunFile);
 
     final AtomCommandCenterConsole ctrlMgr = mock(AtomCommandCenterConsole.class);

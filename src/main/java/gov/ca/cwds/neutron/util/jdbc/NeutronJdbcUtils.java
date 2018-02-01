@@ -27,6 +27,7 @@ import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
+import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
  * JDBC utilities for Neutron rockets.
@@ -68,6 +69,11 @@ public final class NeutronJdbcUtils {
   public static String makeSimpleTimestampString(final Date date) {
     return new SimpleDateFormat(NeutronDateTimeFormat.LEGACY_TIMESTAMP_FORMAT.getFormat())
         .format(date);
+  }
+
+  public static String makeTimestampStringLookBack(final Date date) {
+    return new SimpleDateFormat(NeutronDateTimeFormat.LEGACY_TIMESTAMP_FORMAT.getFormat())
+        .format(NeutronDateUtils.lookBack(date));
   }
 
   /**

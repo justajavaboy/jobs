@@ -17,7 +17,7 @@ import gov.ca.cwds.neutron.atom.AtomRocketFactory;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.shrinkray.NeutronClassFinder;
 
@@ -53,12 +53,12 @@ public class RocketFactory implements AtomRocketFactory {
   public BasePersonRocket fuelRocket(Class<?> klass, final FlightPlan flightPlan)
       throws NeutronCheckedException {
     try {
-      LOGGER.info("Fuel registered rocket: {}", klass.getName());
+      LOGGER.info("READY SCHEDULED ROCKET: {}", klass.getName());
       final BasePersonRocket ret = (BasePersonRocket<?, ?>) injector.getInstance(klass);
       ret.init(flightPlan.getLastRunLoc(), flightPlan);
       return ret;
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO PREPARE ROCKET!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO PREPARE ROCKET!: {}", e.getMessage());
     }
   }
 

@@ -111,7 +111,7 @@ public class RelationshipIndexerJob
   public String getPrepLastChangeSQL() {
     try {
       return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
-          NeutronJdbcUtils.makeSimpleTimestampString(determineLastSuccessfulRunTime()));
+          NeutronJdbcUtils.makeTimestampStringLookBack(determineLastSuccessfulRunTime()));
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
     }
@@ -166,10 +166,9 @@ public class RelationshipIndexerJob
    * @param grpRecs records for same client id
    */
   protected void normalizeAndQueueIndex(final List<EsRelationship> grpRecs) {
-    grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2))
-        .filter(EsRelationship::isActive).sequential().sorted()
-        .collect(Collectors.groupingBy(EsRelationship::getThisLegacyId)).entrySet().stream()
-        .map(e -> normalizeSingle(e.getValue())).forEach(this::addToIndexQueue);
+    grpRecs.stream().sorted((e1, e2) -> e1.compare(e1, e2)).filter(EsRelationship::isActive)
+        .sequential().sorted().collect(Collectors.groupingBy(EsRelationship::getThisLegacyId))
+        .entrySet().stream().map(e -> normalizeSingle(e.getValue())).forEach(this::addToIndexQueue);
   }
 
   /**

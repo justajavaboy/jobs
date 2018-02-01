@@ -17,7 +17,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 
@@ -143,10 +143,10 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   default Function<Connection, PreparedStatement> getPreparedStatementMaker() {
     return c -> {
       try {
-        getLogger().info("LAST CHANGE SQL: {}", getPrepLastChangeSQL());
+        getLogger().info("PREPARE LAST CHANGE SQL:\n\n{}\n", getPrepLastChangeSQL());
         return c.prepareStatement(getPrepLastChangeSQL());
       } catch (SQLException e) {
-        throw JobLogs.runtime(getLogger(), e, "FAILED TO PREPARE STATEMENT! {}", e.getMessage());
+        throw CheeseRay.runtime(getLogger(), e, "FAILED TO PREPARE STATEMENT! {}", e.getMessage());
       }
     };
   }

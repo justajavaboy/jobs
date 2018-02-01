@@ -62,9 +62,9 @@ import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 
@@ -198,12 +198,12 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    */
   protected void addToIndexQueue(T norm) {
     try {
-      JobLogs.logEvery(flightLog.markQueuedToIndex(), "index queue", "recs");
+      CheeseRay.logEvery(flightLog.markQueuedToIndex(), "index queue", "recs");
       queueIndex.putLast(norm);
     } catch (InterruptedException e) {
       fail();
       Thread.currentThread().interrupt();
-      throw JobLogs.runtime(LOGGER, e, "INTERRUPTED! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "INTERRUPTED! {}", e.getMessage());
     }
   }
 
@@ -261,7 +261,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
         getFlightLog().incrementBulkPrepared();
       }
     } catch (Exception e) {
-      throw JobLogs.runtime(LOGGER, e, "ERROR BUILDING UPSERT!: PK: {}", t.getPrimaryKey()); // NOSONAR
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING UPSERT!: PK: {}", t.getPrimaryKey()); // NOSONAR
     }
 
     return ret;
@@ -334,7 +334,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     } catch (Exception e) {
       fail();
       Thread.currentThread().interrupt();
-      throw JobLogs.checked(LOGGER, e, "JDBC EXCEPTION: {}", e);
+      throw CheeseRay.checked(LOGGER, e, "JDBC EXCEPTION: {}", e);
     } finally {
       done();
       this.finish(); // OK for initial load.
@@ -372,7 +372,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
         int cntr = 0;
         while (isRunning() && rs.next() && (m = extract(rs)) != null) {
-          JobLogs.logEvery(++cntr, "Retrieved", "recs");
+          CheeseRay.logEvery(++cntr, "Retrieved", "recs");
           queueNormalize.putLast(m);
         }
 
@@ -380,7 +380,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       }
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "BATCH ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }
@@ -398,7 +398,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
     while ((m = queueNormalize.pollFirst(NeutronIntegerDefaults.POLL_MILLIS.getValue(),
         TimeUnit.MILLISECONDS)) != null) {
-      JobLogs.logEvery(++cntr, "Transformed", "recs");
+      CheeseRay.logEvery(++cntr, "Transformed", "recs");
 
       // NOTE: Assumes that records are sorted by group key.
       // End of group. Normalize these group records.
@@ -441,7 +441,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     } catch (Exception e) {
       fail();
       Thread.currentThread().interrupt();
-      throw JobLogs.runtime(LOGGER, e, "Transformer: FATAL ERROR: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "Transformer: FATAL ERROR: {}", e.getMessage());
     } finally {
       doneTransform();
     }
@@ -474,7 +474,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     } catch (Exception e) {
       fail();
       Thread.currentThread().interrupt();
-      throw JobLogs.runtime(LOGGER, e, "FATAL INDEXING ERROR: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "FATAL INDEXING ERROR: {}", e.getMessage());
     } finally {
       doneIndex();
     }
@@ -498,7 +498,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
     while (isRunning() && (t = queueIndex.pollFirst(NeutronIntegerDefaults.POLL_MILLIS.getValue(),
         TimeUnit.MILLISECONDS)) != null) {
-      JobLogs.logEvery(++i, "Indexed", "recs to ES");
+      CheeseRay.logEvery(++i, "Indexed", "recs to ES");
       prepareDocument(bp, t);
     }
     return i;
@@ -515,7 +515,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       prepareDocument(bp, p);
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "IO EXCEPTION: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "IO EXCEPTION: {}", e.getMessage());
     }
   }
 
@@ -580,7 +580,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       return new Date(getFlightLog().getStartTime());
     } catch (Exception e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "General Exception: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "General Exception: {}", e.getMessage());
     } finally {
       done();
     }
@@ -627,7 +627,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
           StringUtils.isBlank(indexNameOverride) ? esDao.getConfig().getElasticsearchAlias()
               : indexNameOverride;
       getFlightPlan().setIndexName(effectiveIndexName); // WARNING: probably a bad idea.
+
       final Date lastRun = calcLastRunDate(lastSuccessfulRunTime);
+      LOGGER.info("last run date/time: {}", lastRun);
 
       sizeQueues(lastRun);
       if (determineInitialLoad(lastRun)) {
@@ -652,7 +654,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       ret = new Date(flightLog.getStartTime());
     } catch (NeutronCheckedException | RuntimeException e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ROCKET EXPLODED! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "ROCKET EXPLODED! {}", e.getMessage());
     } finally {
       done();
       try {
@@ -687,7 +689,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     try {
       final NativeQuery<T> q = session.getNamedNativeQuery(namedQueryName);
       q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
-          NeutronJdbcUtils.makeSimpleTimestampString(lastRunTime), StringType.INSTANCE);
+          NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
       final ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
       final List<T> recs = q.list();
@@ -715,7 +717,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
         entityClass.getName() + ".findAllUpdatedAfterWithLimitedAccess";
     final NativeQuery<M> q = session.getNamedNativeQuery(namedQueryNameForDeletion);
     q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
-        NeutronJdbcUtils.makeSimpleTimestampString(lastRunTime), StringType.INSTANCE);
+        NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
     final List<M> deletionRecs = q.list();
     if (deletionRecs != null && !deletionRecs.isEmpty()) {
@@ -759,7 +761,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       prepHibernateLastChange(session, lastRunTime);
       final NativeQuery<M> q = session.getNamedNativeQuery(namedQueryName);
       q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
-          NeutronJdbcUtils.makeSimpleTimestampString(lastRunTime), StringType.INSTANCE);
+          NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
       final ImmutableList.Builder<T> results = new ImmutableList.Builder<>();
       final List<M> recs = q.list();
@@ -797,7 +799,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     } catch (Exception h) {
       fail();
       txn.rollback();
-      throw JobLogs.runtime(LOGGER, h, "EXTRACT SQL ERROR!: {}", h.getMessage());
+      throw CheeseRay.runtime(LOGGER, h, "EXTRACT SQL ERROR!: {}", h.getMessage());
     } finally {
       doneRetrieve();
     }
@@ -831,7 +833,8 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       close();
     } catch (Exception e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR LANDING ROCKET! {}, {}", rocketName, e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "ERROR LANDING ROCKET! {}, {}", rocketName,
+          e.getMessage());
     }
     LOGGER.info("JOB FINISHED!");
   }

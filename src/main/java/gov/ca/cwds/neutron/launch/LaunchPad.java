@@ -4,6 +4,19 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.quartz.JobDetail;
@@ -20,14 +33,25 @@ import com.google.inject.Inject;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
+import gov.ca.cwds.neutron.atom.AtomLaunchPad;
+import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.vox.jmx.VoxLaunchPadMBean;
 
-public class LaunchPad implements VoxLaunchPadMBean {
+/**
+ * Everything required to launch a rocket.
+ * 
+ * <p>
+ * Exposes methods to JMX via Vox.
+ * </p>
+ * 
+ * @author CWDS API Team
+ */
+public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
 
   private static final long serialVersionUID = 1L;
 
@@ -76,17 +100,19 @@ public class LaunchPad implements VoxLaunchPadMBean {
    * {@inheritDoc}
    */
   @Override
-  @Managed(description = "Launch rocket now, show results immediately")
+  @Managed(description = "Launch rocket now and show results immediately."
+      + "\nparam: rocket command line."
+      + "\nexample: -c config/local.yaml -l /Users/dsmith/client_indexer_time.txt -s=true")
   public String run(String cmdLine) throws NeutronCheckedException {
     try {
-      LOGGER.info("RUN JOB: {}", flightSchedule.getRocketName());
+      LOGGER.info("LAUNCH ONE-WAY TRIP! {}", flightSchedule.getRocketName());
       final FlightPlan plan =
           FlightPlan.parseCommandLine(StringUtils.isBlank(cmdLine) ? null : cmdLine.split("\\s+"));
       final FlightLog flightLog = this.launchDirector.launch(flightSchedule.getRocketClass(), plan);
       return flightLog.toString();
     } catch (Exception e) {
       LOGGER.error("FAILED TO RUN ON DEMAND! {}", e.getMessage(), e);
-      return JobLogs.stackToString(e);
+      return CheeseRay.stackToString(e);
     }
   }
 
@@ -96,6 +122,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Override
   @Managed(description = "Schedule rocket launch")
   public void schedule() throws NeutronCheckedException {
+    LOGGER.warn("ATTEMPT TO SCHEDULE LAUNCH! {}", rocketName);
     try {
       if (scheduler.checkExists(this.jobKey)) {
         LOGGER.warn("ROCKET ALREADY SCHEDULED! rocket: {}", rocketName);
@@ -133,7 +160,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
       }
 
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILURE TO LAUNCH! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILURE TO LAUNCH! rocket: {}", rocketName);
     }
   }
 
@@ -144,10 +171,10 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Managed(description = "Unschedule rocket")
   public void unschedule() throws NeutronCheckedException {
     try {
-      LOGGER.warn("unschedule launch");
+      LOGGER.warn("UNSCHEDULE LAUNCH! {}", rocketName);
       scheduler.unscheduleJob(triggerKey);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO UNSCHEDULE LAUNCH! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO UNSCHEDULE LAUNCH! rocket: {}", rocketName);
     }
   }
 
@@ -157,7 +184,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Override
   @Managed(description = "Show rocket's last flight status")
   public String status() {
-    LOGGER.warn("Show rocket status");
+    LOGGER.warn("SHOW ROCKET STATUS! {}", rocketName);
     return flightRecorder.getLastFlightLog(this.flightSchedule.getRocketClass()).toString();
   }
 
@@ -167,7 +194,7 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Override
   @Managed(description = "Show rocket's flight history")
   public String history() {
-    LOGGER.warn("Show rocket history");
+    LOGGER.warn("SHOW ROCKET FLIGHT HISTORY! {}", rocketName);
     final StringBuilder buf = new StringBuilder();
     flightRecorder.getHistory(this.flightSchedule.getRocketClass()).stream().forEach(buf::append);
     return buf.toString();
@@ -179,10 +206,55 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Override
   @Managed(description = "Show rocket log")
   public String logs() {
+    LOGGER.warn("SHOW ROCKET LOG! {}", rocketName);
     final StringBuilder buf = new StringBuilder();
-    buf.append("log stuff");
-    // IMPL ME!
-    return buf.toString();
+    buf.append(this.getFlightPlan().getBaseDirectory()).append(File.separator).append("rocketlog")
+        .append(File.separator).append(flightSchedule.getRocketName()).append(".log");
+
+    final StringWriter sw = new StringWriter();
+    final Path pathIn = Paths.get(buf.toString());
+    try (final Stream<String> lines = Files.lines(pathIn)) {
+      final PrintWriter w = new PrintWriter(sw);
+      lines.sequential().forEach(w::println);
+      w.flush();
+      w.close();
+    } catch (Exception e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR READING LOGS! {}", flightSchedule.getRocketName());
+    }
+
+    return sw.toString();
+  }
+
+  protected void resetTimestamp(boolean initialMode, int hoursInPast) throws IOException {
+    final DateFormat fmt =
+        new SimpleDateFormat(NeutronDateTimeFormat.LAST_RUN_DATE_FORMAT.getFormat());
+    final Date now = new DateTime().minusHours(initialMode ? 876000 : hoursInPast).toDate();
+
+    // Find the rocket's time file under the base directory:
+    final StringBuilder buf = new StringBuilder();
+    buf.append(flightPlan.getBaseDirectory()).append(File.separatorChar)
+        .append(flightSchedule.getRocketName()).append(".time");
+
+    final String timestampFileName = buf.toString();
+    final File f = new File(timestampFileName);
+    final boolean fileExists = f.exists();
+
+    if (fileExists) {
+      FileUtils.writeStringToFile(f, fmt.format(now));
+    } else {
+      LOGGER.warn("MISSING TIMESTAMP FILE?? {}", timestampFileName);
+    }
+  }
+
+  @Managed(description = "Move timestamp file back in time." + "\nparam: hours in past")
+  public void wayback(int hoursInPast) {
+    try {
+      LOGGER.warn("WAYBACK MACHINE! RESET TIMESTAMP! {}", rocketName);
+      resetTimestamp(false, hoursInPast);
+    } catch (Exception e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR RESETTING TIMESTAMP! {}",
+          flightSchedule.getRocketName());
+    }
   }
 
   /**
@@ -192,12 +264,12 @@ public class LaunchPad implements VoxLaunchPadMBean {
   @Managed(description = "Abort flying rocket")
   public void stop() throws NeutronCheckedException {
     try {
-      LOGGER.warn("Abort flying rocket {}", rocketName);
+      LOGGER.warn("ABORT ROCKET IN FLIGHT! {}", rocketName);
       unschedule();
       final JobKey key = new JobKey(rocketName, NeutronSchedulerConstants.GRP_LST_CHG);
       scheduler.interrupt(key);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO ABORT! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO ABORT! rocket: {}", rocketName);
     }
   }
 
@@ -205,13 +277,13 @@ public class LaunchPad implements VoxLaunchPadMBean {
    * {@inheritDoc}
    */
   @Override
-  @Managed(description = "Pause rocket")
+  @Managed(description = "Pause rocket flight")
   public void pause() throws NeutronCheckedException {
     try {
-      LOGGER.warn("Pause rocket {}", rocketName);
+      LOGGER.warn("PAUSE ROCKET! {}", rocketName);
       scheduler.pauseTrigger(triggerKey);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO PAUSE! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO PAUSE! rocket: {}", rocketName);
     }
   }
 
@@ -219,13 +291,13 @@ public class LaunchPad implements VoxLaunchPadMBean {
    * {@inheritDoc}
    */
   @Override
-  @Managed(description = "Resume rocket")
+  @Managed(description = "Resume rocket flight")
   public void resume() throws NeutronCheckedException {
     try {
-      LOGGER.warn("Resume rocket {}", rocketName);
+      LOGGER.warn("RESUME FLIGHT! {}", rocketName);
       scheduler.resumeTrigger(triggerKey);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO RESUME! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO RESUME! rocket: {}", rocketName);
     }
   }
 
