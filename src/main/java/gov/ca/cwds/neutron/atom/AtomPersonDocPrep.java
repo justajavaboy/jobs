@@ -15,7 +15,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
 
@@ -111,7 +111,7 @@ public interface AtomPersonDocPrep<T extends PersistentObject> extends ApiMarker
       return updateOnly ? ur
           : ur.upsert(new IndexRequest(alias, docType, id).source(insertJson, XContentType.JSON));
     } catch (Exception e) {
-      throw JobLogs.checked(getLogger(), e, "NESTED ELEMENT ERROR! {}", e.getMessage());
+      throw CheeseRay.checked(getLogger(), e, "NESTED ELEMENT ERROR! {}", e.getMessage());
     }
   }
 
