@@ -49,6 +49,7 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
   public void setup() throws Exception {
     super.setup();
 
+    flightPlan = new FlightPlan();
     flightPlan.setEsConfigLoc("config/local.yaml");
     flightPlan.setBaseDirectory("/var/lib/jenkins/");
     flightPlan.setLastRunLoc(lastRunFile);
