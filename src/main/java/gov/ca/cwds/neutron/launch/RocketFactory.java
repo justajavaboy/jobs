@@ -31,6 +31,9 @@ public class RocketFactory implements AtomRocketFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocketFactory.class);
 
+  /**
+   * HACK: use a DI abstraction instead.
+   */
   private Injector injector;
 
   private FlightPlanRegistry flightPlanRegistry;

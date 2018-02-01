@@ -459,8 +459,7 @@ public class ReferralHistoryIndexerJob
     int countNormalized = 0;
     try {
       final Map<String, List<MinClientReferral>> mapReferralByClient =
-          listClientReferralKeys.stream()
-              // .filter(MinClientReferral::isActive)
+          listClientReferralKeys.stream().filter(MinClientReferral::isActive)
               .sorted((e1, e2) -> e1.getClientId().compareTo(e2.getClientId()))
               .collect(Collectors.groupingBy(MinClientReferral::getClientId));
       listClientReferralKeys.clear(); // release objects for gc

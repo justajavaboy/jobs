@@ -12,7 +12,7 @@ import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.launch.RocketSpecification;
 
 /**
- * Shared features of all Elasticsearch indexing rockets.
+ * Shared features of all Elasticsearch indexer rockets.
  * 
  * @author CWDS API Team
  */

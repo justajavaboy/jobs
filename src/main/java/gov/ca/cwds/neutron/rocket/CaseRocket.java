@@ -57,7 +57,7 @@ import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.cases.FocusChildParent;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -264,7 +264,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     FocusChildParent m;
     final ResultSet rs = stmt.executeQuery();
     while (!isFailed() && rs.next() && (m = FocusChildParent.extract(rs)) != null) {
-      JobLogs.logEvery(++cntr, "read", "focus child parent");
+      CheeseRay.logEvery(++cntr, "read", "focus child parent");
       list.add(m);
     }
   }
@@ -281,8 +281,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     final ResultSet rs = stmtSelCase.executeQuery(); // NOSONAR
     while (!isFailed() && rs.next()) {
       m = extractCase(rs);
-      JobLogs.logEvery(++cntr, "read", "case bundle");
-      JobLogs.logEvery(LOGGER, 10000, rowsReadCases.incrementAndGet(), "Total read", "cases");
+      CheeseRay.logEvery(++cntr, "read", "case bundle");
+      CheeseRay.logEvery(LOGGER, 10000, rowsReadCases.incrementAndGet(), "Total read", "cases");
       mapCases.put(m.getCaseId(), m);
     }
   }
@@ -634,7 +634,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         }
       } catch (IOException e) {
         fail();
-        throw JobLogs.checked(LOGGER, e, "VALIDATION ERROR! {}", e.getMessage());
+        throw CheeseRay.checked(LOGGER, e, "VALIDATION ERROR! {}", e.getMessage());
       }
     }
 
@@ -696,7 +696,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR PULLING RANGE! {} - {}: {}", keyRange.getLeft(),
+      throw CheeseRay.checked(LOGGER, e, "ERROR PULLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     }
 
@@ -707,7 +707,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           mapClients, new HashMap<>(HASH_SIZE_LARGE));
     } catch (NeutronCheckedException e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),
+      throw CheeseRay.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     } finally {
       getFlightLog().markRangeComplete(keyRange);
@@ -742,7 +742,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       }
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }
@@ -759,7 +759,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       pullNextRange(Pair.of("a", "b"));
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }
