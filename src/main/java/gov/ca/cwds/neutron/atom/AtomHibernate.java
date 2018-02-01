@@ -143,7 +143,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   default Function<Connection, PreparedStatement> getPreparedStatementMaker() {
     return c -> {
       try {
-        getLogger().info("LAST CHANGE SQL: {}", getPrepLastChangeSQL());
+        getLogger().info("PREPARE LAST CHANGE SQL:\n\n{}\n", getPrepLastChangeSQL());
         return c.prepareStatement(getPrepLastChangeSQL());
       } catch (SQLException e) {
         throw CheeseRay.runtime(getLogger(), e, "FAILED TO PREPARE STATEMENT! {}", e.getMessage());
