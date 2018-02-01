@@ -2,6 +2,7 @@ package gov.ca.cwds.jobs.schedule;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -118,7 +119,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
       // Find the rocket's time file under the base directory:
       final StringBuilder buf = new StringBuilder();
-      buf.append(opts.getBaseDirectory()).append(File.separatorChar).append(sched.getRocketName())
+      buf.append(Paths.get(opts.getBaseDirectory()).toString()).append(File.separatorChar).append(sched.getRocketName())
           .append(".time");
       opts.setLastRunLoc(buf.toString());
 
@@ -176,10 +177,9 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
       final Date now, final StandardFlightSchedule sched) throws IOException {
     final StringBuilder buf = new StringBuilder();
 
-    buf.append(flightPlan.getBaseDirectory()).append(File.separatorChar)
+    buf.append(Paths.get(flightPlan.getBaseDirectory()).toString()).append(File.separatorChar)
         .append(sched.getRocketName()).append(".time");
-    final String timeFileLoc =
-        buf.toString().replaceAll(File.separator + File.separator, File.separator);
+    final String timeFileLoc = buf.toString();
     flightPlan.setLastRunLoc(timeFileLoc);
     LOGGER.debug("base directory: {}, rocket name: {}, last run loc: {}",
         flightPlan.getBaseDirectory(), sched.getRocketName(), flightPlan.getLastRunLoc());
@@ -340,15 +340,16 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
   /**
    * Populates list of System properties from corresponding Env Variables.
-   * Puts property names instead of nulls.
+   * Will not create/update property if null.
    *
    */
   public static void setSysPropsFromEnvVars(List<String> props) {
     for (String propName : props){
       //Get from Env Variables by Prop Name.
       String envVarValue = System.getenv(propName);
-      // If no Env Var - default to PropName
-      System.setProperty(propName, envVarValue == null  ? propName : envVarValue);
+      if (envVarValue != null) {
+        System.setProperty(propName, envVarValue);
+      }
     }
   }
 
