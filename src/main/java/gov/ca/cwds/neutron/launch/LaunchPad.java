@@ -100,7 +100,9 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
    * {@inheritDoc}
    */
   @Override
-  @Managed(description = "Launch rocket now, show results immediately")
+  @Managed(description = "Launch rocket now and show results immediately."
+      + "\nparam: rocket command line."
+      + "\nexample: -c config/local.yaml -l /Users/dsmith/client_indexer_time.txt -s=true")
   public String run(String cmdLine) throws NeutronCheckedException {
     try {
       LOGGER.info("LAUNCH ONE-WAY TRIP! {}", flightSchedule.getRocketName());
@@ -244,7 +246,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
     }
   }
 
-  @Managed(description = "Move timestamp file back in time")
+  @Managed(description = "Move timestamp file back in time." + "\nparam: hours in past")
   public void wayback(int hoursInPast) {
     try {
       LOGGER.warn("WAYBACK MACHINE! RESET TIMESTAMP! {}", rocketName);
