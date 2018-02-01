@@ -1,5 +1,7 @@
 package gov.ca.cwds.jobs.schedule;
 
+import static java.util.Arrays.asList;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -36,8 +38,6 @@ import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.NeutronStringUtils;
-
-import static java.util.Arrays.asList;
 
 /**
  * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy
@@ -77,15 +77,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
-  private static final List<String> dbPropList = asList(
-            "DB_NS_USER"
-          , "DB_NS_PASSWORD"
-          , "DB_NS_JDBC_URL"
-          , "DB_CMS_USER"
-          , "DB_CMS_PASSWORD"
-          , "DB_CMS_JDBC_URL"
-          , "DB_CMS_SCHEMA"
-  );
+  private static final List<String> dbPropList = asList("DB_NS_USER", "DB_NS_PASSWORD",
+      "DB_NS_JDBC_URL", "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA");
 
   private LaunchCommand() {
     // no-op
@@ -119,8 +112,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
       // Find the rocket's time file under the base directory:
       final StringBuilder buf = new StringBuilder();
-      buf.append(Paths.get(opts.getBaseDirectory()).toString()).append(File.separatorChar).append(sched.getRocketName())
-          .append(".time");
+      buf.append(Paths.get(opts.getBaseDirectory()).toString()).append(File.separatorChar)
+          .append(sched.getRocketName()).append(".time");
       opts.setLastRunLoc(buf.toString());
 
       final File f = new File(opts.getLastRunLoc()); // NOSONAR
@@ -339,13 +332,14 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   }
 
   /**
-   * Populates list of System properties from corresponding Env Variables.
-   * Will not create/update property if null.
-   *
+   * Populates list of System properties from corresponding Env Variables. Will not create/update
+   * property if null.
+   * 
+   * @param props list of system properties
    */
   public static void setSysPropsFromEnvVars(List<String> props) {
-    for (String propName : props){
-      //Get from Env Variables by Prop Name.
+    for (String propName : props) {
+      // Get from Env Variables by Prop Name.
       String envVarValue = System.getenv(propName);
       if (envVarValue != null) {
         System.setProperty(propName, envVarValue);
