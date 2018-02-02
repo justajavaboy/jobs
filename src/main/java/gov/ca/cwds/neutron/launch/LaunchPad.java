@@ -247,7 +247,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
   }
 
   @Managed(description = "Move timestamp file back in time." + "\nparam: hours in past")
-  public void wayback(int hoursInPast) {
+  public void waybackHours(int hoursInPast) {
     try {
       LOGGER.warn("WAYBACK MACHINE! RESET TIMESTAMP! {}", rocketName);
       resetTimestamp(false, hoursInPast);

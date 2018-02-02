@@ -8,6 +8,11 @@ import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandFlightHistory;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandLastRunStatus;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandShutdown;
 
+/**
+ * Registered VOX command actions.
+ * 
+ * @author CWDS API Team
+ */
 public enum VoxCommandType {
 
   STATUS(VoxCommandLastRunStatus.class, "status"),
@@ -24,7 +29,9 @@ public enum VoxCommandType {
 
   PAUSE(VoxCommandLastRunStatus.class, "pause"),
 
-  RESUME(VoxCommandLastRunStatus.class, "resume")
+  RESUME(VoxCommandLastRunStatus.class, "resume"),
+
+  WAYBACK(VoxCommandLastRunStatus.class, "resume")
 
   ;
 

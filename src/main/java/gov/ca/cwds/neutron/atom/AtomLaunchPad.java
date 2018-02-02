@@ -32,6 +32,13 @@ public interface AtomLaunchPad extends ApiMarker {
   String status();
 
   /**
+   * Roll back timestamp file the number of hours specified.
+   * 
+   * @param hoursInPast hours to roll back timestamp file
+   */
+  void waybackHours(int hoursInPast);
+
+  /**
    * Show history of last N flights.
    * 
    * @return flight history

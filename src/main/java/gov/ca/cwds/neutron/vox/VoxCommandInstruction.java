@@ -2,6 +2,8 @@ package gov.ca.cwds.neutron.vox;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
@@ -29,6 +31,8 @@ public final class VoxCommandInstruction implements ApiMarker {
   private String rocket;
   private String command;
 
+  private String args;
+
   public VoxCommandInstruction() {
     // default
   }
@@ -40,8 +44,8 @@ public final class VoxCommandInstruction implements ApiMarker {
 
   public static VoxCommandInstruction parseCommandLine(final String[] args) {
     LOGGER.info("PARSE COMMAND LINE");
-    VoxCommandInstruction ret = new VoxCommandInstruction();
-    final OptionParser parser = new OptionParser("h:p:r:c:");
+    final VoxCommandInstruction ret = new VoxCommandInstruction();
+    final OptionParser parser = new OptionParser("h:p:r:c:a:");
     final OptionSet options = parser.parse(args);
 
     final String host =
@@ -53,12 +57,15 @@ public final class VoxCommandInstruction implements ApiMarker {
     final String cmd =
         options.has("c") ? (String) options.valueOf("c") : VoxCommandType.STATUS.getKey();
 
+    final String arg = options.has("a") ? (String) options.valueOf("a") : "";
+
     ret.setHost(host);
     ret.setPort(port);
     ret.setRocket(rocket);
     ret.setCommand(cmd);
+    ret.setArgs(arg);
 
-    LOGGER.info("VOX COMMAND: host: {}, port: {}, rocket: {}", host, port, rocket);
+    LOGGER.info("VOX COMMAND: host: {}, port: {}, rocket: {}, arg: {}", host, port, rocket, arg);
     return ret;
   }
 
@@ -92,6 +99,19 @@ public final class VoxCommandInstruction implements ApiMarker {
 
   public void setCommand(String command) {
     this.command = command;
+  }
+
+  public String getArgs() {
+    return args;
+  }
+
+  public void setArgs(String args) {
+    this.args = args;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, true);
   }
 
   @Override
