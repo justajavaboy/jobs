@@ -7,7 +7,9 @@ import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandFetchLogs;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandFlightHistory;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandLastRunStatus;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandPause;
+import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandResume;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandShutdown;
+import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandStop;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandWayBack;
 
 /**
@@ -29,9 +31,11 @@ public enum VoxCommandType {
 
   ENABLE(VoxCommandLastRunStatus.class, "enable"),
 
-  PAUSE(VoxCommandPause.class, "pause"),
+  STOP(VoxCommandStop.class, "stop"),
 
-  RESUME(VoxCommandLastRunStatus.class, "resume"),
+  RESUME(VoxCommandResume.class, "resume"),
+
+  PAUSE(VoxCommandPause.class, "pause"),
 
   WAYBACK(VoxCommandWayBack.class, "wayback")
 
