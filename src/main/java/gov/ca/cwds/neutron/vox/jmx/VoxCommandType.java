@@ -6,6 +6,7 @@ import java.util.Map;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandFetchLogs;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandFlightHistory;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandLastRunStatus;
+import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandPause;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandShutdown;
 import gov.ca.cwds.neutron.vox.jmx.cmd.VoxCommandWayBack;
 
@@ -28,7 +29,7 @@ public enum VoxCommandType {
 
   ENABLE(VoxCommandLastRunStatus.class, "enable"),
 
-  PAUSE(VoxCommandLastRunStatus.class, "pause"),
+  PAUSE(VoxCommandPause.class, "pause"),
 
   RESUME(VoxCommandLastRunStatus.class, "resume"),
 
