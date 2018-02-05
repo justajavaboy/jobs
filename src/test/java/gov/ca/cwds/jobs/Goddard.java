@@ -259,7 +259,7 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
     when(esConfig.getElasticsearchAlias()).thenReturn("people");
     when(esConfig.getElasticsearchDocType()).thenReturn("person");
 
-    // Job options:
+    // Flight options:
     esConfileFile = tempFolder.newFile("es.yml");
     flightPlan = mock(FlightPlan.class);
 
@@ -280,12 +280,12 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
     when(nq.setFetchSize(any(Integer.class))).thenReturn(nq);
     when(nq.setCacheable(any(Boolean.class))).thenReturn(nq);
 
-    // Job track:
+    // Flight track:
     flightRecord = new FlightLog();
     flightRecorder = new FlightRecorder();
     launchDirector = mock(LaunchDirector.class);
 
-    // Elasticsearch msearch.
+    // Elasticsearch _msearch.
     final MultiSearchRequestBuilder mBuilder = mock(MultiSearchRequestBuilder.class);
     final MultiSearchResponse multiResponse = mock(MultiSearchResponse.class);
     final SearchRequestBuilder sBuilder = mock(SearchRequestBuilder.class);
