@@ -27,6 +27,7 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
@@ -96,8 +97,8 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   @Override
   public String getPrepLastChangeSQL() {
     try {
-      return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
-          NeutronJdbcUtils.makeTimestampStringLookBack(determineLastSuccessfulRunTime()));
+      return NeutronDB2Utils.prepLastChangeSQL(INSERT_CLIENT_LAST_CHG,
+          determineLastSuccessfulRunTime());
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
     }

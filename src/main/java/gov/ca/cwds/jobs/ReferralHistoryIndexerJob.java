@@ -46,7 +46,6 @@ import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
-import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
@@ -601,8 +600,8 @@ public class ReferralHistoryIndexerJob
   @Override
   public String getPrepLastChangeSQL() {
     try {
-      return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
-          NeutronJdbcUtils.makeTimestampStringLookBack(determineLastSuccessfulRunTime()));
+      return NeutronDB2Utils.prepLastChangeSQL(INSERT_CLIENT_LAST_CHG,
+          determineLastSuccessfulRunTime());
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
     }

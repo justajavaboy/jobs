@@ -127,7 +127,12 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public String getPrepLastChangeSQL() {
-    return CaseSQLResource.PREP_AFFECTED_CLIENTS_LAST_CHG;
+    try {
+      return NeutronDB2Utils.prepLastChangeSQL(CaseSQLResource.PREP_AFFECTED_CLIENTS_LAST_CHG,
+          determineLastSuccessfulRunTime());
+    } catch (NeutronCheckedException e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+    }
   }
 
   @Override
