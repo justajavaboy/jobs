@@ -122,7 +122,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
   @Override
   @Managed(description = "Schedule rocket launch")
   public void schedule() throws NeutronCheckedException {
-    LOGGER.warn("ATTEMPT TO SCHEDULE LAUNCH! {}", rocketName);
+    LOGGER.debug("ATTEMPT TO SCHEDULE LAUNCH! {}", rocketName);
     try {
       if (scheduler.checkExists(this.jobKey)) {
         LOGGER.warn("ROCKET ALREADY SCHEDULED! rocket: {}", rocketName);
@@ -246,6 +246,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
     }
   }
 
+  @Override
   @Managed(description = "Move timestamp file back in time." + "\nparam: hours in past")
   public void waybackHours(int hoursInPast) {
     try {

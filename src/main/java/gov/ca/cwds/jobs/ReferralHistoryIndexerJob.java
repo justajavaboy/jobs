@@ -73,7 +73,7 @@ public class ReferralHistoryIndexerJob
 //@formatter:on
 
   /**
-   * Filter <strong>deleted</strong> Client, Referral, Referral/Client, Allegation.
+   * Filter <strong>deleted</strong> Client, Referral, Referral/Client, and Allegation.
    */
 //@formatter:off
   protected static final String INSERT_CLIENT_LAST_CHG = 

@@ -60,7 +60,6 @@ import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.cases.FocusChildParent;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
-import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 import gov.ca.cwds.rest.api.domain.DomainChef;
@@ -231,11 +230,11 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       stmtInsClient.setString(2, p.getRight());
     } else {
       LOGGER.debug("LAST RUN");
-      final String strTimestamp =
-          NeutronJdbcUtils.makeTimestampStringLookBack(getFlightLog().getLastChangeSince());
-      for (int i = 1; i <= 5; i++) {
-        stmtInsClient.setString(i, strTimestamp);
-      }
+      // final String strTimestamp =
+      // NeutronJdbcUtils.makeTimestampStringLookBack(getFlightLog().getLastChangeSince());
+      // for (int i = 1; i <= 5; i++) {
+      // stmtInsClient.setString(i, strTimestamp);
+      // }
     }
 
     final int countInsClient = stmtInsClient.executeUpdate();
@@ -681,8 +680,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       NeutronDB2Utils.enableParallelism(con);
 
       try (final PreparedStatement stmtInsClient = con.prepareStatement(buildAffectedClientsSQL());
-          final PreparedStatement stmtInsClientCase =
-              con.prepareStatement(CaseSQLResource.INSERT_CLIENT_CASE);
+          final PreparedStatement stmtInsClientCase = con.prepareStatement(getPrepLastChangeSQL());
           final PreparedStatement stmtSelClient =
               con.prepareStatement(CaseSQLResource.SELECT_CLIENT);
           final PreparedStatement stmtSelCase = con.prepareStatement(CaseSQLResource.SELECT_CASE);
