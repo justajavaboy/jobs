@@ -49,6 +49,7 @@ public final class NeutronDB2Utils {
    * 
    * @param sql last change SQL
    * @param lastRunDate last successful run date
+   * @return DB2 timestamp string
    */
   public static String prepLastChangeSQL(String sql, Date lastRunDate) {
     return sql.replaceAll("XYZ", NeutronJdbcUtils.makeTimestampStringLookBack(lastRunDate));
