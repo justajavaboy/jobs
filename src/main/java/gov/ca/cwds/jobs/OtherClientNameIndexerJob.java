@@ -8,6 +8,8 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -22,9 +24,11 @@ import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
@@ -40,11 +44,20 @@ public class OtherClientNameIndexerJob
 
   private static final long serialVersionUID = 1L;
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(OtherClientNameIndexerJob.class);
+
+//@formatter:off
   private static final String INSERT_CLIENT_LAST_CHG =
-      "INSERT INTO GT_ID (IDENTIFIER)\n" + "SELECT CLT.IDENTIFIER AS CLIENT_ID\n"
-          + "FROM OCL_NM_T ONM\n" + "JOIN CLIENT_T CLT ON CLT.IDENTIFIER = ONM.FKCLIENT_T\n"
-          + "WHERE ONM.IBMSNAP_LOGMARKER > ?\n" + "UNION ALL\n" + "SELECT CLT.IDENTIFIER\n"
-          + "FROM CLIENT_T CLT WHERE CLT.IBMSNAP_LOGMARKER > ?";
+      "INSERT INTO GT_ID (IDENTIFIER)\n" 
+    + "SELECT CLT.IDENTIFIER AS CLIENT_ID\n"
+    + "FROM OCL_NM_T ONM\n" 
+    + "JOIN CLIENT_T CLT ON CLT.IDENTIFIER = ONM.FKCLIENT_T\n"
+    + "WHERE ONM.IBMSNAP_LOGMARKER > 'XYZ' \n" 
+    + "UNION ALL\n" 
+    + "SELECT CLT.IDENTIFIER\n"
+    + "FROM CLIENT_T CLT \n"
+    + "WHERE CLT.IBMSNAP_LOGMARKER > 'XYZ' ";
+//@formatter:on
 
   private transient ReplicatedOtherClientNameDao denormDao;
 
@@ -66,9 +79,17 @@ public class OtherClientNameIndexerJob
     this.denormDao = denormDao;
   }
 
+  /**
+   * DB2's optimizer is not very bright.
+   */
   @Override
   public String getPrepLastChangeSQL() {
-    return INSERT_CLIENT_LAST_CHG;
+    try {
+      return NeutronDB2Utils.prepLastChangeSQL(INSERT_CLIENT_LAST_CHG,
+          determineLastSuccessfulRunTime());
+    } catch (NeutronCheckedException e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+    }
   }
 
   @Override
