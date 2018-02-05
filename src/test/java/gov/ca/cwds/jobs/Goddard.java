@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.persistence.EntityManager;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.search.MultiSearchRequestBuilder;
@@ -175,6 +176,9 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
     tempFile = tempFolder.newFile("tempFile.txt");
     jobConfigFile = tempFolder.newFile("jobConfigFile.yml");
     lastRunFile = tempFile.getAbsolutePath();
+
+    FileUtils.writeStringToFile(tempFile, "2018-12-31 03:34:12");
+
     mapper = MAPPER;
     pair = Pair.of("aaaaaaaaaa", "9999999999");
 
