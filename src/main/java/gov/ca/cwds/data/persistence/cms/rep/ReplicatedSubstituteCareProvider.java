@@ -29,27 +29,50 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider.findBucketRange",
     query = "select z.IDENTIFIER, z.ADD_TEL_NO, z.ADD_EXT_NO, z.YR_INC_AMT, "
-        + "z.BIRTH_DT, TRIM(z.CA_DLIC_NO) CA_DLIC_NO, TRIM(z.CITY_NM) CITY_NM, z.EDUCATION, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, "
-        + "TRIM(z.EMPLYR_NM) EMPLYR_NM, z.EMPL_STAT, z.ETH_UD_CD, TRIM(z.FIRST_NM) FIRST_NM, z.FRG_ADRT_B, "
+        + "z.BIRTH_DT, TRIM(z.CA_DLIC_NO) CA_DLIC_NO, TRIM(z.CITY_NM) CITY_NM, "
+        + "z.EDUCATION, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, TRIM(z.EMPLYR_NM) EMPLYR_NM, "
+        + "z.EMPL_STAT, z.ETH_UD_CD, TRIM(z.FIRST_NM) FIRST_NM, z.FRG_ADRT_B, "
         + "z.GENDER_IND, z.HISP_UD_CD, z.HISP_CD, z.IND_TRBC, TRIM(z.LAST_NM) LAST_NM, "
-        + "z.LISOWNIND, TRIM(z.LIS_PER_ID) LIS_PER_ID, z.MRTL_STC, TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
+        + "z.LISOWNIND, TRIM(z.LIS_PER_ID) LIS_PER_ID, z.MRTL_STC, "
+        + "TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
         + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, TRIM(z.SS_NO) SS_NO, z.STATE_C, "
         + "TRIM(z.STREET_NM) STREET_NM, TRIM(z.STREET_NO) STREET_NO, TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.ZIP_NO, "
-        + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-        + "from {h-schema}SB_PVDRT z "
-        + "WHERE z.IDENTIFIER > :min_id AND z.IDENTIFIER < :max_id FOR READ ONLY WITH UR",
+        + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER \n"
+        + "FROM {h-schema}SB_PVDRT z \n"
+        + "WHERE z.IDENTIFIER > :min_id AND z.IDENTIFIER < :max_id "
+        + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedSubstituteCareProvider.class, readOnly = true)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider.findAllUpdatedAfter",
     query = "select z.IDENTIFIER, z.ADD_TEL_NO, z.ADD_EXT_NO, z.YR_INC_AMT, "
-        + "z.BIRTH_DT, TRIM(z.CA_DLIC_NO) CA_DLIC_NO, TRIM(z.CITY_NM) CITY_NM, z.EDUCATION, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, "
-        + "TRIM(z.EMPLYR_NM) EMPLYR_NM, z.EMPL_STAT, z.ETH_UD_CD, TRIM(z.FIRST_NM) FIRST_NM, z.FRG_ADRT_B, "
+        + "z.BIRTH_DT, TRIM(z.CA_DLIC_NO) CA_DLIC_NO, TRIM(z.CITY_NM) CITY_NM, "
+        + "z.EDUCATION, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, TRIM(z.EMPLYR_NM) EMPLYR_NM, "
+        + "z.EMPL_STAT, z.ETH_UD_CD, TRIM(z.FIRST_NM) FIRST_NM, z.FRG_ADRT_B, "
         + "z.GENDER_IND, z.HISP_UD_CD, z.HISP_CD, z.IND_TRBC, TRIM(z.LAST_NM) LAST_NM, "
-        + "z.LISOWNIND, TRIM(z.LIS_PER_ID) LIS_PER_ID, z.MRTL_STC, TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
+        + "z.LISOWNIND, TRIM(z.LIS_PER_ID) LIS_PER_ID, z.MRTL_STC, "
+        + "TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
         + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, TRIM(z.SS_NO) SS_NO, z.STATE_C, "
         + "TRIM(z.STREET_NM) STREET_NM, TRIM(z.STREET_NO) STREET_NO, TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.ZIP_NO, "
         + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER \n"
-        + "from {h-schema}SB_PVDRT z \n"
+        + "FROM {h-schema}GT_ID gt \n"
+        + "JOIN {h-schema}SB_PVDRT z ON gt.IDENTIFIER = z.IDENTIFIER \n"
+        + "WHERE (1=1 OR current timestamp < :after) \n"
+        + "FOR READ ONLY WITH UR ",
+    resultClass = ReplicatedSubstituteCareProvider.class)
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider.findAllUpdatedAfterWithUnlimitedAccess",
+    query = "select z.IDENTIFIER, z.ADD_TEL_NO, z.ADD_EXT_NO, z.YR_INC_AMT, "
+        + "z.BIRTH_DT, TRIM(z.CA_DLIC_NO) CA_DLIC_NO, TRIM(z.CITY_NM) CITY_NM, "
+        + "z.EDUCATION, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, TRIM(z.EMPLYR_NM) EMPLYR_NM, "
+        + "z.EMPL_STAT, z.ETH_UD_CD, TRIM(z.FIRST_NM) FIRST_NM, z.FRG_ADRT_B, "
+        + "z.GENDER_IND, z.HISP_UD_CD, z.HISP_CD, z.IND_TRBC, TRIM(z.LAST_NM) LAST_NM, "
+        + "z.LISOWNIND, TRIM(z.LIS_PER_ID) LIS_PER_ID, z.MRTL_STC, "
+        + "TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
+        + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, TRIM(z.SS_NO) SS_NO, z.STATE_C, "
+        + "TRIM(z.STREET_NM) STREET_NM, TRIM(z.STREET_NO) STREET_NO, TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.ZIP_NO, "
+        + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER \n"
+        + "FROM {h-schema}GT_ID gt \n"
+        + "JOIN {h-schema}SB_PVDRT z ON gt.IDENTIFIER = z.IDENTIFIER \n"
         + "WHERE (1=1 OR current timestamp < :after) \n"
         + "FOR READ ONLY WITH UR ",
     resultClass = ReplicatedSubstituteCareProvider.class)
