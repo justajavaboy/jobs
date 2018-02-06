@@ -47,7 +47,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, trim(z.SS_NO) SS_NO, z.STATE_C, "
         + "trim(z.STREET_NM) STREET_NM, trim(z.STREET_NO) STREET_NO, trim(z.SUFX_TLDSC) SUFX_TLDSC, z.ZIP_NO, "
         + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-        + "from {h-schema}SB_PVDRT z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
+        + "from {h-schema}SB_PVDRT z WHERE z.IBMSNAP_LOGMARKER >= CAST(:after AS TIMESTAMP) FOR READ ONLY WITH UR ",
     resultClass = ReplicatedSubstituteCareProvider.class)
 @Entity
 @Table(name = "SB_PVDRT")

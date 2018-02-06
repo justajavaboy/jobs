@@ -25,29 +25,29 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
  * @author CWDS API Team
  */
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporter.findBucketRange",
-    query = "SELECT trim(z.RPTR_BDGNO) RPTR_BDGNO, trim(z.RPTR_CTYNM) RPTR_CTYNM, "
-        + "z.COL_RELC, z.CMM_MTHC, z.CNFWVR_IND, z.FDBACK_DOC, trim(z.RPTR_EMPNM) RPTR_EMPNM, "
-        + "z.FEEDBCK_DT, z.FB_RQR_IND, trim(z.RPTR_FSTNM) RPTR_FSTNM, trim(z.RPTR_LSTNM) RPTR_LSTNM, "
-        + "z.MNRPTR_IND, z.MSG_EXT_NO, z.MSG_TEL_NO, trim(z.MID_INI_NM) MID_INI_NM, "
-        + "trim(z.NMPRFX_DSC) NMPRFX_DSC, z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, "
-        + "trim(z.RPTR_ST_NM) RPTR_ST_NM, trim(z.RPTR_ST_NO) RPTR_ST_NO, "
-        + "trim(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, z.LST_UPD_ID, z.LST_UPD_TS, "
+    query = "SELECT TRIM(z.RPTR_BDGNO) RPTR_BDGNO, TRIM(z.RPTR_CTYNM) RPTR_CTYNM, "
+        + "z.COL_RELC, z.CMM_MTHC, z.CNFWVR_IND, z.FDBACK_DOC, TRIM(z.RPTR_EMPNM) RPTR_EMPNM, "
+        + "z.FEEDBCK_DT, z.FB_RQR_IND, TRIM(z.RPTR_FSTNM) RPTR_FSTNM, TRIM(z.RPTR_LSTNM) RPTR_LSTNM, "
+        + "z.MNRPTR_IND, z.MSG_EXT_NO, z.MSG_TEL_NO, TRIM(z.MID_INI_NM) MID_INI_NM, "
+        + "TRIM(z.NMPRFX_DSC) NMPRFX_DSC, z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, "
+        + "TRIM(z.RPTR_ST_NM) RPTR_ST_NM, TRIM(z.RPTR_ST_NO) RPTR_ST_NO, "
+        + "TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, z.LST_UPD_ID, z.LST_UPD_TS, "
         + "z.FKREFERL_T, z.FKLAW_ENFT, z.ZIP_SFX_NO, z.CNTY_SPFCD "
         + ", z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}REPTR_T z "
         + "WHERE z.FKREFERL_T > :min_id AND z.FKREFERL_T <= :max_id FOR READ ONLY WITH UR",
     resultClass = ReplicatedReporter.class, readOnly = true)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedReporter.findAllUpdatedAfter",
-    query = "SELECT trim(z.RPTR_BDGNO) RPTR_BDGNO, trim(z.RPTR_CTYNM) RPTR_CTYNM, "
-        + "z.COL_RELC, z.CMM_MTHC, z.CNFWVR_IND, z.FDBACK_DOC, trim(z.RPTR_EMPNM) RPTR_EMPNM, "
-        + "z.FEEDBCK_DT, z.FB_RQR_IND, trim(z.RPTR_FSTNM) RPTR_FSTNM, trim(z.RPTR_LSTNM) RPTR_LSTNM, "
-        + "z.MNRPTR_IND, z.MSG_EXT_NO, z.MSG_TEL_NO, trim(z.MID_INI_NM) MID_INI_NM, "
-        + "trim(z.NMPRFX_DSC) NMPRFX_DSC, z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, "
-        + "trim(z.RPTR_ST_NM) RPTR_ST_NM, trim(z.RPTR_ST_NO) RPTR_ST_NO, "
-        + "trim(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, z.LST_UPD_ID, z.LST_UPD_TS, "
+    query = "SELECT TRIM(z.RPTR_BDGNO) RPTR_BDGNO, TRIM(z.RPTR_CTYNM) RPTR_CTYNM, "
+        + "z.COL_RELC, z.CMM_MTHC, z.CNFWVR_IND, z.FDBACK_DOC, TRIM(z.RPTR_EMPNM) RPTR_EMPNM, "
+        + "z.FEEDBCK_DT, z.FB_RQR_IND, TRIM(z.RPTR_FSTNM) RPTR_FSTNM, TRIM(z.RPTR_LSTNM) RPTR_LSTNM, "
+        + "z.MNRPTR_IND, z.MSG_EXT_NO, z.MSG_TEL_NO, TRIM(z.MID_INI_NM) MID_INI_NM, "
+        + "TRIM(z.NMPRFX_DSC) NMPRFX_DSC, z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, "
+        + "TRIM(z.RPTR_ST_NM) RPTR_ST_NM, TRIM(z.RPTR_ST_NO) RPTR_ST_NO, "
+        + "TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.RPTR_ZIPNO, z.LST_UPD_ID, z.LST_UPD_TS, "
         + "z.FKREFERL_T, z.FKLAW_ENFT, z.ZIP_SFX_NO, z.CNTY_SPFCD "
         + ", z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}REPTR_T z "
-        + "WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR ",
+        + "WHERE z.IBMSNAP_LOGMARKER >= TIMESTAMP(CAST(:after AS VARCHAR(22))) FOR READ ONLY WITH UR ",
     resultClass = ReplicatedReporter.class)
 @Entity
 @Table(name = "REPTR_T")
@@ -56,9 +56,6 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 public class ReplicatedReporter extends BaseReporter implements CmsReplicatedEntity,
     ApiGroupNormalizer<ReplicatedReporter>, EmbeddableCmsReplicatedEntityAware {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   private EmbeddableCmsReplicatedEntity replicatedEntity = new EmbeddableCmsReplicatedEntity();
@@ -111,6 +108,10 @@ public class ReplicatedReporter extends BaseReporter implements CmsReplicatedEnt
     return ElasticTransformer.createLegacyDescriptor(getId(), getLastUpdatedTime(),
         LegacyTable.REPORTER);
   }
+
+  // =======================
+  // OBJECT IDENTITY:
+  // =======================
 
   @Override
   public int hashCode() {

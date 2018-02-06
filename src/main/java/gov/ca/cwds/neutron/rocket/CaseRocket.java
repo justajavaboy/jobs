@@ -294,6 +294,10 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   /**
    * Reads the current list of staff workers.
    * 
+   * <p>
+   * TODO1: Read staff worker deltas or cache with Hibernate.
+   * </p>
+   * 
    * @return complete list of potential case workers
    * @throws NeutronCheckedException on database error
    */

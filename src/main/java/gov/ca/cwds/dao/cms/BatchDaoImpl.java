@@ -86,7 +86,9 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
       // Cross platform DB2 (both z/OS and Linux).
       final Query<T> query = session.getNamedQuery(namedQueryName).setCacheable(false)
           .setHibernateFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
-          .setParameter("after", ts, TimestampType.INSTANCE);
+          .setParameter("after", ts, TimestampType.INSTANCE)
+      // .setParameter("after", ts, StringType.INSTANCE)
+      ;
 
       // Iterate, process, flush.
       query.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());

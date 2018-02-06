@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchDirector;
 import gov.ca.cwds.neutron.launch.NeutronRocket;
 
@@ -50,7 +50,7 @@ public class NeutronTriggerListener implements TriggerListener {
     try {
       answer = neutronScheduler.isLaunchVetoed(className);
     } catch (Exception e) {
-      throw JobLogs.runtime(LOGGER, e, "ERROR FINDING ROCKET LAUNCH PAD! rocket class: {}",
+      throw CheeseRay.runtime(LOGGER, e, "ERROR FINDING ROCKET LAUNCH PAD! rocket class: {}",
           className, e);
     }
 
@@ -61,7 +61,7 @@ public class NeutronTriggerListener implements TriggerListener {
   @Override
   public void triggerMisfired(Trigger trigger) {
     final TriggerKey key = trigger.getKey();
-    LOGGER.warn("TRIGGER MISFIRED! key: {}", key);
+    LOGGER.info("TRIGGER MISFIRED! key: {}", key);
     neutronScheduler.removeExecutingJob(key);
   }
 
@@ -69,7 +69,7 @@ public class NeutronTriggerListener implements TriggerListener {
   public void triggerComplete(Trigger trigger, JobExecutionContext context,
       CompletedExecutionInstruction triggerInstructionCode) {
     final TriggerKey key = trigger.getKey();
-    LOGGER.debug("trigger complete: key: {}", key);
+    LOGGER.info("trigger complete: key: {}", key);
     neutronScheduler.removeExecutingJob(key);
   }
 
