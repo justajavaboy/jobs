@@ -190,7 +190,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   private String buildAffectedClientsSQL() {
-    return getFlightPlan().isLastRunMode() ? CaseSQLResource.PREP_AFFECTED_CLIENTS_LAST_CHG
+    return getFlightPlan().isLastRunMode() ? getPrepLastChangeSQL()
         : CaseSQLResource.PREP_AFFECTED_CLIENTS_FULL;
   }
 
@@ -680,7 +680,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       NeutronDB2Utils.enableParallelism(con);
 
       try (final PreparedStatement stmtInsClient = con.prepareStatement(buildAffectedClientsSQL());
-          final PreparedStatement stmtInsClientCase = con.prepareStatement(getPrepLastChangeSQL());
+          final PreparedStatement stmtInsClientCase =
+              con.prepareStatement(CaseSQLResource.INSERT_CLIENT_CASE);
           final PreparedStatement stmtSelClient =
               con.prepareStatement(CaseSQLResource.SELECT_CLIENT);
           final PreparedStatement stmtSelCase = con.prepareStatement(CaseSQLResource.SELECT_CASE);

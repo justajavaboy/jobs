@@ -45,7 +45,8 @@ public final class NeutronDB2Utils {
   }
 
   /**
-   * DB2's optimizer is not very bright.
+   * DB2's optimizer is not very bright. Timestamps in query plans run fine as a String through
+   * hard-parsed SQL but not in prepared statements.
    * 
    * @param sql last change SQL
    * @param lastRunDate last successful run date
