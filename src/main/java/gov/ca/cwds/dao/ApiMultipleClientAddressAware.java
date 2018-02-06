@@ -4,6 +4,7 @@ import java.util.List;
 
 import gov.ca.cwds.data.es.ElasticSearchPersonAddress;
 
+@FunctionalInterface
 public interface ApiMultipleClientAddressAware {
 
   /**
@@ -12,4 +13,5 @@ public interface ApiMultipleClientAddressAware {
    * @return List of person addresses
    */
   List<ElasticSearchPersonAddress> getElasticSearchPersonAddresses();
+
 }
