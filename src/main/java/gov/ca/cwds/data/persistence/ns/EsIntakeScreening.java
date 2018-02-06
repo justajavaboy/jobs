@@ -26,6 +26,7 @@ import gov.ca.cwds.data.es.ElasticSearchPersonPhone;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
@@ -76,9 +77,6 @@ public class EsIntakeScreening extends CommonScreening
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EsIntakeScreening.class);
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   @Type(type = "timestamp")
@@ -360,7 +358,6 @@ public class EsIntakeScreening extends CommonScreening
 
         // Synthetic, composite field, "state_name", not found in legacy.
         addr.setStreetAddress(streetAddress);
-        // addr.setType(addressType);
         addr.setZip(zip);
         otherPartc.addAddress(addr);
       }
@@ -414,9 +411,7 @@ public class EsIntakeScreening extends CommonScreening
       final IntakeParticipant otherPartc = handleOtherParticipant(s);
       handleAllegations(thisPartcId, s, otherPartc);
     } catch (Exception e) {
-      // Log the offending record.
-      LOGGER.error("OOPS! {}", this);
-      throw e;
+      throw CheeseRay.runtime(LOGGER, e, "SCREENING ERROR!! record: {}", e.getMessage());
     }
 
     return ret;
