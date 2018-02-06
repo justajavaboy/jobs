@@ -25,6 +25,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
  * 
  * @author CWDS API Team
  */
+//@formatter:off
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider.findBucketRange",
     query = "select z.IDENTIFIER, z.ADD_TEL_NO, z.ADD_EXT_NO, z.YR_INC_AMT, "
@@ -35,7 +36,8 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, TRIM(z.SS_NO) SS_NO, z.STATE_C, "
         + "TRIM(z.STREET_NM) STREET_NM, TRIM(z.STREET_NO) STREET_NO, TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.ZIP_NO, "
         + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-        + "from {h-schema}SB_PVDRT z WHERE z.IDENTIFIER > :min_id AND z.IDENTIFIER < :max_id FOR READ ONLY WITH UR",
+        + "from {h-schema}SB_PVDRT z "
+        + "WHERE z.IDENTIFIER > :min_id AND z.IDENTIFIER < :max_id FOR READ ONLY WITH UR",
     resultClass = ReplicatedSubstituteCareProvider.class, readOnly = true)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedSubstituteCareProvider.findAllUpdatedAfter",
@@ -46,9 +48,12 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "z.LISOWNIND, TRIM(z.LIS_PER_ID) LIS_PER_ID, z.MRTL_STC, TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
         + "z.PASSBC_CD, z.PRIM_INC, z.RESOST_IND, z.SEC_INC, TRIM(z.SS_NO) SS_NO, z.STATE_C, "
         + "TRIM(z.STREET_NM) STREET_NM, TRIM(z.STREET_NO) STREET_NO, TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.ZIP_NO, "
-        + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-        + "from {h-schema}SB_PVDRT z WHERE z.IBMSNAP_LOGMARKER > :after FOR READ ONLY WITH UR ",
+        + "z.ZIP_SFX_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER \n"
+        + "from {h-schema}SB_PVDRT z \n"
+        + "WHERE (1=1 OR current timestamp < :after) \n"
+        + "FOR READ ONLY WITH UR ",
     resultClass = ReplicatedSubstituteCareProvider.class)
+//@formatter:on
 @Entity
 @Table(name = "SB_PVDRT")
 @JsonPropertyOrder(alphabetic = true)

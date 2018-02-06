@@ -24,6 +24,7 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
  * 
  * @author CWDS API Team
  */
+//@formatter:off
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual.findBucketRange",
     query = "select z.IDENTIFIER, TRIM(z.BADGE_NO) BADGE_NO, TRIM(z.CITY_NM) CITY_NM, TRIM(z.EMPLYR_NM) EMPLYR_NM, "
@@ -33,8 +34,10 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "z.ZIP_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.ZIP_SFX_NO, TRIM(z.COMNT_DSC) COMNT_DSC, "
         + "z.GENDER_CD, z.BIRTH_DT, z.MRTL_STC, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, "
         + "z.ESTBLSH_CD, z.ESTBLSH_ID, z.RESOST_IND, "
-        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}COLTRL_T z "
-        + "WHERE z.IDENTIFIER >= :min_id AND z.IDENTIFIER <= :max_id FOR READ ONLY WITH UR",
+        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
+        + "FROM {h-schema}COLTRL_T z "
+        + "WHERE z.IDENTIFIER >= :min_id AND z.IDENTIFIER <= :max_id "
+        + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedCollateralIndividual.class, readOnly = true)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual.findAllUpdatedAfter",
@@ -45,8 +48,26 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "z.ZIP_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.ZIP_SFX_NO, TRIM(z.COMNT_DSC) COMNT_DSC, "
         + "z.GENDER_CD, z.BIRTH_DT, z.MRTL_STC, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, "
         + "z.ESTBLSH_CD, z.ESTBLSH_ID, z.RESOST_IND, "
-        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}COLTRL_T z "
-        + "WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR",
+        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER \n"
+        + "FROM {h-schema}GT_ID gt \n"
+        + "JOIN {h-schema}COLTRL_T z ON z.IDENTIFIER = gt.IDENTIFIER \n"
+        + "WHERE (1=1 OR z.IBMSNAP_LOGMARKER >= :after) \n"
+        + "FOR READ ONLY WITH UR",
+    resultClass = ReplicatedCollateralIndividual.class)
+@NamedNativeQuery(
+    name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual.findAllUpdatedAfterWithUnlimitedAccess",
+    query = "select z.IDENTIFIER, TRIM(z.BADGE_NO) BADGE_NO, TRIM(z.CITY_NM) CITY_NM, TRIM(z.EMPLYR_NM) EMPLYR_NM, "
+        + "z.FAX_NO, TRIM(z.FIRST_NM) FIRST_NM, z.FRG_ADRT_B, TRIM(z.LAST_NM) LAST_NM, "
+        + "TRIM(z.MID_INI_NM) MID_INI_NM, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, z.PRM_TEL_NO, z.PRM_EXT_NO, z.STATE_C, "
+        + "TRIM(z.STREET_NM) STREET_NM, TRIM(z.STREET_NO) STREET_NO, TRIM(z.SUFX_TLDSC) SUFX_TLDSC, "
+        + "z.ZIP_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.ZIP_SFX_NO, TRIM(z.COMNT_DSC) COMNT_DSC, "
+        + "z.GENDER_CD, z.BIRTH_DT, z.MRTL_STC, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, "
+        + "z.ESTBLSH_CD, z.ESTBLSH_ID, z.RESOST_IND, "
+        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER \n"
+        + "FROM {h-schema}GT_ID gt \n"
+        + "JOIN {h-schema}COLTRL_T z ON z.IDENTIFIER = gt.IDENTIFIER \n"
+        + "WHERE (1=1 OR z.IBMSNAP_LOGMARKER >= :after) \n"
+        + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedCollateralIndividual.class)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedCollateralIndividual.findPartitionedBuckets",
@@ -57,9 +78,12 @@ import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
         + "z.ZIP_NO, z.LST_UPD_ID, z.LST_UPD_TS, z.ZIP_SFX_NO, TRIM(z.COMNT_DSC) COMNT_DSC, "
         + "z.GENDER_CD, z.BIRTH_DT, z.MRTL_STC, TRIM(z.EMAIL_ADDR) EMAIL_ADDR, "
         + "z.ESTBLSH_CD, z.ESTBLSH_ID, z.RESOST_IND, "
-        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER FROM {h-schema}COLTRL_T z "
-        + "WHERE z.IDENTIFIER >= :min_id AND z.IDENTIFIER <= :max_id FOR READ ONLY WITH UR",
+        + "IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
+        + "FROM {h-schema}COLTRL_T z "
+        + "WHERE z.IDENTIFIER >= :min_id AND z.IDENTIFIER <= :max_id "
+        + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedCollateralIndividual.class)
+//@formatter:on
 @Entity
 @Table(name = "COLTRL_T")
 @JsonPropertyOrder(alphabetic = true)
