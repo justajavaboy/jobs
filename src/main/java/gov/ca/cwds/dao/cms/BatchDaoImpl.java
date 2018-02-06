@@ -12,7 +12,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-import org.hibernate.type.DateType;
+import org.hibernate.type.TimestampType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,6 @@ import gov.ca.cwds.data.DaoException;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.BatchBucketDao;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
-import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 
 /**
  * Base class for DAO with some common methods.
@@ -83,20 +82,11 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
     final Session session = getSessionFactory().getCurrentSession();
     final Transaction txn = session.beginTransaction();
     final java.sql.Timestamp ts = new java.sql.Timestamp(datetime.getTime());
-    final java.sql.Date sqlDate = new java.sql.Date(datetime.getTime());
-
-    final String db2NotOptimizingTimestampInPreparedStatementsWTF =
-        NeutronJdbcUtils.makeTimestampStringLookBack(datetime);
-
     try {
       // Cross platform DB2 (both z/OS and Linux).
       final Query<T> query = session.getNamedQuery(namedQueryName).setCacheable(false)
           .setHibernateFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
-          // .setParameter("after", ts, TimestampType.INSTANCE)
-          .setParameter("after", sqlDate, DateType.INSTANCE)
-      // .setParameter("after", db2NotOptimizingTimestampInPreparedStatementsWTF,
-      // StringType.INSTANCE)
-      ;
+          .setParameter("after", ts, TimestampType.INSTANCE);
 
       // Iterate, process, flush.
       query.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
@@ -120,6 +110,7 @@ public abstract class BatchDaoImpl<T extends PersistentObject> extends BaseDaoIm
       results.close();
       txn.commit();
       return ret.build();
+
     } catch (HibernateException h) {
       txn.rollback();
       throw new DaoException(h);
