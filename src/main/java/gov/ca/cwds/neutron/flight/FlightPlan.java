@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.jobs.config.CmdLineOption;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
@@ -199,6 +199,10 @@ public class FlightPlan implements ApiMarker {
    * Smart/auto mode. If last run date is older than 25 years, assume initial load. Written when
    * DevOps started using Rundeck and was unable to pass parameters to jobs.
    * 
+   * <p>
+   * HACK: This approach was concocted because Rundeck was not configured to accept job parameters.
+   * </p>
+   * 
    * @param lastRun last successful run date
    * @return true if running initial load
    */
@@ -362,7 +366,7 @@ public class FlightPlan implements ApiMarker {
           pad + "\nUSAGE: java <rocket class> ...\n" + pad, buildCmdLineOptions(), 4, 8, pad, true);
       LOGGER.error(sw.toString()); // NOSONAR
     } catch (IOException e) {
-      throw JobLogs.checked(LOGGER, e, "INCORRECT USAGE! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "INCORRECT USAGE! {}", e.getMessage());
     }
   }
 
@@ -484,7 +488,7 @@ public class FlightPlan implements ApiMarker {
       }
     } catch (IllegalArgumentException | java.text.ParseException | ParseException e) {
       printUsage();
-      throw JobLogs.checked(LOGGER, e, "INVALID ARGS", e.getMessage(), e);
+      throw CheeseRay.checked(LOGGER, e, "INVALID ARGS", e.getMessage(), e);
     }
 
     return new FlightPlan(esConfigPeopleLoc, esConfigPeopleSummaryLoc, indexName, lastRunTime,

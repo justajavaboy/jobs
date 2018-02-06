@@ -239,9 +239,9 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
     this.openCaseId = openCaseId;
   }
 
-  // ============================
+  // =================================
   // ApiMultipleClientAddressAware:
-  // ============================
+  // =================================
 
   @JsonIgnore
   @Override
@@ -314,13 +314,6 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
 
     return new ArrayList<>(esClientAddresses.values());
   }
-
-  // @JsonIgnore
-  // @Override
-  // public ApiAddressAware[] getAddresses() {
-  // return clientAddresses.stream().flatMap(ca -> ca.getAddresses().stream())
-  // .collect(Collectors.toList()).toArray(new ApiAddressAware[0]);
-  // }
 
   // ============================
   // ApiMultiplePhonesAware:
