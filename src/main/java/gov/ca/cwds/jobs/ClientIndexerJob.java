@@ -53,16 +53,17 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   //@formatter:off
   private static final String INSERT_CLIENT_LAST_CHG =
       "INSERT INTO GT_ID (IDENTIFIER)\n" 
-          + "SELECT CLT.IDENTIFIER \nFROM CLIENT_T clt\n"
+          + "SELECT DISTINCT CLT.IDENTIFIER \n"
+          + "FROM CLIENT_T clt \n"
           + "WHERE CLT.IBMSNAP_LOGMARKER > 'XYZ'\n"
         + "UNION\n" 
-          + "SELECT CLT.IDENTIFIER "
+          + "SELECT DISTINCT CLT.IDENTIFIER "
           + "FROM CLIENT_T clt\n" 
           + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T \n"
           + "WHERE CLA.IBMSNAP_LOGMARKER > 'XYZ'\n"
         + "UNION\n" 
-          + "SELECT CLT.IDENTIFIER \n"
-          + "FROM CLIENT_T clt\n" 
+          + "SELECT DISTINCT CLT.IDENTIFIER \n"
+          + "FROM CLIENT_T clt \n" 
           + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T\n"
           + "JOIN ADDRS_T  adr ON cla.FKADDRS_T  = adr.IDENTIFIER\n"
           + "WHERE ADR.IBMSNAP_LOGMARKER > 'XYZ'";
