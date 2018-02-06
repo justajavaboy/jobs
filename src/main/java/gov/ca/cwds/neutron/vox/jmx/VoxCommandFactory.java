@@ -2,9 +2,9 @@ package gov.ca.cwds.neutron.vox.jmx;
 
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.vox.VoxCommandInstruction;
 
 public final class VoxCommandFactory implements ApiMarker {
@@ -22,7 +22,7 @@ public final class VoxCommandFactory implements ApiMarker {
     try {
       ret = (VoxJMXCommandClient) cmdType.getKlass().newInstance();
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "JMX ERROR! host: {}, port: {}, rocket: {}", cmd.getHost(),
+      throw CheeseRay.checked(LOGGER, e, "JMX ERROR! host: {}, port: {}, rocket: {}", cmd.getHost(),
           cmd.getPort(), cmd.getRocket());
     }
 

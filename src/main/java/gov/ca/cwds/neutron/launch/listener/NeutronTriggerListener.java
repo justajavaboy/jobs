@@ -11,10 +11,16 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchDirector;
 import gov.ca.cwds.neutron.launch.NeutronRocket;
 
+/**
+ * Neutron implementation of Quartz TriggerListener.
+ * 
+ * @author CWDS API Team
+ */
 public class NeutronTriggerListener implements TriggerListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NeutronTriggerListener.class);
@@ -24,6 +30,7 @@ public class NeutronTriggerListener implements TriggerListener {
   @Inject
   public NeutronTriggerListener(final LaunchDirector neutronScheduler) {
     this.neutronScheduler = neutronScheduler;
+    NeutronThreadUtils.nameThread("neutron_trigger_listener", this);
   }
 
   @Override
@@ -50,8 +57,8 @@ public class NeutronTriggerListener implements TriggerListener {
     try {
       answer = neutronScheduler.isLaunchVetoed(className);
     } catch (Exception e) {
-      throw JobLogs.runtime(LOGGER, e, "ERROR FINDING ROCKET LAUNCH PAD! rocket class: {}",
-          className, e);
+      throw CheeseRay.runtime(LOGGER, e, "ERROR FINDING LAUNCH PAD! rocket class: {}", className,
+          e);
     }
 
     LOGGER.warn("veto job execution: {}", answer);
@@ -61,7 +68,7 @@ public class NeutronTriggerListener implements TriggerListener {
   @Override
   public void triggerMisfired(Trigger trigger) {
     final TriggerKey key = trigger.getKey();
-    LOGGER.warn("TRIGGER MISFIRED! key: {}", key);
+    LOGGER.info("TRIGGER MISFIRED! key: {}", key);
     neutronScheduler.removeExecutingJob(key);
   }
 
@@ -69,7 +76,7 @@ public class NeutronTriggerListener implements TriggerListener {
   public void triggerComplete(Trigger trigger, JobExecutionContext context,
       CompletedExecutionInstruction triggerInstructionCode) {
     final TriggerKey key = trigger.getKey();
-    LOGGER.debug("trigger complete: key: {}", key);
+    LOGGER.info("trigger complete: key: {}", key);
     neutronScheduler.removeExecutingJob(key);
   }
 

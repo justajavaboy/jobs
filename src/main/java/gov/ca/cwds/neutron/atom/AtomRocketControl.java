@@ -4,7 +4,8 @@ import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.neutron.flight.FlightLog;
 
 /**
- * Rocket control interface.
+ * Rocket control interface. Mark major steps completed (retrieve, transform, index) or fail the
+ * entire flight.
  * 
  * @author CWDS API Team
  * @see FlightLog
@@ -47,12 +48,16 @@ public interface AtomRocketControl extends ApiMarker {
   boolean isRetrieveDone();
 
   /**
-   * Mark the rocket as failed and stop the rocket. Working threads should stop themselves.
+   * Mark the rocket as failed and stop the rocket.
+   * 
+   * <p>
+   * Worker threads should stop themselves.
+   * </p>
    */
   void fail();
 
   /**
-   * Mark ES indexing done.
+   * Mark Elasticsearch indexing complete.
    */
   void doneIndex();
 

@@ -26,11 +26,13 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedAddress;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
+import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.InitialLoadJdbcRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -52,18 +54,18 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   private static final String INSERT_CLIENT_LAST_CHG =
       "INSERT INTO GT_ID (IDENTIFIER)\n" 
           + "SELECT CLT.IDENTIFIER \nFROM CLIENT_T clt\n"
-          + "WHERE CLT.IBMSNAP_LOGMARKER > ?\n"
+          + "WHERE CLT.IBMSNAP_LOGMARKER > 'XYZ'\n"
         + "UNION\n" 
           + "SELECT CLT.IDENTIFIER "
           + "FROM CLIENT_T clt\n" 
           + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T \n"
-          + "WHERE CLA.IBMSNAP_LOGMARKER > ?\n"
+          + "WHERE CLA.IBMSNAP_LOGMARKER > 'XYZ'\n"
         + "UNION\n" 
           + "SELECT CLT.IDENTIFIER \n"
           + "FROM CLIENT_T clt\n" 
           + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T\n"
           + "JOIN ADDRS_T  adr ON cla.FKADDRS_T  = adr.IDENTIFIER\n"
-          + "WHERE ADR.IBMSNAP_LOGMARKER > ?";
+          + "WHERE ADR.IBMSNAP_LOGMARKER > 'XYZ'";
   //@formatter:on
 
   private AtomicInteger nextThreadNum = new AtomicInteger(0);
@@ -95,7 +97,12 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
 
   @Override
   public String getPrepLastChangeSQL() {
-    return INSERT_CLIENT_LAST_CHG;
+    try {
+      return NeutronDB2Utils.prepLastChangeSQL(INSERT_CLIENT_LAST_CHG,
+          determineLastSuccessfulRunTime());
+    } catch (NeutronCheckedException e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+    }
   }
 
   @Override

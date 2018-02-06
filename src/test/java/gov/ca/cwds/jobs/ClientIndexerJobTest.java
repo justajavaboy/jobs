@@ -197,7 +197,7 @@ public class ClientIndexerJobTest extends Goddard<ReplicatedClient, EsClientAddr
 
   @Test
   public void getPrepLastChangeSQL_Args__() throws Exception {
-    String actual = target.getPrepLastChangeSQL();
+    final String actual = target.getPrepLastChangeSQL();
     assertThat(actual, is(notNullValue()));
   }
 

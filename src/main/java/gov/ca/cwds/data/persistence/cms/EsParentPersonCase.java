@@ -10,7 +10,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.NamedNativeQuery;
 
 /**
- * Entity bean for view VW_LST_PARENT_CASE_HIST for parent person cases.
+ * Entity bean for parent person cases.
+ * 
+ * <p>
+ * Per Jira INT-1271, view VW_LST_PARENT_CASE_HIST is obsolete.
+ * </p>
  * 
  * @author CWDS API Team
  */

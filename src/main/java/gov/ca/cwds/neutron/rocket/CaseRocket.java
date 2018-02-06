@@ -57,10 +57,9 @@ import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.cases.FocusChildParent;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
-import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 import gov.ca.cwds.rest.api.domain.DomainChef;
@@ -127,7 +126,12 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
   @Override
   public String getPrepLastChangeSQL() {
-    return CaseSQLResource.PREP_AFFECTED_CLIENTS_LAST_CHG;
+    try {
+      return NeutronDB2Utils.prepLastChangeSQL(CaseSQLResource.PREP_AFFECTED_CLIENTS_LAST_CHG,
+          determineLastSuccessfulRunTime());
+    } catch (NeutronCheckedException e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+    }
   }
 
   @Override
@@ -186,7 +190,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   }
 
   private String buildAffectedClientsSQL() {
-    return getFlightPlan().isLastRunMode() ? CaseSQLResource.PREP_AFFECTED_CLIENTS_LAST_CHG
+    return getFlightPlan().isLastRunMode() ? getPrepLastChangeSQL()
         : CaseSQLResource.PREP_AFFECTED_CLIENTS_FULL;
   }
 
@@ -226,11 +230,11 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       stmtInsClient.setString(2, p.getRight());
     } else {
       LOGGER.debug("LAST RUN");
-      final String strTimestamp =
-          NeutronJdbcUtils.makeTimestampStringLookBack(getFlightLog().getLastChangeSince());
-      for (int i = 1; i <= 5; i++) {
-        stmtInsClient.setString(i, strTimestamp);
-      }
+      // final String strTimestamp =
+      // NeutronJdbcUtils.makeTimestampStringLookBack(getFlightLog().getLastChangeSince());
+      // for (int i = 1; i <= 5; i++) {
+      // stmtInsClient.setString(i, strTimestamp);
+      // }
     }
 
     final int countInsClient = stmtInsClient.executeUpdate();
@@ -264,7 +268,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     FocusChildParent m;
     final ResultSet rs = stmt.executeQuery();
     while (!isFailed() && rs.next() && (m = FocusChildParent.extract(rs)) != null) {
-      JobLogs.logEvery(++cntr, "read", "focus child parent");
+      CheeseRay.logEvery(++cntr, "read", "focus child parent");
       list.add(m);
     }
   }
@@ -281,14 +285,18 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     final ResultSet rs = stmtSelCase.executeQuery(); // NOSONAR
     while (!isFailed() && rs.next()) {
       m = extractCase(rs);
-      JobLogs.logEvery(++cntr, "read", "case bundle");
-      JobLogs.logEvery(LOGGER, 10000, rowsReadCases.incrementAndGet(), "Total read", "cases");
+      CheeseRay.logEvery(++cntr, "read", "case bundle");
+      CheeseRay.logEvery(LOGGER, 10000, rowsReadCases.incrementAndGet(), "Total read", "cases");
       mapCases.put(m.getCaseId(), m);
     }
   }
 
   /**
    * Reads the current list of staff workers.
+   * 
+   * <p>
+   * TODO1: Read staff worker deltas or cache with Hibernate.
+   * </p>
    * 
    * @return complete list of potential case workers
    * @throws NeutronCheckedException on database error
@@ -634,7 +642,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
         }
       } catch (IOException e) {
         fail();
-        throw JobLogs.checked(LOGGER, e, "VALIDATION ERROR! {}", e.getMessage());
+        throw CheeseRay.checked(LOGGER, e, "VALIDATION ERROR! {}", e.getMessage());
       }
     }
 
@@ -696,7 +704,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR PULLING RANGE! {} - {}: {}", keyRange.getLeft(),
+      throw CheeseRay.checked(LOGGER, e, "ERROR PULLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     }
 
@@ -707,7 +715,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
           mapClients, new HashMap<>(HASH_SIZE_LARGE));
     } catch (NeutronCheckedException e) {
       fail();
-      throw JobLogs.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),
+      throw CheeseRay.checked(LOGGER, e, "ERROR ASSEMBLING RANGE! {} - {}: {}", keyRange.getLeft(),
           keyRange.getRight(), e.getMessage());
     } finally {
       getFlightLog().markRangeComplete(keyRange);
@@ -742,7 +750,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       }
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }
@@ -759,7 +767,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       pullNextRange(Pair.of("a", "b"));
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }
