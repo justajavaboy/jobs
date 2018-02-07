@@ -1,4 +1,4 @@
-package gov.ca.cwds.data.persistence.cms;
+package gov.ca.cwds.neutron.rocket.cases;
 
 import gov.ca.cwds.data.std.ApiMarker;
 

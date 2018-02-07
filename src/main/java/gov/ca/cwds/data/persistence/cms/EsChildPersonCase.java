@@ -5,6 +5,8 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.NamedNativeQuery;
 
+import gov.ca.cwds.neutron.rocket.cases.CaseSQLResource;
+
 /**
  * Entity bean for view VW_LST_CASE_HIST for focus child person cases.
  * 
