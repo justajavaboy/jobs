@@ -55,17 +55,17 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   private static final String INSERT_CLIENT_LAST_CHG =
       "INSERT INTO GT_ID (IDENTIFIER)\n" 
     + "SELECT CLT.IDENTIFIER \n"
-      + "FROM CLIENT_T clt \n"
-      + "WHERE CLT.IBMSNAP_LOGMARKER > 'XYZ' \n"
+       + "FROM CLIENT_T clt \n"
+       + "WHERE CLT.IBMSNAP_LOGMARKER > 'XYZ' \n"
     + "UNION SELECT CLT.IDENTIFIER \n"
-      + "FROM CLIENT_T clt \n" 
-      + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T \n"
-      + "WHERE CLA.IBMSNAP_LOGMARKER > 'XYZ' \n"
+       + "FROM CLIENT_T clt \n" 
+       + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T \n"
+       + "WHERE CLA.IBMSNAP_LOGMARKER > 'XYZ' \n"
     + "UNION SELECT CLT.IDENTIFIER \n"
-      + "FROM CLIENT_T clt \n" 
-      + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T \n"
-      + "JOIN ADDRS_T  adr ON cla.FKADDRS_T  = adr.IDENTIFIER \n"
-      + "WHERE ADR.IBMSNAP_LOGMARKER > 'XYZ' ";
+       + "FROM CLIENT_T clt \n" 
+       + "JOIN CL_ADDRT cla ON clt.IDENTIFIER = cla.FKCLIENT_T \n"
+       + "JOIN ADDRS_T  adr ON cla.FKADDRS_T  = adr.IDENTIFIER \n"
+       + "WHERE ADR.IBMSNAP_LOGMARKER > 'XYZ' ";
 //@formatter:on
 
   private AtomicInteger nextThreadNum = new AtomicInteger(0);

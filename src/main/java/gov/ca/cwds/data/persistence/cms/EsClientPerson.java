@@ -45,27 +45,47 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  */
 @Entity
 @Table(name = "VW_LST_CLIENT_ADDRESS")
+//@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsClientPerson.findAllUpdatedAfter",
-    query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
-        + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
-        + "WHERE x1.LAST_CHG > :after " + ") ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR ",
+    query = "SELECT x.* "
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+        + "WHERE x.CLT_IDENTIFIER IN ( \n"
+           + "SELECT x1.CLT_IDENTIFIER \n"
+           + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
+           + "WHERE x1.LAST_CHG > :after \n" 
+        + ") \n"
+        + "ORDER BY CLT_IDENTIFIER FOR \n"
+        + "READ ONLY WITH UR ",
     resultClass = EsClientPerson.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientPerson.findAllUpdatedAfterWithUnlimitedAccess",
-    query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
-        + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
-        + "WHERE x1.LAST_CHG > :after "
-        + ") AND x.CLT_SENSTV_IND = 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR",
+    query = "SELECT x.* \n"
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+        + "WHERE x.CLT_IDENTIFIER IN ( \n"
+           + "SELECT x1.CLT_IDENTIFIER \n"
+           + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
+           + "WHERE x1.LAST_CHG > :after \n"
+        + ") \n"
+        + "AND x.CLT_SENSTV_IND = 'N' \n"
+        + "ORDER BY CLT_IDENTIFIER \n"
+        + "FOR READ ONLY WITH UR",
     resultClass = EsClientPerson.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientPerson.findAllUpdatedAfterWithLimitedAccess",
-    query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
-        + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
-        + "WHERE x1.LAST_CHG > :after "
-        + ") AND x.CLT_SENSTV_IND != 'N' ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR ",
+    query = "SELECT x.* "
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+        + "WHERE x.CLT_IDENTIFIER IN ( \n"
+           + "SELECT x1.CLT_IDENTIFIER \n"
+           + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
+           + "WHERE x1.LAST_CHG > :after \n"
+        + ") \n"
+        + "AND x.CLT_SENSTV_IND != 'N' \n"
+        + "ORDER BY CLT_IDENTIFIER \n"
+        + "FOR READ ONLY WITH UR ",
     resultClass = EsClientPerson.class, readOnly = true)
+//@formatter:on
 public class EsClientPerson extends BaseEsClient
     implements Comparable<EsClientPerson>, Comparator<EsClientPerson> {
 
@@ -259,26 +279,6 @@ public class EsClientPerson extends BaseEsClient
   @Override
   public Serializable getPrimaryKey() {
     return null;
-  }
-
-  @Override
-  public int compare(EsClientPerson o1, EsClientPerson o2) {
-    return o1.getCltId().compareTo(o2.getCltId());
-  }
-
-  @Override
-  public int compareTo(EsClientPerson o) {
-    return compare(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this, false);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
   public Date getCltFatherParentalRightTermDate() {
@@ -600,6 +600,26 @@ public class EsClientPerson extends BaseEsClient
         this.akaLastUpdatedTimestamp, LegacyTable.ALIAS_OR_OTHER_CLIENT_NAME));
 
     return aka;
+  }
+
+  @Override
+  public int compare(EsClientPerson o1, EsClientPerson o2) {
+    return o1.getCltId().compareTo(o2.getCltId());
+  }
+
+  @Override
+  public int compareTo(EsClientPerson o) {
+    return compare(this, o);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }
