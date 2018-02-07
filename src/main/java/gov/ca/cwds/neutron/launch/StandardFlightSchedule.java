@@ -67,35 +67,35 @@ public enum StandardFlightSchedule {
   PEOPLE_SUMMARY(ClientPersonIndexerJob.class, "people_summary", 5, 20, 1000, null, true, true),
 
   /**
-   * Client. Essential document root.
+   * Essential document root: Client.
    */
   CLIENT(ClientIndexerJob.class, "client", 8, 20, 1000, null, true, true),
 
   /**
-   * Document root. Reporter
+   * Document root: Reporter.
    */
   REPORTER(ReporterIndexerJob.class, "reporter", 14, 30, 950, null, true, true),
 
   /**
-   * Document root. Collateral Individual.
+   * Document root: Collateral Individual.
    */
   COLLATERAL_INDIVIDUAL(CollateralIndividualIndexerJob.class, "collateral_individual", 20, 30, 90,
       null, true, true),
 
   /**
-   * Document root. Service Provider.
+   * Document root: Service Provider.
    */
   SERVICE_PROVIDER(ServiceProviderIndexerJob.class, "service_provider", 25, 120, 85, null, true,
       true),
 
   /**
-   * Document root. Substitute Care Provider.
+   * Document root: Substitute Care Provider.
    */
   SUBSTITUTE_CARE_PROVIDER(SubstituteCareProviderIndexJob.class, "substitute_care_provider", 30, 25,
       80, null, true, true),
 
   /**
-   * Document root. Education Provider.
+   * Document root: Education Provider.
    */
   EDUCATION_PROVIDER(EducationProviderContactIndexerJob.class, "education_provider", 42, 120, 75,
       null, true, true),
