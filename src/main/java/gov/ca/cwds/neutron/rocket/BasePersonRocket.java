@@ -841,6 +841,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
   /**
    * Divide work into buckets: pull a unique range of identifiers so that no bucket results overlap.
+   * 
    * <p>
    * Where possible, prefer use {@link #threadRetrieveByJdbc()} or {@link #extractHibernate()}
    * instead.

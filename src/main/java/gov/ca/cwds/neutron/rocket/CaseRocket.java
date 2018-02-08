@@ -230,11 +230,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       stmtInsClient.setString(2, p.getRight());
     } else {
       LOGGER.debug("LAST RUN");
-      // final String strTimestamp =
-      // NeutronJdbcUtils.makeTimestampStringLookBack(getFlightLog().getLastChangeSince());
-      // for (int i = 1; i <= 5; i++) {
-      // stmtInsClient.setString(i, strTimestamp);
-      // }
     }
 
     final int countInsClient = stmtInsClient.executeUpdate();
@@ -295,7 +290,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    * Reads the current list of staff workers.
    * 
    * <p>
-   * TODO1: Read staff worker deltas or cache with Hibernate.
+   * NEXT: Read staff worker deltas or cache with Hibernate.
    * </p>
    * 
    * @return complete list of potential case workers
