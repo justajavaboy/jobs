@@ -523,6 +523,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * @throws Exception unhandled error
    */
   public static void main(String[] args) throws Exception {
+    setSysPropsFromEnvVars(dbPropList);
     standardFlightPlan = parseCommandLine(args);
     final String baseDir = standardFlightPlan.getBaseDirectory();
     LaunchCommand.settings.setBaseDirectory(baseDir);
