@@ -56,7 +56,7 @@ import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.neutron.atom.AtomPersonDocPrep;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.rest.api.domain.DomainChef;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
@@ -94,7 +94,7 @@ public final class ElasticTransformer {
 
   public static void pushToBulkProcessor(final FlightLog flightLog, final BulkProcessor bp,
       final DocWriteRequest<?> t) {
-    JobLogs.logEvery(flightLog.incrementBulkPrepared(), "add to ES bulk", "index doc");
+    CheeseRay.logEvery(flightLog.incrementBulkPrepared(), "add to ES bulk", "index doc");
     bp.add(t);
   }
 
@@ -171,7 +171,7 @@ public final class ElasticTransformer {
       json = ElasticTransformer.prepareUpsertJson(docPrep, esp, t, docPrep.getOptionalElementName(),
           docPrep.getOptionalCollection(esp, t), docPrep.keepCollections());
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "ERROR PREPARING UPSERT: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "ERROR PREPARING UPSERT: {}", e.getMessage());
     }
 
     // "Upsert": update if doc exists, insert if it does not.

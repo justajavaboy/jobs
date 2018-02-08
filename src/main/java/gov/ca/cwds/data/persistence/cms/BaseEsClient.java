@@ -30,6 +30,8 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
 public abstract class BaseEsClient
     implements PersistentObject, ApiGroupNormalizer<ReplicatedClient> {
 
+  private static final long serialVersionUID = 1L;
+
   @Type(type = "timestamp")
   @Column(name = "LAST_CHG", updatable = false)
   protected Date lastChange;
