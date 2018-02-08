@@ -142,12 +142,11 @@ public final class NeutronJdbcUtils {
       @SuppressWarnings("rawtypes") AtomInitialLoad initialLoad, int numPartitions)
       throws NeutronCheckedException {
     List<Pair<String, String>> ret = new ArrayList<>(numPartitions);
-    if (initialLoad.isLargeDataSet()) {
+    if (initialLoad.isLargeDataSet()) { // Large data sets are only on z/OS.
       // ----------------------------
       // z/OS, large data set:
       // ORDER: a,z,A,Z,0,9
       // ----------------------------
-      // default List<Pair<String, String>> limitRange(final List<Pair<String, String>> allKeyPairs)
       ret = initialLoad.limitRange(buildPartitionsRanges(numPartitions));
     } else if (initialLoad.isDB2OnZOS()) {
       // ----------------------------
