@@ -41,6 +41,7 @@ import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
@@ -72,7 +73,7 @@ public class ReferralHistoryIndexerJob
 //@formatter:on
 
   /**
-   * Filter <strong>deleted</strong> Client, Referral, Referral/Client, Allegation.
+   * Filter <strong>deleted</strong> Client, Referral, Referral/Client, and Allegation.
    */
 //@formatter:off
   protected static final String INSERT_CLIENT_LAST_CHG = 
@@ -80,28 +81,28 @@ public class ReferralHistoryIndexerJob
       + " WITH step1 AS (\n"
       + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID\n"
       + "     FROM ALLGTN_T ALG \n"
-      + "     WHERE ALG.IBMSNAP_LOGMARKER > ?\n"
+      + "     WHERE ALG.IBMSNAP_LOGMARKER > 'XYZ' \n"
       + " ), "
       + " step2 AS (\n"
       + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID \n"
       + "     FROM CLIENT_T C \n"
       + "     JOIN ALLGTN_T ALG ON (C.IDENTIFIER = ALG.FKCLIENT_0 OR C.IDENTIFIER = ALG.FKCLIENT_T)\n"
-      + "     WHERE C.IBMSNAP_LOGMARKER > ?\n"
+      + "     WHERE C.IBMSNAP_LOGMARKER > 'XYZ' \n"
       + " ),\n"
       + " step3 AS (\n"
       + "     SELECT RCT.FKREFERL_T AS REFERRAL_ID \n"
       + "     FROM REFR_CLT RCT \n"
-      + "     WHERE RCT.IBMSNAP_LOGMARKER > ?\n"
+      + "     WHERE RCT.IBMSNAP_LOGMARKER > 'XYZ' \n"
       + " ), \n"
       + " step4 AS (\n"
       + "     SELECT RFL.IDENTIFIER AS REFERRAL_ID \n"
       + "     FROM REFERL_T RFL \n"
-      + "     WHERE RFL.IBMSNAP_LOGMARKER > ?\n"
+      + "     WHERE RFL.IBMSNAP_LOGMARKER > 'XYZ' \n"
       + " ), "
       + " step5 AS (\n"
       + "     SELECT RPT.FKREFERL_T AS REFERRAL_ID \n"
       + "     FROM REPTR_T RPT \n"
-      + "     WHERE RPT.IBMSNAP_LOGMARKER > ?\n"
+      + "     WHERE RPT.IBMSNAP_LOGMARKER > 'XYZ' \n"
       + " ), \n"
       + " hoard AS (\n"
       + "     SELECT s1.REFERRAL_ID FROM STEP1 s1 UNION ALL\n"
@@ -459,8 +460,7 @@ public class ReferralHistoryIndexerJob
     int countNormalized = 0;
     try {
       final Map<String, List<MinClientReferral>> mapReferralByClient =
-          listClientReferralKeys.stream()
-              // .filter(MinClientReferral::isActive)
+          listClientReferralKeys.stream().filter(MinClientReferral::isActive)
               .sorted((e1, e2) -> e1.getClientId().compareTo(e2.getClientId()))
               .collect(Collectors.groupingBy(MinClientReferral::getClientId));
       listClientReferralKeys.clear(); // release objects for gc
@@ -594,9 +594,17 @@ public class ReferralHistoryIndexerJob
     return false;
   }
 
+  /**
+   * DB2's optimizer is not very bright.
+   */
   @Override
   public String getPrepLastChangeSQL() {
-    return INSERT_CLIENT_LAST_CHG;
+    try {
+      return NeutronDB2Utils.prepLastChangeSQL(INSERT_CLIENT_LAST_CHG,
+          determineLastSuccessfulRunTime());
+    } catch (NeutronCheckedException e) {
+      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+    }
   }
 
   @Override

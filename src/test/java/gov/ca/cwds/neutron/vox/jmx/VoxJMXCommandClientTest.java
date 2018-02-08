@@ -123,6 +123,7 @@ public class VoxJMXCommandClientTest {
     expected.setPort(port);
     expected.setRocket(rocket);
     expected.setCommand(cmd);
+    expected.setArgs("");
 
     assertThat(actual, is(equalTo(expected)));
   }

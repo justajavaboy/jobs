@@ -11,9 +11,9 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.vox.VoxCommandInstruction;
 
 /**
@@ -32,13 +32,14 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
       return JMXConnectorFactory.connect(new JMXServiceURL(
           "service:jmx:rmi:///jndi/rmi://" + theHost + ":" + thePort + "/jmxrmi"));
     } catch (IOException e) {
-      throw JobLogs.runtime(LOGGER, e, "FAILED TO CONNECT VIA JMX! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "FAILED TO CONNECT VIA JMX! {}", e.getMessage());
     }
   };
 
   private String host;
   private String port;
   private String rocket;
+  private String args;
 
   private VoxLaunchPadMBean mbean;
   private JMXConnector jmxConnector;
@@ -60,7 +61,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
       LOGGER.info("mbean count: {}", mbeanServerConnection.getMBeanCount());
       this.mbean = proxy(rocket);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "JMX DIDN'T CONNECT!! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "JMX DIDN'T CONNECT!! {}", e.getMessage());
     }
   }
 
@@ -77,7 +78,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
       return MBeanServerInvocationHandler.newProxyInstance(mbeanServerConnection, mbeanName,
           VoxLaunchPadMBean.class, true);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO GET MBEAN! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO GET MBEAN! {}", e.getMessage());
     }
   }
 
@@ -87,11 +88,12 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
       this.setHost(cmd.getHost());
       this.setPort(cmd.getPort());
       this.setRocket(cmd.getRocket());
+      this.setArgs(cmd.getArgs());
 
       this.connect();
       this.run();
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "JMX ERROR! host: {}, port: {}, rocket: {}", cmd.getHost(),
+      throw CheeseRay.checked(LOGGER, e, "JMX ERROR! host: {}, port: {}, rocket: {}", cmd.getHost(),
           cmd.getPort(), cmd.getRocket());
     }
   }
@@ -158,6 +160,14 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
 
   public void setRocket(String rocket) {
     this.rocket = rocket;
+  }
+
+  public String getArgs() {
+    return args;
+  }
+
+  public void setArgs(String args) {
+    this.args = args;
   }
 
 }

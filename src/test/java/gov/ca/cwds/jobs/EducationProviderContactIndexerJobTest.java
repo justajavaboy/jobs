@@ -13,8 +13,8 @@ import gov.ca.cwds.data.persistence.cms.rep.ReplicatedEducationProviderContact;
  * @author CWDS API Team
  */
 @SuppressWarnings("javadoc")
-public class EducationProviderContactIndexerJobTest extends
-    Goddard<ReplicatedEducationProviderContact, ReplicatedEducationProviderContact> {
+public class EducationProviderContactIndexerJobTest
+    extends Goddard<ReplicatedEducationProviderContact, ReplicatedEducationProviderContact> {
 
   ReplicatedEducationProviderContactDao dao;
   EducationProviderContactIndexerJob target;
@@ -24,8 +24,7 @@ public class EducationProviderContactIndexerJobTest extends
   public void setup() throws Exception {
     super.setup();
     dao = new ReplicatedEducationProviderContactDao(this.sessionFactory);
-    target = new EducationProviderContactIndexerJob(dao, esDao, lastRunFile, MAPPER,
-        flightPlan);
+    target = new EducationProviderContactIndexerJob(dao, esDao, lastRunFile, MAPPER, flightPlan);
   }
 
   @Test
@@ -41,7 +40,7 @@ public class EducationProviderContactIndexerJobTest extends
   @Test
   public void main_Args__StringArray() throws Exception {
     final String[] args = new String[] {"-c", "config/local.yaml", "-l",
-        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+        "/Users/dsmith/client_indexer_time.txt", "-S"};
     EducationProviderContactIndexerJob.main(args);
   }
 

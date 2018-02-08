@@ -3,6 +3,7 @@ package gov.ca.cwds.jobs.util.jdbc;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
@@ -15,6 +16,7 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 
 /**
  * Miscellaneous DB2 utilities for Neutron rockets.
@@ -40,6 +42,18 @@ public final class NeutronDB2Utils {
     if (StringUtils.containsIgnoreCase(dbProductName, "db2")) {
       con.nativeSQL("SET CURRENT DEGREE = 'ANY'");
     }
+  }
+
+  /**
+   * DB2's optimizer is not very bright. Timestamps in query plans run fine as a String through
+   * hard-parsed SQL but not in prepared statements.
+   * 
+   * @param sql last change SQL
+   * @param lastRunDate last successful run date
+   * @return DB2 timestamp string
+   */
+  public static String prepLastChangeSQL(String sql, Date lastRunDate) {
+    return sql.replaceAll("XYZ", NeutronJdbcUtils.makeTimestampStringLookBack(lastRunDate));
   }
 
   /**
