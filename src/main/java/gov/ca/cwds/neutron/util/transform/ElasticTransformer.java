@@ -87,6 +87,10 @@ public final class ElasticTransformer {
     try {
       ret = mapper.writeValueAsString(obj);
     } catch (Exception e) { // NOSONAR
+      // HACK: shouldn't swallow the exception, but don't blow up a whole batch for one bad record.
+      // Functional lambda doesn't like checked exceptions, but runtime exceptions.
+      // But then SonarQube complains about switching from checked to runtime.
+      // Damned if you do, damned if you don't.
       LOGGER.warn("ERROR SERIALIZING OBJECT {} TO JSON", obj);
     }
     return ret;
@@ -121,8 +125,8 @@ public final class ElasticTransformer {
 
   /**
    * Prepare sections of a document for update. Elasticsearch automatically updates the provided
-   * sections. Some jobs should only write sub-documents, such as screenings or allegations, from a
-   * new data source, like Intake PostgreSQL, but should NOT overwrite document details from legacy.
+   * sections. Some rockets only write sub-documents, such as screenings or allegations, from a new
+   * data source, like Intake PostgreSQL, but should NOT overwrite document details from legacy.
    * 
    * <p>
    * Default handler just serializes the whole ElasticSearchPerson instance to JSON and returns the

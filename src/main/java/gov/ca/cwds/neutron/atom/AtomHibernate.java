@@ -33,6 +33,11 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
     extends AtomShared, AtomRowMapper<M> {
 
   /**
+   * @return the rocket's main DAO.
+   */
+  BaseDaoImpl<T> getJobDao();
+
+  /**
    * @return default CMS schema name
    */
   default String getDBSchemaName() {
@@ -45,11 +50,6 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   static String databaseSchemaName() {
     return System.getProperty("DB_CMS_SCHEMA");
   }
-
-  /**
-   * @return the rocket's main DAO.
-   */
-  BaseDaoImpl<T> getJobDao();
 
   /**
    * Identifier column for this table. Defaults to "IDENTIFIER", the common key name in legacy CMS.

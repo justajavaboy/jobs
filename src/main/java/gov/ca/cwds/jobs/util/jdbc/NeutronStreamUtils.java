@@ -4,6 +4,11 @@ import java.io.File;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+/**
+ * Stream utility functions, such as splitting a stream by every Nth element.
+ * 
+ * @author CWDS API Team
+ */
 public final class NeutronStreamUtils {
 
   private NeutronStreamUtils() {
