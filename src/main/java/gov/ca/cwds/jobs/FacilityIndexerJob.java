@@ -32,7 +32,6 @@ import com.google.inject.name.Names;
 import gov.ca.cwds.common.ApiFileAssistant;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.model.facility.es.ESFacility;
-import gov.ca.cwds.jobs.component.Rocket;
 import gov.ca.cwds.jobs.config.JobConfiguration;
 import gov.ca.cwds.jobs.facility.FacilityProcessor;
 import gov.ca.cwds.jobs.facility.FacilityRowMapper;
@@ -43,6 +42,7 @@ import gov.ca.cwds.jobs.util.JobWriter;
 import gov.ca.cwds.jobs.util.elastic.ElasticJobWriter;
 import gov.ca.cwds.jobs.util.jdbc.JdbcJobReader;
 import gov.ca.cwds.jobs.util.jdbc.RowMapper;
+import gov.ca.cwds.neutron.component.Rocket;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
 

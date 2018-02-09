@@ -22,13 +22,13 @@ import org.junit.Test;
 import gov.ca.cwds.data.es.Elasticsearch5xDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.jobs.component.Rocket;
 import gov.ca.cwds.jobs.config.JobConfiguration;
 import gov.ca.cwds.jobs.facility.FacilityProcessor;
 import gov.ca.cwds.jobs.facility.FacilityRowMapper;
 import gov.ca.cwds.jobs.util.JobProcessor;
 import gov.ca.cwds.jobs.util.JobReader;
 import gov.ca.cwds.jobs.util.JobWriter;
+import gov.ca.cwds.neutron.component.Rocket;
 
 public class FacilityIndexerJobTest
     extends Goddard<PersistentObject, ApiGroupNormalizer<?>> {

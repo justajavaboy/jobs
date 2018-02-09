@@ -7,6 +7,8 @@ import gov.ca.cwds.data.std.ApiMarker;
 
 /**
  * Instead of repeatedly parsing relationship components, just parse once and lookup, as needed.
+ * 
+ * @author CWDS API Team
  */
 public final class SonarQubeMemoryBloatComplaintCache implements ApiMarker {
 

@@ -91,7 +91,7 @@ import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.FlightPlanRegistry;
 import gov.ca.cwds.neutron.launch.FlightRecorder;
 import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
@@ -204,13 +204,12 @@ public class HyperCube extends NeutronGuiceModule {
     try {
       return buildInjector(flightPlan);
     } catch (NeutronCheckedException e) {
-      throw JobLogs.runtime(LOGGER, e, "FAILED TO BUILD INJECTOR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "FAILED TO BUILD INJECTOR! {}", e.getMessage());
     }
   }
 
   /**
-   * Build the Guice Injector once and use it for all Job instances during the life of this batch
-   * JVM.
+   * Build the Guice Injector once and use it for all Rocket instances.
    * 
    * @param flightPlan command line options
    * @return Guice Injector
@@ -229,7 +228,7 @@ public class HyperCube extends NeutronGuiceModule {
         ElasticTransformer.setMapper(injector.getInstance(ObjectMapper.class));
         ElasticSearchPerson.getSystemCodes();
       } catch (Exception e) {
-        throw JobLogs.checked(LOGGER, e, "FAILED TO BUILD INJECTOR! {}", e.getMessage());
+        throw CheeseRay.checked(LOGGER, e, "FAILED TO BUILD INJECTOR! {}", e.getMessage());
       }
     }
 
@@ -252,7 +251,7 @@ public class HyperCube extends NeutronGuiceModule {
       ret.setFlightPlan(flightPlan);
       return ret;
     } catch (CreationException e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO BUILD ROCKET!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO BUILD ROCKET!: {}", e.getMessage());
     }
   }
 
@@ -297,7 +296,6 @@ public class HyperCube extends NeutronGuiceModule {
 
     // Singleton:
     bind(ObjectMapper.class).toInstance(ObjectMapperUtils.createObjectMapper());
-    // bind(ElasticsearchDao.class).asEagerSingleton();
 
     // Command Center:
     bind(AtomFlightRecorder.class).to(FlightRecorder.class).asEagerSingleton();
@@ -453,7 +451,7 @@ public class HyperCube extends NeutronGuiceModule {
       if (client != null) {
         client.close();
       }
-      throw JobLogs.checked(LOGGER, e,
+      throw CheeseRay.checked(LOGGER, e,
           "ERROR initializing Elasticsearch client for people index: {}", e.getMessage(), e);
     }
   }
@@ -477,8 +475,7 @@ public class HyperCube extends NeutronGuiceModule {
   }
 
   /**
-   * Elasticsearch 5.x. Instantiate the singleton ElasticSearch client on demand. Initializes X-Pack
-   * security.
+   * Instantiate the singleton Elasticsearch 5.x client on demand and initialize X-Pack security.
    * 
    * @return initialized singleton ElasticSearch client, people summary index
    * @throws NeutronCheckedException on ES connection error
@@ -509,14 +506,12 @@ public class HyperCube extends NeutronGuiceModule {
 
   protected ElasticsearchConfiguration loadElasticSearchConfig(File esConfig)
       throws NeutronCheckedException {
-    ElasticsearchConfiguration ret = null;
     try {
-      ret =
-          new ObjectMapper(new YAMLFactory()).readValue(esConfig, ElasticsearchConfiguration.class);
+      return new ObjectMapper(new YAMLFactory()).readValue(esConfig,
+          ElasticsearchConfiguration.class);
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "ERROR READING ES CONFIG! {}", e.getMessage(), e);
+      throw CheeseRay.checked(LOGGER, e, "ERROR READING ES CONFIG! {}", e.getMessage(), e);
     }
-    return ret;
   }
 
   /**
@@ -544,7 +539,8 @@ public class HyperCube extends NeutronGuiceModule {
    */
   @Provides
   @Named("elasticsearch.config.people-summary")
-  public ElasticsearchConfiguration elasticSearchConfigPeopleSummary() throws NeutronCheckedException {
+  public ElasticsearchConfiguration elasticSearchConfigPeopleSummary()
+      throws NeutronCheckedException {
     ElasticsearchConfiguration ret = null;
     if (esConfigPeopleSummary != null) {
       LOGGER.debug("Create NEW ES configuration: people summary");
@@ -600,17 +596,14 @@ public class HyperCube extends NeutronGuiceModule {
   // ACCESSORS:
   // =========================
 
-  @SuppressWarnings("javadoc")
   public FlightPlan getFlightPlan() {
     return flightPlan;
   }
 
-  @SuppressWarnings("javadoc")
   public void setFlightPlan(FlightPlan opts) {
     this.flightPlan = opts;
   }
 
-  @SuppressWarnings("javadoc")
   public static Injector getInjector() {
     return injector;
   }

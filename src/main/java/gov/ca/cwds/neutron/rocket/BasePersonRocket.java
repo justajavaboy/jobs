@@ -45,8 +45,6 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPersonAware;
-import gov.ca.cwds.jobs.component.HoverCar;
-import gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.atom.AtomDocumentSecurity;
@@ -54,6 +52,8 @@ import gov.ca.cwds.neutron.atom.AtomInitialLoad;
 import gov.ca.cwds.neutron.atom.AtomPersonDocPrep;
 import gov.ca.cwds.neutron.atom.AtomTransform;
 import gov.ca.cwds.neutron.atom.AtomValidateDocument;
+import gov.ca.cwds.neutron.component.HoverCar;
+import gov.ca.cwds.neutron.component.NeutronBulkProcessorBuilder;
 import gov.ca.cwds.neutron.enums.NeutronColumn;
 import gov.ca.cwds.neutron.enums.NeutronDateTimeFormat;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
@@ -994,7 +994,6 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     return mapper;
   }
 
-  @SuppressWarnings("javadoc")
   public void setMapper(ObjectMapper mapper) {
     this.mapper = mapper;
   }

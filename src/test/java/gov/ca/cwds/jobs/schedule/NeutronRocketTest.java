@@ -19,9 +19,9 @@ import org.quartz.JobKey;
 import org.quartz.Trigger;
 
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.jobs.component.Rocket;
 import gov.ca.cwds.jobs.test.TestIndexerJob;
 import gov.ca.cwds.jobs.test.TestNormalizedEntityDao;
+import gov.ca.cwds.neutron.component.Rocket;
 import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.launch.NeutronRocket;
