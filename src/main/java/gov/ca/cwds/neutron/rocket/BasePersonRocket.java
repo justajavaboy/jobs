@@ -441,7 +441,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
     } catch (Exception e) {
       fail();
       Thread.currentThread().interrupt();
-      throw CheeseRay.runtime(LOGGER, e, "Transformer: FATAL ERROR: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "TRANSFORMER: FATAL ERROR: {}", e.getMessage());
     } finally {
       doneTransform();
     }

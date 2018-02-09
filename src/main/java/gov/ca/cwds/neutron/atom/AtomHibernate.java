@@ -27,7 +27,7 @@ import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
  * @author CWDS API Team
  *
  * @param <T> normalized type
- * @param <M> de-normalized type or same as normalized type if normalization not needed
+ * @param <M> de-normalized type or same as normalized type, if normalization not needed
  */
 public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNormalizer<?>>
     extends AtomShared, AtomRowMapper<M> {
@@ -52,8 +52,7 @@ public interface AtomHibernate<T extends PersistentObject, M extends ApiGroupNor
   BaseDaoImpl<T> getJobDao();
 
   /**
-   * Identifier column for this table. Defaults to "IDENTIFIER", the most common key name in legacy
-   * DB2.
+   * Identifier column for this table. Defaults to "IDENTIFIER", the common key name in legacy CMS.
    * 
    * @return Identifier column
    */
