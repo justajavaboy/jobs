@@ -326,28 +326,28 @@ public class FlightPlan implements ApiMarker {
   protected static Options buildCmdLineOptions() {
     final Options ret = new Options();
 
-    ret.addOption(CmdLineOption.SIMULATE_LAUNCH.getOpt());
-    ret.addOption(CmdLineOption.ES_CONFIG_PEOPLE.getOpt());
-    ret.addOption(CmdLineOption.ES_CONFIG_PEOPLE_SUMMARY.getOpt());
-    ret.addOption(CmdLineOption.INDEX_NAME.getOpt());
-    ret.addOption(CmdLineOption.LAST_RUN_TIME.getOpt());
-    ret.addOption(CmdLineOption.THREADS.getOpt());
-    ret.addOption(CmdLineOption.LOAD_SEALED_SENSITIVE.getOpt());
+    ret.addOption(NeutronCmdLineOption.SIMULATE_LAUNCH.getOpt());
+    ret.addOption(NeutronCmdLineOption.ES_CONFIG_PEOPLE.getOpt());
+    ret.addOption(NeutronCmdLineOption.ES_CONFIG_PEOPLE_SUMMARY.getOpt());
+    ret.addOption(NeutronCmdLineOption.INDEX_NAME.getOpt());
+    ret.addOption(NeutronCmdLineOption.LAST_RUN_TIME.getOpt());
+    ret.addOption(NeutronCmdLineOption.THREADS.getOpt());
+    ret.addOption(NeutronCmdLineOption.LOAD_SEALED_SENSITIVE.getOpt());
 
-    ret.addOption(CmdLineOption.FULL_LOAD.getOpt());
-    ret.addOption(CmdLineOption.REFRESH_MQT.getOpt());
-    ret.addOption(CmdLineOption.DROP_INDEX.getOpt());
+    ret.addOption(NeutronCmdLineOption.FULL_LOAD.getOpt());
+    ret.addOption(NeutronCmdLineOption.REFRESH_MQT.getOpt());
+    ret.addOption(NeutronCmdLineOption.DROP_INDEX.getOpt());
 
-    ret.addOption(CmdLineOption.BUCKET_RANGE.getOpt());
-    ret.addOption(CmdLineOption.BUCKET_TOTAL.getOpt());
-    ret.addOption(CmdLineOption.MIN_ID.getOpt());
-    ret.addOption(CmdLineOption.MAX_ID.getOpt());
+    ret.addOption(NeutronCmdLineOption.BUCKET_RANGE.getOpt());
+    ret.addOption(NeutronCmdLineOption.BUCKET_TOTAL.getOpt());
+    ret.addOption(NeutronCmdLineOption.MIN_ID.getOpt());
+    ret.addOption(NeutronCmdLineOption.MAX_ID.getOpt());
 
     // RUN MODE: mutually exclusive choice.
     final OptionGroup group = new OptionGroup();
     group.setRequired(true);
-    group.addOption(CmdLineOption.LAST_RUN_FILE.getOpt());
-    group.addOption(CmdLineOption.BASE_DIRECTORY.getOpt());
+    group.addOption(NeutronCmdLineOption.LAST_RUN_FILE.getOpt());
+    group.addOption(NeutronCmdLineOption.BASE_DIRECTORY.getOpt());
     ret.addOptionGroup(group);
 
     return ret;

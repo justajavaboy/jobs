@@ -7,7 +7,7 @@ import org.apache.commons.cli.Option;
  * 
  * @author CWDS API Team
  */
-public enum CmdLineOption {
+public enum NeutronCmdLineOption {
 
   /**
    * ElasticSearch configuration file for the gigantic "people" index.
@@ -119,7 +119,7 @@ public enum CmdLineOption {
 
   private final Option opt;
 
-  CmdLineOption(Option opt) {
+  NeutronCmdLineOption(Option opt) {
     this.opt = opt;
   }
 

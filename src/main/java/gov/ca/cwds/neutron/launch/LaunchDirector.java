@@ -20,7 +20,7 @@ import gov.ca.cwds.neutron.atom.AtomRocketFactory;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.shrinkray.NeutronClassFinder;
 
@@ -99,19 +99,21 @@ public class LaunchDirector implements AtomLaunchDirector {
   }
 
   @Override
-  public FlightLog launch(Class<?> klass, final FlightPlan flightPlan) throws NeutronCheckedException {
+  public FlightLog launch(Class<?> klass, final FlightPlan flightPlan)
+      throws NeutronCheckedException {
     try {
       LOGGER.info("LAUNCH SCHEDULED ROCKET! {}", klass.getName());
       final BasePersonRocket<?, ?> rocket = fuelRocket(klass, flightPlan);
       rocket.run();
       return rocket.getFlightLog();
     } catch (Exception e) {
-      throw JobLogs.checked(LOGGER, e, "SCHEDULED LAUNCH FAILED!: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "SCHEDULED LAUNCH FAILED!: {}", e.getMessage());
     }
   }
 
   @Override
-  public FlightLog launch(String rocketName, final FlightPlan flightPlan) throws NeutronCheckedException {
+  public FlightLog launch(String rocketName, final FlightPlan flightPlan)
+      throws NeutronCheckedException {
     return launch(NeutronClassFinder.classForName(rocketName), flightPlan);
   }
 
@@ -133,7 +135,7 @@ public class LaunchDirector implements AtomLaunchDirector {
     try {
       this.getScheduler().shutdown(waitForJobsToComplete);
     } catch (SchedulerException e) {
-      throw JobLogs.checked(LOGGER, e, "FAILED TO STOP SCHEDULER! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO STOP SCHEDULER! {}", e.getMessage());
     }
   }
 
@@ -144,7 +146,7 @@ public class LaunchDirector implements AtomLaunchDirector {
       this.getScheduler().start();
     } catch (SchedulerException e) {
       LOGGER.error("FAILED TO START SCHEDULER! {}", e.getMessage(), e);
-      throw JobLogs.checked(LOGGER, e, "FAILED TO START SCHEDULER! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO START SCHEDULER! {}", e.getMessage());
     }
   }
 

@@ -47,8 +47,9 @@ public class HoverCar implements ApiMarker, NeutronBulkProcessorBuilder {
     this.flightLog = flightLog;
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Run multiple threads for bulk indexing. Send a max of either {@link #ES_BYTES_MB} megabytes or
+   * {@link #ES_BULK_SIZE} records, whichever comes first.
    * 
    * @see gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder#buildBulkProcessor()
    */
