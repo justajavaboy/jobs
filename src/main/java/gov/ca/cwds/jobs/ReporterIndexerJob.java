@@ -51,7 +51,7 @@ public class ReporterIndexerJob extends BasePersonRocket<ReplicatedReporter, Rep
   }
 
   //@formatter:off
-  static final String INSERT_CLIENT_LAST_CHG =
+  static final String INSERT_REPORTER_LAST_CHG =
       "INSERT INTO GT_ID (IDENTIFIER)\n" 
        + " SELECT DISTINCT R.FKREFERL_T\n" 
        + " FROM REPTR_T R \n"
@@ -61,7 +61,7 @@ public class ReporterIndexerJob extends BasePersonRocket<ReplicatedReporter, Rep
   @Override
   public String getPrepLastChangeSQL() {
     try {
-      return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
+      return INSERT_REPORTER_LAST_CHG.replaceAll("XYZ",
           NeutronJdbcUtils.makeTimestampStringLookBack(determineLastSuccessfulRunTime()));
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
