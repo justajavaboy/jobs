@@ -24,7 +24,7 @@ public class VoxCommandPause extends VoxJMXCommandClient {
     LOGGER.info("PAUSE {}", getRocket());
     try {
       getMbean().pause();
-      return String.format("PAUSED {}!", getRocket());
+      return String.format("PAUSED ROCKET %s!", getRocket());
     } catch (NeutronCheckedException e) {
       LOGGER.error("ERROR PAUSING {}!", getRocket(), e);
       return ExceptionUtils.getStackTrace(e);
