@@ -36,6 +36,14 @@ public class SubstituteCareProviderIndexJob
   private static final Logger LOGGER =
       LoggerFactory.getLogger(CollateralIndividualIndexerJob.class);
 
+  //@formatter:off
+  static final String INSERT_LAST_CHG =
+      "INSERT INTO GT_ID (IDENTIFIER)\n" 
+       + " SELECT DISTINCT R.IDENTIFIER \n" 
+       + " FROM SB_PVDRT R \n"
+       + " WHERE R.IBMSNAP_LOGMARKER > 'XYZ'";
+  // @formatter:on
+
   /**
    * Construct rocket with all required dependencies.
    * 
@@ -56,14 +64,6 @@ public class SubstituteCareProviderIndexJob
   public List<Pair<String, String>> getPartitionRanges() throws NeutronCheckedException {
     return NeutronJdbcUtils.getCommonPartitionRanges16(this);
   }
-
-  //@formatter:off
-  static final String INSERT_LAST_CHG =
-      "INSERT INTO GT_ID (IDENTIFIER)\n" 
-       + " SELECT DISTINCT R.IDENTIFIER \n" 
-       + " FROM SB_PVDRT R \n"
-       + " WHERE R.IBMSNAP_LOGMARKER > 'XYZ'";
-  // @formatter:on
 
   @Override
   public String getPrepLastChangeSQL() {

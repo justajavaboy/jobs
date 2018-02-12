@@ -72,23 +72,11 @@ public class WorkPrepareLastChange implements Work {
     final String strLastRunTime = NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime);
     LOGGER.info("strLastRunTime: {}", strLastRunTime);
 
-    // The poverty of DB2's optimizer ...
-    // final String strLastRunTime =
-    // "TIMESTAMP('" + NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime) + "')";
-    // final Date date = NeutronJdbcUtils.uncookTimestampString(strLastRunTime);
-    // final Timestamp ts = new Timestamp(date.getTime());
-    // final java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-
     try (final PreparedStatement stmt = createPreparedStatement(con)) {
       for (int i = 1; i <= StringUtils.countMatches(sql, "?"); i++) {
-        stmt.setString(i, strLastRunTime);
-
         // DB2's optimizer is a mystery wrapped in an enigma.
         // Prepared statements do NOT optimize with the **exact same parameter types and values**.
-
-        // String or Timestamp, that is the question.
-        // stmt.setTimestamp(i, ts);
-        // stmt.setDate(i, sqlDate);
+        stmt.setString(i, strLastRunTime);
       }
 
       LOGGER.info("Find keys new/changed since {}", strLastRunTime);

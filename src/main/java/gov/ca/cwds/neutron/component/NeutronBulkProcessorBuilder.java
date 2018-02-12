@@ -2,7 +2,7 @@ package gov.ca.cwds.neutron.component;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
 
-
+@FunctionalInterface
 public interface NeutronBulkProcessorBuilder {
 
   /**

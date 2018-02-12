@@ -7,6 +7,7 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
  * 
  * @param <T> type to read into
  */
+@FunctionalInterface
 public interface JobReader<T> extends JobComponent {
 
   /**
