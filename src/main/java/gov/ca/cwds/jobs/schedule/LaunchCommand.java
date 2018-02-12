@@ -321,14 +321,11 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   }
 
   protected static FlightPlan parseCommandLine(String... args) throws NeutronCheckedException {
-    FlightPlan ret;
     try {
-      ret = FlightPlan.parseCommandLine(args);
+      return FlightPlan.parseCommandLine(args);
     } catch (Exception e) {
       throw CheeseRay.checked(LOGGER, e, "COMMAND LINE ERROR! {}", e.getMessage());
     }
-
-    return ret;
   }
 
   /**
