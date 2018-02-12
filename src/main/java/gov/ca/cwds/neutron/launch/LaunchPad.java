@@ -111,7 +111,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       final FlightLog flightLog = this.launchDirector.launch(flightSchedule.getRocketClass(), plan);
       return flightLog.toString();
     } catch (Exception e) {
-      LOGGER.error("FAILED TO RUN ON DEMAND! {}", e.getMessage(), e);
+      LOGGER.error("FAILED TO LAUNCH ON DEMAND! {}", e.getMessage(), e);
       return CheeseRay.stackToString(e);
     }
   }
@@ -174,7 +174,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       LOGGER.warn("UNSCHEDULE LAUNCH! {}", rocketName);
       scheduler.unscheduleJob(triggerKey);
     } catch (Exception e) {
-      throw CheeseRay.checked(LOGGER, e, "FAILED TO UNSCHEDULE LAUNCH! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "UNABLED UNSCHEDULE LAUNCH! rocket: {}", rocketName);
     }
   }
 
@@ -204,9 +204,9 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
    * {@inheritDoc}
    */
   @Override
-  @Managed(description = "Show rocket log")
+  @Managed(description = "Show flight log")
   public String logs() {
-    LOGGER.warn("SHOW ROCKET LOG! {}", rocketName);
+    LOGGER.warn("SHOW FLIGHT LOG! {}", rocketName);
     final StringBuilder buf = new StringBuilder();
     buf.append(this.getFlightPlan().getBaseDirectory()).append(File.separator).append("rocketlog")
         .append(File.separator).append(flightSchedule.getRocketName()).append(".log");
@@ -270,7 +270,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       final JobKey key = new JobKey(rocketName, NeutronSchedulerConstants.GRP_LST_CHG);
       scheduler.interrupt(key);
     } catch (Exception e) {
-      throw CheeseRay.checked(LOGGER, e, "FAILED TO ABORT! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO ABORT FLIGHT! rocket: {}", rocketName);
     }
   }
 
@@ -284,7 +284,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       LOGGER.warn("PAUSE ROCKET! {}", rocketName);
       scheduler.pauseTrigger(triggerKey);
     } catch (Exception e) {
-      throw CheeseRay.checked(LOGGER, e, "FAILED TO PAUSE! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO PAUSE FLIGHT! rocket: {}", rocketName);
     }
   }
 
@@ -298,13 +298,13 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       LOGGER.warn("RESUME FLIGHT! {}", rocketName);
       scheduler.resumeTrigger(triggerKey);
     } catch (Exception e) {
-      throw CheeseRay.checked(LOGGER, e, "FAILED TO RESUME! rocket: {}", rocketName);
+      throw CheeseRay.checked(LOGGER, e, "FAILED TO RESUME FLIGHT! rocket: {}", rocketName);
     }
   }
 
   protected void threadShutdownLaunchCommand() {
     try {
-      Thread.sleep(1000);
+      Thread.sleep(2000);
       LaunchCommand.getInstance().shutdown();
     } catch (InterruptedException | NeutronCheckedException e) {
       Thread.currentThread().interrupt();
