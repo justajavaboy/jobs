@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import org.apache.commons.cli.Option;
 import org.junit.Test;
 
+import gov.ca.cwds.neutron.flight.CmdLineOption;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 
 public class CmdLineOptionTest {

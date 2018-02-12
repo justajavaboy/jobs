@@ -1,8 +1,6 @@
-package gov.ca.cwds.jobs.config;
+package gov.ca.cwds.neutron.flight;
 
 import org.apache.commons.cli.Option;
-
-import gov.ca.cwds.neutron.flight.FlightPlan;
 
 /**
  * Neutron command line options.
@@ -25,7 +23,7 @@ public enum CmdLineOption {
    * ElasticSearch configuration file for the "people-summary" index.
    * 
    * <p>
-   * Jira INT=1073. In the future, the Neutron architecture should handle an arbitrary number of
+   * Jira INT-1073. In the future, the Neutron architecture should handle an arbitrary number of
    * indexes and name them with Guice annotations.
    * </p>
    */
