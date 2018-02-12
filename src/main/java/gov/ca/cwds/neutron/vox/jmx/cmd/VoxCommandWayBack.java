@@ -25,7 +25,7 @@ public class VoxCommandWayBack extends VoxJMXCommandClient {
     try {
       final int hours = Integer.parseInt(input);
       getMbean().waybackHours(hours);
-      return String.format("WAY BACK MACHINE! {} hours in past", hours);
+      return String.format("WAY BACK MACHINE! %s hours in past", hours);
     } catch (Exception e) {
       LOGGER.error("WAY BACK MACHINE: ERROR PARSING! {}", input, e);
       return ExceptionUtils.getStackTrace(e);

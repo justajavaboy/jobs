@@ -35,28 +35,37 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
 @Table(name = "VW_LST_CLIENT_ADDRESS")
 //@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfter",
-    query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
+    query = "SELECT x.* "
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x "
+        + "WHERE x.CLT_IDENTIFIER IN ( "
         + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
         + "WHERE x1.LAST_CHG > :after " 
-        + ") ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR ",
+        + ") ORDER BY CLT_IDENTIFIER "
+        + "FOR READ ONLY WITH UR ",
     resultClass = EsClientAddress.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithUnlimitedAccess",
-    query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
+    query = "SELECT x.* "
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x "
+        + "WHERE x.CLT_IDENTIFIER IN ( "
         + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
         + "WHERE x1.LAST_CHG > :after "
         + ") AND x.CLT_SENSTV_IND = 'N' "
-        + "ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR",
+        + "ORDER BY CLT_IDENTIFIER "
+        + "FOR READ ONLY WITH UR",
     resultClass = EsClientAddress.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithLimitedAccess",
-    query = "SELECT x.* FROM {h-schema}VW_LST_CLIENT_ADDRESS x WHERE x.CLT_IDENTIFIER IN ( "
+    query = "SELECT x.* "
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x "
+        + "WHERE x.CLT_IDENTIFIER IN ( "
         + "SELECT x1.CLT_IDENTIFIER FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
         + "WHERE x1.LAST_CHG > :after "
         + ") AND x.CLT_SENSTV_IND != 'N' "
-        + "ORDER BY CLT_IDENTIFIER FOR READ ONLY WITH UR ",
+        + "ORDER BY CLT_IDENTIFIER "
+        + "FOR READ ONLY WITH UR ",
     resultClass = EsClientAddress.class, readOnly = true)
 //@formatter:on
 public class EsClientAddress extends BaseEsClient
