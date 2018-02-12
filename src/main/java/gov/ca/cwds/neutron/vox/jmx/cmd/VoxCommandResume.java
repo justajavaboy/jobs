@@ -24,7 +24,7 @@ public class VoxCommandResume extends VoxJMXCommandClient {
     LOGGER.info("STOP {}!", getRocket());
     try {
       getMbean().stop();
-      return String.format("STOP {}!", getRocket());
+      return String.format("STOPPED ROCKET %s!", getRocket());
     } catch (NeutronCheckedException e) {
       LOGGER.error("ERROR STOPPING {}!", getRocket(), e);
       return ExceptionUtils.getStackTrace(e);

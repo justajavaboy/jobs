@@ -410,7 +410,7 @@ public final class ElasticTransformer {
 
   protected static ElasticSearchSystemCode buildClientCounty(ApiPersonAware p) {
     ElasticSearchSystemCode ret = null;
-    if (p != null && p instanceof ApiClientCountyAware) {
+    if (p instanceof ApiClientCountyAware) {
       final ApiClientCountyAware countyAware = (ApiClientCountyAware) p;
       final Short county = countyAware.getClientCounty();
       if (county != null) {

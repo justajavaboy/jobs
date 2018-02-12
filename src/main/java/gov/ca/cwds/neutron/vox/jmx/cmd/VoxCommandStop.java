@@ -21,10 +21,10 @@ public class VoxCommandStop extends VoxJMXCommandClient {
 
   @Override
   public String run() {
-    LOGGER.info("RESUME {}!", getRocket());
+    LOGGER.info("STOP {}!", getRocket());
     try {
       getMbean().resume();
-      return String.format("RESUME {}!", getRocket());
+      return String.format("STOP ROCKET %s!", getRocket());
     } catch (NeutronCheckedException e) {
       LOGGER.error("ERROR RESUMING {}!", getRocket(), e);
       return ExceptionUtils.getStackTrace(e);
