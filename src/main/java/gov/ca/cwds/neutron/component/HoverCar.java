@@ -48,10 +48,10 @@ public class HoverCar implements ApiMarker, NeutronBulkProcessorBuilder {
   }
 
   /**
-   * Run multiple threads for bulk indexing. Send a max of either 5 megabytes or 1,000 records,
-   * whichever comes first.
+   * Run multiple threads for bulk indexing. Send a max of either {@link #ES_BYTES_MB} megabytes or
+   * {@link #ES_BULK_SIZE} records, whichever comes first.
    * 
-   * @see gov.ca.cwds.jobs.component.NeutronBulkProcessorBuilder#buildBulkProcessor()
+   * @return Elasticsearch BulkProcessor
    */
   @Override
   public BulkProcessor buildBulkProcessor() {
