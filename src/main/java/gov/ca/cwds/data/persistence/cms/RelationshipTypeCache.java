@@ -10,20 +10,20 @@ import gov.ca.cwds.data.std.ApiMarker;
  * 
  * @author CWDS API Team
  */
-public final class SonarQubeMemoryBloatComplaintCache implements ApiMarker {
+public final class RelationshipTypeCache implements ApiMarker {
 
   private static final long serialVersionUID = 1L;
 
   private final Map<Short, CmsRelationship> mapRelationCodes = new ConcurrentHashMap<>();
 
-  private static final SonarQubeMemoryBloatComplaintCache instance =
-      new SonarQubeMemoryBloatComplaintCache();
+  private static final RelationshipTypeCache instance =
+      new RelationshipTypeCache();
 
-  private SonarQubeMemoryBloatComplaintCache() {
+  private RelationshipTypeCache() {
     // whatever
   }
 
-  public static SonarQubeMemoryBloatComplaintCache getInstance() {
+  public static RelationshipTypeCache getInstance() {
     return instance;
   }
 

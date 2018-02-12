@@ -25,7 +25,7 @@ import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.persistence.cms.EsRelationship;
 import gov.ca.cwds.data.persistence.cms.ReplicatedRelationships;
-import gov.ca.cwds.data.persistence.cms.SonarQubeMemoryBloatComplaintCache;
+import gov.ca.cwds.data.persistence.cms.RelationshipTypeCache;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
@@ -57,7 +57,7 @@ public class RelationshipIndexerJob
    * VW_LST_BI_DIR_RELATION and VW_LST_REL_CLN_RELT_CLIENT.
    */
   // @formatter:off
-  static final String INSERT_CLIENT_LAST_CHG = 
+  static final String INSERT_RELATION_LAST_CHG = 
       "INSERT INTO GT_ID (IDENTIFIER)\n"
           + "WITH LAST_CHG AS (\n"
              + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID\n"
@@ -69,7 +69,7 @@ public class RelationshipIndexerJob
              + " JOIN CLIENT_T CLNS ON CLNR.FKCLIENT_T = CLNS.IDENTIFIER\n"
              + " WHERE CLNS.IBMSNAP_LOGMARKER > 'XYZ' \n"
            + " UNION \n"
-             + " SELECT DISTINCT CLNR.IDENTIFIER  AS REL_ID\n"
+             + " SELECT DISTINCT CLNR.IDENTIFIER AS REL_ID\n"
              + " FROM CLN_RELT CLNR\n"
              + " JOIN CLIENT_T CLNP ON CLNR.FKCLIENT_0 = CLNP.IDENTIFIER\n"
              + " WHERE CLNP.IBMSNAP_LOGMARKER > 'XYZ' \n"
@@ -104,13 +104,13 @@ public class RelationshipIndexerJob
       @Named("elasticsearch.dao.people") final ElasticsearchDao esDao,
       @LastRunFile String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
-    SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+    RelationshipTypeCache.getInstance().clearCache();
   }
 
   @Override
   public String getPrepLastChangeSQL() {
     try {
-      return INSERT_CLIENT_LAST_CHG.replaceAll("XYZ",
+      return INSERT_RELATION_LAST_CHG.replaceAll("XYZ",
           NeutronJdbcUtils.makeTimestampStringLookBack(determineLastSuccessfulRunTime()));
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
@@ -212,7 +212,7 @@ public class RelationshipIndexerJob
     LOGGER.info("BEGIN: main extract thread");
     doneTransform(); // No transform thread
 
-    SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+    RelationshipTypeCache.getInstance().clearCache();
     try {
       final List<Pair<String, String>> ranges = getPartitionRanges();
       LOGGER.info(">>>>>>>> # OF RANGES: {} <<<<<<<<", ranges);
@@ -235,7 +235,7 @@ public class RelationshipIndexerJob
       throw CheeseRay.runtime(LOGGER, e, "RELATIONSHIP BATCH ERROR! {}", e.getMessage());
     } finally {
       doneRetrieve();
-      SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+      RelationshipTypeCache.getInstance().clearCache();
     }
 
     LOGGER.info("DONE: relationship extract thread");
@@ -287,7 +287,7 @@ public class RelationshipIndexerJob
 
   @Override
   public synchronized void close() throws IOException {
-    SonarQubeMemoryBloatComplaintCache.getInstance().clearCache();
+    RelationshipTypeCache.getInstance().clearCache();
     super.close();
   }
 

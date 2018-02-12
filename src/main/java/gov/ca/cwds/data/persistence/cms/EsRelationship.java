@@ -405,7 +405,7 @@ public class EsRelationship
 
       CmsRelationship relationship;
       final Map<Short, CmsRelationship> mapRelationCodes =
-          SonarQubeMemoryBloatComplaintCache.getInstance().getMapRelationCodes();
+          RelationshipTypeCache.getInstance().getMapRelationCodes();
       if (mapRelationCodes.containsKey(relCode)) {
         relationship = mapRelationCodes.get(relCode);
       } else {

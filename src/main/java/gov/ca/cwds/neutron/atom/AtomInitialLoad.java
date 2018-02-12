@@ -28,7 +28,7 @@ import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 
 /**
  * Common functions and features for initial load.
@@ -171,7 +171,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
       getLogger().info("RANGE COMPLETED SUCCESSFULLY! {}-{}", p.getLeft(), p.getRight());
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(getLogger(), e, "FAILED TO PULL RANGE! {}-{} : {}", p.getLeft(),
+      throw CheeseRay.runtime(getLogger(), e, "FAILED TO PULL RANGE! {}-{} : {}", p.getLeft(),
           p.getRight(), e.getMessage());
     } finally {
       getFlightLog().markRangeComplete(p);
@@ -218,7 +218,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
 
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(log, e, "ERROR IN MULTI-THREAD JDBC! {}", e.getMessage());
+      throw CheeseRay.runtime(log, e, "ERROR IN MULTI-THREAD JDBC! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }
@@ -260,7 +260,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
       getLogger().info("refresh MQT proc: status: {}, msg: {}", returnStatus, returnMsg);
 
       if (returnStatus.charAt(0) != '0') {
-        JobLogs.runtime(getLogger(), "MQT REFRESH ERROR! {}", returnMsg);
+        CheeseRay.runtime(getLogger(), "MQT REFRESH ERROR! {}", returnMsg);
       }
     }
   }
