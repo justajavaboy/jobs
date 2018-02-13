@@ -18,7 +18,11 @@ public class ClientSQLResource implements ApiMarker {
     + "UNION SELECT DISTINCT cla.FKCLIENT_T AS IDENTIFIER \n"
        + "FROM CL_ADDRT cla \n"
        + "JOIN ADDRS_T  adr ON cla.FKADDRS_T  = adr.IDENTIFIER \n"
-       + "WHERE ADR.IBMSNAP_LOGMARKER > 'XYZ' ";
+       + "WHERE ADR.IBMSNAP_LOGMARKER > 'XYZ' "
+    + "UNION SELECT DISTINCT eth.ESTBLSH_ID AS IDENTIFIER "
+       + "FROM CLSCP_ET eth "
+       + "WHERE ETH.ESTBLSH_CD = 'C' "
+       + "AND ETH.IBMSNAP_LOGMARKER > 'XYZ' ";
   //@formatter:on
 
 }
