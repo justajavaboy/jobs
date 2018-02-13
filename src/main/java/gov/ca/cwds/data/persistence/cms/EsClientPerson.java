@@ -26,6 +26,7 @@ import gov.ca.cwds.data.es.ElasticSearchSystemCode;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
+import gov.ca.cwds.neutron.rocket.ClientSQLResource;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.DomainChef;
@@ -47,39 +48,27 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 @Table(name = "VW_LST_CLIENT_ADDRESS")
 //@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsClientPerson.findAllUpdatedAfter",
-    query = "SELECT x.* "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
-        + "WHERE x.CLT_IDENTIFIER IN ( \n"
-           + "SELECT x1.CLT_IDENTIFIER \n"
-           + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
-           + "WHERE (1=1 OR x1.LAST_CHG > :after) "
-        + ") \n"
-        + "ORDER BY CLT_IDENTIFIER FOR \n"
-        + "READ ONLY WITH UR ",
+query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
+    + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+    + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
+    + "ORDER BY CLT_IDENTIFIER \n"
+    + "FOR READ ONLY WITH UR ",
     resultClass = EsClientPerson.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientPerson.findAllUpdatedAfterWithUnlimitedAccess",
-    query = "SELECT x.* \n"
+        query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
         + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
-        + "WHERE x.CLT_IDENTIFIER IN ( \n"
-           + "SELECT x1.CLT_IDENTIFIER \n"
-           + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
-           + "WHERE (1=1 OR x1.LAST_CHG > :after) "
-        + ") \n"
-        + "AND x.CLT_SENSTV_IND = 'N' \n"
+        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
         + "ORDER BY CLT_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR",
     resultClass = EsClientPerson.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientPerson.findAllUpdatedAfterWithLimitedAccess",
-    query = "SELECT x.* "
+        query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
         + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
-        + "WHERE x.CLT_IDENTIFIER IN ( \n"
-           + "SELECT x1.CLT_IDENTIFIER \n"
-           + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
-           + "WHERE (1=1 OR x1.LAST_CHG > :after) "
+        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
         + "AND x.CLT_SENSTV_IND != 'N' \n"
         + "ORDER BY CLT_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR ",
