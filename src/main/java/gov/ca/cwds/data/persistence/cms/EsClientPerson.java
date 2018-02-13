@@ -79,7 +79,6 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
         + "WHERE x.CLT_IDENTIFIER IN ( \n"
            + "SELECT x1.CLT_IDENTIFIER \n"
            + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 \n"
-           + "WHERE x1.LAST_CHG > :after \n"
            + "WHERE (1=1 OR x1.LAST_CHG > :after) "
         + "AND x.CLT_SENSTV_IND != 'N' \n"
         + "ORDER BY CLT_IDENTIFIER \n"
