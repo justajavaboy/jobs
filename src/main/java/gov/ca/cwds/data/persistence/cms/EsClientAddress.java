@@ -16,6 +16,7 @@ import org.hibernate.annotations.NamedNativeQuery;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
+import gov.ca.cwds.neutron.rocket.ClientSQLResource;
 import gov.ca.cwds.neutron.util.NeutronDateUtils;
 
 /**
@@ -35,39 +36,29 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
 @Table(name = "VW_LST_CLIENT_ADDRESS")
 //@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfter",
-    query = "SELECT x.* "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x "
-        + "WHERE x.CLT_IDENTIFIER IN ( "
-        + "SELECT x1.CLT_IDENTIFIER "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
-        + "WHERE (1=1 OR x1.LAST_CHG > :after) "
-        + ") ORDER BY CLT_IDENTIFIER "
+    query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
+        + "ORDER BY CLT_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR ",
     resultClass = EsClientAddress.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithUnlimitedAccess",
-    query = "SELECT x.* "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x "
-        + "WHERE x.CLT_IDENTIFIER IN ( "
-        + "SELECT x1.CLT_IDENTIFIER "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
-        + "WHERE (1=1 OR x1.LAST_CHG > :after) "
-        + ") AND x.CLT_SENSTV_IND = 'N' "
-        + "ORDER BY CLT_IDENTIFIER "
+        query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
+        + "ORDER BY CLT_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR",
     resultClass = EsClientAddress.class, readOnly = true)
 
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithLimitedAccess",
-    query = "SELECT x.* "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x "
-        + "WHERE x.CLT_IDENTIFIER IN ( "
-        + "SELECT x1.CLT_IDENTIFIER "
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x1 "
-        + "WHERE (1=1 OR x1.LAST_CHG > :after) "
-        + ") AND x.CLT_SENSTV_IND != 'N' "
-        + "ORDER BY CLT_IDENTIFIER "
+        query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
+        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
+        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
+        + "AND x.CLT_SENSTV_IND != 'N' \n"
+        + "ORDER BY CLT_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR ",
     resultClass = EsClientAddress.class, readOnly = true)
 //@formatter:on
