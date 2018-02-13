@@ -77,7 +77,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
-  private static final List<String> dbPropList = asList("DB_NS_USER", "DB_NS_PASSWORD",
+  private static final List<String> DB_PROPERTY_LIST = asList("DB_NS_USER", "DB_NS_PASSWORD",
       "DB_NS_JDBC_URL", "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA");
 
   private LaunchCommand() {
@@ -449,7 +449,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    */
   public static <T extends BasePersonRocket<?, ?>> void launchOneWayTrip(final Class<T> klass,
       String... args) throws NeutronCheckedException {
-    setSysPropsFromEnvVars(dbPropList);
+    setSysPropsFromEnvVars(DB_PROPERTY_LIST);
     standardFlightPlan = parseCommandLine(args);
 
     System.setProperty("LAUNCH_DIR",
@@ -520,7 +520,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * @throws Exception unhandled error
    */
   public static void main(String[] args) throws Exception {
-    setSysPropsFromEnvVars(dbPropList);
+    setSysPropsFromEnvVars(DB_PROPERTY_LIST);
     standardFlightPlan = parseCommandLine(args);
     final String baseDir = standardFlightPlan.getBaseDirectory();
     LaunchCommand.settings.setBaseDirectory(baseDir);
