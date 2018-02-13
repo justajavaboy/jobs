@@ -1,7 +1,14 @@
 package gov.ca.cwds.neutron.rocket.cases;
 
 import gov.ca.cwds.data.std.ApiMarker;
+import gov.ca.cwds.neutron.rocket.CaseRocket;
 
+/**
+ * SQL statements for the Cases rocket.
+ * 
+ * @author CWDS API Team
+ * @see CaseRocket
+ */
 public class CaseSQLResource implements ApiMarker {
 
   private static final long serialVersionUID = 1L;
