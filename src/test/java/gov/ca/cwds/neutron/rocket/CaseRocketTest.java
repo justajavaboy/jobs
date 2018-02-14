@@ -93,6 +93,63 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     when(rs.getTimestamp("CLIENT_LAST_UPDATED")).thenReturn(ts);
     when(rs.getString("CLIENT_OPERATION")).thenReturn("U");
     when(rs.getTimestamp("CLIENT_LOGMARKER")).thenReturn(ts);
+    when(rs.getString("WORKER_ID")).thenReturn("0X5");
+
+    final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
+    final PreparedStatement stmtInsClientCase = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelCase = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelClientCase = mock(PreparedStatement.class);
+    final PreparedStatement stmtSelParents = mock(PreparedStatement.class);
+
+    final ResultSet rsInsClient = mock(ResultSet.class);
+    final ResultSet rsInsClientCase = mock(ResultSet.class);
+    final ResultSet rsSelClient = mock(ResultSet.class);
+    final ResultSet rsSelClientCase = mock(ResultSet.class);
+    final ResultSet rsSelCase = mock(ResultSet.class);
+    final ResultSet rsSelParents = mock(ResultSet.class);
+
+    final String sqlInsClient = CaseSQLResource.PREP_AFFECTED_CLIENTS_FULL;
+    final String sqlInsClientCase = CaseSQLResource.INSERT_CLIENT_CASE;
+    final String sqlClient = CaseSQLResource.SELECT_CLIENT;
+    final String sqlCase = CaseSQLResource.SELECT_CASE;
+    final String sqlClientCase = CaseSQLResource.SELECT_CLIENT_CASE;
+    final String sqlParents = CaseSQLResource.SELECT_FOCUS_CHILD_PARENTS;
+
+    when(con.prepareStatement(sqlInsClient)).thenReturn(stmtInsClient);
+    when(con.prepareStatement(sqlInsClientCase)).thenReturn(stmtInsClientCase);
+    when(con.prepareStatement(sqlClient)).thenReturn(stmtSelClient);
+    when(con.prepareStatement(sqlCase)).thenReturn(stmtSelCase);
+    when(con.prepareStatement(sqlClientCase)).thenReturn(stmtSelClientCase);
+    when(con.prepareStatement(sqlParents)).thenReturn(stmtSelParents);
+
+    when(stmtInsClient.executeQuery()).thenReturn(rsInsClient);
+    when(stmtInsClient.executeUpdate()).thenReturn(1);
+
+    when(stmtInsClientCase.executeQuery()).thenReturn(rsInsClientCase);
+    when(stmtInsClientCase.executeUpdate()).thenReturn(1);
+
+    when(stmtSelClient.executeQuery()).thenReturn(rsSelClient);
+    when(stmtSelCase.executeQuery()).thenReturn(rsSelClientCase);
+
+    when(stmtSelClientCase.executeQuery()).thenReturn(rsSelCase);
+    when(stmtSelClientCase.executeUpdate()).thenReturn(1);
+
+    when(stmtSelParents.executeQuery()).thenReturn(rsSelParents);
+    when(stmtSelParents.executeUpdate()).thenReturn(1);
+
+    when(rsInsClientCase.next()).thenReturn(true).thenReturn(false);
+    when(rsInsClient.next()).thenReturn(true).thenReturn(false);
+    when(rsSelClient.next()).thenReturn(true).thenReturn(false);
+    when(rsSelClientCase.next()).thenReturn(false);
+    when(rsSelCase.next()).thenReturn(false);
+
+    when(rsInsClient.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
+    when(rsInsClient.getString("SENSTV_IND")).thenReturn("N");
+
+    when(rsSelClient.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
+    when(rsSelClient.getString("SENSTV_IND")).thenReturn("N");
+    when(rsSelClient.getString("CLIENT_OPERATION")).thenReturn("U");
 
     target = new CaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
   }
@@ -211,62 +268,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void pullNextRange_Args__Pair() throws Exception {
-    final PreparedStatement stmtInsClient = mock(PreparedStatement.class);
-    final PreparedStatement stmtInsClientCase = mock(PreparedStatement.class);
-    final PreparedStatement stmtSelClient = mock(PreparedStatement.class);
-    final PreparedStatement stmtSelCase = mock(PreparedStatement.class);
-    final PreparedStatement stmtSelClientCase = mock(PreparedStatement.class);
-    final PreparedStatement stmtSelParents = mock(PreparedStatement.class);
-
-    final ResultSet rsInsClient = mock(ResultSet.class);
-    final ResultSet rsInsClientCase = mock(ResultSet.class);
-    final ResultSet rsSelClient = mock(ResultSet.class);
-    final ResultSet rsSelClientCase = mock(ResultSet.class);
-    final ResultSet rsSelCase = mock(ResultSet.class);
-    final ResultSet rsSelParents = mock(ResultSet.class);
-
-    final String sqlInsClient = CaseSQLResource.PREP_AFFECTED_CLIENTS_FULL;
-    final String sqlInsClientCase = CaseSQLResource.INSERT_CLIENT_CASE;
-    final String sqlClient = CaseSQLResource.SELECT_CLIENT;
-    final String sqlCase = CaseSQLResource.SELECT_CASE;
-    final String sqlClientCase = CaseSQLResource.SELECT_CLIENT_CASE;
-    final String sqlParents = CaseSQLResource.SELECT_FOCUS_CHILD_PARENTS;
-
-    when(con.prepareStatement(sqlInsClient)).thenReturn(stmtInsClient);
-    when(con.prepareStatement(sqlInsClientCase)).thenReturn(stmtInsClientCase);
-    when(con.prepareStatement(sqlClient)).thenReturn(stmtSelClient);
-    when(con.prepareStatement(sqlCase)).thenReturn(stmtSelCase);
-    when(con.prepareStatement(sqlClientCase)).thenReturn(stmtSelClientCase);
-    when(con.prepareStatement(sqlParents)).thenReturn(stmtSelParents);
-
-    when(stmtInsClient.executeQuery()).thenReturn(rsInsClient);
-    when(stmtInsClient.executeUpdate()).thenReturn(1);
-
-    when(stmtInsClientCase.executeQuery()).thenReturn(rsInsClientCase);
-    when(stmtInsClientCase.executeUpdate()).thenReturn(1);
-
-    when(stmtSelClient.executeQuery()).thenReturn(rsSelClient);
-    when(stmtSelCase.executeQuery()).thenReturn(rsSelClientCase);
-
-    when(stmtSelClientCase.executeQuery()).thenReturn(rsSelCase);
-    when(stmtSelClientCase.executeUpdate()).thenReturn(1);
-
-    when(stmtSelParents.executeQuery()).thenReturn(rsSelParents);
-    when(stmtSelParents.executeUpdate()).thenReturn(1);
-
-    when(rsInsClientCase.next()).thenReturn(true).thenReturn(false);
-    when(rsInsClient.next()).thenReturn(true).thenReturn(false);
-    when(rsSelClient.next()).thenReturn(true).thenReturn(false);
-    when(rsSelClientCase.next()).thenReturn(false);
-    when(rsSelCase.next()).thenReturn(false);
-
-    when(rsInsClient.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
-    when(rsInsClient.getString("SENSTV_IND")).thenReturn("N");
-
-    when(rsSelClient.getString("FKCLIENT_T")).thenReturn(DEFAULT_CLIENT_ID);
-    when(rsSelClient.getString("SENSTV_IND")).thenReturn("N");
-    when(rsSelClient.getString("CLIENT_OPERATION")).thenReturn("U");
-
     int actual = target.pullNextRange(pair);
     int expected = 0;
     assertThat(actual, is(equalTo(expected)));
@@ -275,6 +276,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test(expected = NeutronCheckedException.class)
   public void pullNextRange_Args__Pair_T__NeutronException() throws Exception {
     final Pair<String, String> p = pair;
+    when(con.prepareStatement(CaseSQLResource.INSERT_CLIENT_CASE)).thenReturn(null);
     target.pullNextRange(p);
   }
 
@@ -290,14 +292,15 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     assertThat(actual, is(equalTo(expected)));
   }
 
-  // @Test
-  // public void fetchLastRunResults_Args__Date__Set() throws Exception {
-  // Date lastRunDt = mock(Date.class);
-  // Set<String> deletionResults = mock(Set.class);
-  // List<ReplicatedPersonCases> actual = target.fetchLastRunResults(lastRunDt, deletionResults);
-  // List<ReplicatedPersonCases> expected = new ArrayList<>();
-  // assertThat(actual, is(equalTo(expected)));
-  // }
+  @Test
+  public void fetchLastRunResults_Args__Date__Set() throws Exception {
+    final Date lastRunDt = new Date();
+    final Set<String> deletionResults = new HashSet<>();
+    final List<ReplicatedPersonCases> actual =
+        target.fetchLastRunResults(lastRunDt, deletionResults);
+    final List<ReplicatedPersonCases> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
 
   // @Test
   // public void main_Args__StringArray() throws Exception {
@@ -604,10 +607,10 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_reduceCase_A$ReplicatedPersonCases$EsCaseRelatedPerson$Map$Map()
       throws Exception {
-    ReplicatedPersonCases cases = null;
-    EsCaseRelatedPerson rawCase = null;
+    final ReplicatedPersonCases cases = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
+    final EsCaseRelatedPerson rawCase = new EsCaseRelatedPerson();
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
-    Map mapFocusChildParents = new HashMap();
+    final Map<String, Map<String, FocusChildParent>> mapFocusChildParents = new HashMap<>();
     target.reduceCase(cases, rawCase, mapClients, mapFocusChildParents);
   }
 
@@ -634,6 +637,9 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_assemblePieces_A$List$List$Map$Map$Map() throws Exception {
     final List<FocusChildParent> listFocusChildParents = new ArrayList<FocusChildParent>();
+    listFocusChildParents.add(new FocusChildParent(1, DEFAULT_CLIENT_ID, "abc1234567", (short) 205,
+        "Robert", "Plant", "N"));
+
     final List listCaseClients = new ArrayList();
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
@@ -671,15 +677,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   // final int expected = 1;
   // assertEquals(expected, actual);
   // }
-
-  @Test
-  public void test_pullNextRange_A$Pair_T$NeutronException() throws Exception {
-    try {
-      target.pullNextRange(pair);
-      fail("Expected exception was not thrown!");
-    } catch (NeutronCheckedException e) {
-    }
-  }
 
   // @Test
   // public void test_runMultiThreadIndexing_A$() throws Exception {

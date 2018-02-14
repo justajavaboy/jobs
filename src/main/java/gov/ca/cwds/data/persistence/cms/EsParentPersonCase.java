@@ -53,12 +53,10 @@ public class EsParentPersonCase extends EsPersonCase {
     super();
   }
 
-  @SuppressWarnings("javadoc")
   public String getParentPersonId() {
     return parentPersonId;
   }
 
-  @SuppressWarnings("javadoc")
   public void setParentPersonId(String parentPersonId) {
     this.parentPersonId = parentPersonId;
   }
