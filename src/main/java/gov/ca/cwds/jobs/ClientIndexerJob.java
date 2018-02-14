@@ -80,8 +80,10 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
   @Override
   public String getPrepLastChangeSQL() {
     try {
-      return NeutronDB2Utils.prepLastChangeSQL(ClientSQLResource.INSERT_CLIENT_LAST_CHG,
+      final String sql = NeutronDB2Utils.prepLastChangeSQL(ClientSQLResource.INSERT_CLIENT_LAST_CHG,
           determineLastSuccessfulRunTime());
+      LOGGER.info("LAST CHANGE SQL: {}", sql);
+      return sql;
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
     }

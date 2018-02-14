@@ -253,11 +253,11 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
       final boolean addressActive = StringUtils.isBlank(effectiveEndDate);
 
       /*
-       * We index only active addresses
+       * We index only active addresses.
        */
       if (addressActive) {
         String effectiveStartDate = DomainChef.cookDate(repClientAddress.getEffStartDt());
-        ElasticSearchSystemCode addressType = new ElasticSearchSystemCode();
+        final ElasticSearchSystemCode addressType = new ElasticSearchSystemCode();
         SystemCode addressTypeSystemCode =
             SystemCodeCache.global().getSystemCode(repClientAddress.getAddressType());
         if (addressTypeSystemCode != null) {
@@ -266,7 +266,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
         }
 
         for (ReplicatedAddress repAddress : repClientAddress.getAddresses()) {
-          ElasticSearchPersonAddress esAddress = new ElasticSearchPersonAddress();
+          final ElasticSearchPersonAddress esAddress = new ElasticSearchPersonAddress();
           esClientAddresses.put(esAddress.getAddressId(), esAddress);
 
           esAddress.setLegacyDescriptor(repAddress.getLegacyDescriptor());
@@ -284,7 +284,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
           esAddress.setType(addressType);
           esAddress.setActive(addressActive ? "true" : "false");
 
-          ElasticSearchSystemCode stateCode = new ElasticSearchSystemCode();
+          final ElasticSearchSystemCode stateCode = new ElasticSearchSystemCode();
           esAddress.setStateSystemCode(stateCode);
           SystemCode stateSysCode = SystemCodeCache.global().getSystemCode(repAddress.getStateCd());
           if (stateSysCode != null) {
@@ -294,7 +294,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
             esAddress.setStateCode(stateSysCode.getLogicalId());
           }
 
-          ElasticSearchSystemCode countyCode = new ElasticSearchSystemCode();
+          final ElasticSearchSystemCode countyCode = new ElasticSearchSystemCode();
           esAddress.setCountySystemCode(countyCode);
           SystemCode countySysCode =
               SystemCodeCache.global().getSystemCode(repAddress.getGovernmentEntityCd());
