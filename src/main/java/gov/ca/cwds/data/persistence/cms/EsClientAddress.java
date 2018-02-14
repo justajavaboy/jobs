@@ -122,16 +122,16 @@ public class EsClientAddress extends BaseEsClient
   @Override
   public int compare(EsClientAddress o1, EsClientAddress o2) {
     int comp = o1.getCltId().compareTo(o2.getCltId());
-    if (comp == 0) {
+    if (comp == 0 && o1.getClaId() != null && o2.getClaId() != null) {
       comp = o1.getClaId().compareTo(o2.getClaId());
     }
-    if (comp == 0) {
+    if (comp == 0 && o1.getAdrId() != null && o2.getAdrId() != null) {
       comp = o1.getAdrId().compareTo(o2.getAdrId());
     }
-    if (comp == 0) {
+    if (comp == 0 && o1.clientCountyId != null && o2.clientCountyId != null) {
       comp = o1.clientCountyId.compareTo(o2.clientCountyId);
     }
-    if (comp == 0) {
+    if (comp == 0 && o1.clientEthnicityId != null && o2.clientEthnicityId != null) {
       comp = o1.clientEthnicityId.compareTo(o2.clientEthnicityId);
     }
 
