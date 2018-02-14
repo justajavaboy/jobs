@@ -33,7 +33,6 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.ClientSQLResource;
 import gov.ca.cwds.neutron.rocket.InitialLoadJdbcRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -167,7 +166,7 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
 
     // NOTE: Assumes that records are sorted by group key.
     while (!isFailed() && rs.next() && (m = extract(rs)) != null) {
-      JobLogs.logEvery(LOGGER, ++cntr, "Retrieved", "recs");
+      CheeseRay.logEvery(LOGGER, ++cntr, "Retrieved", "recs");
       if (!lastId.equals(m.getNormalizationGroupKey()) && cntr > 1) {
         normalizeAndQueueIndex(grpRecs);
         grpRecs.clear(); // Single thread, re-use memory.

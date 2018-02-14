@@ -590,6 +590,10 @@ public class EsClientPerson extends BaseEsClient
     return aka;
   }
 
+  // =====================
+  // IDENTITY:
+  // =====================
+
   @Override
   public int compare(EsClientPerson o1, EsClientPerson o2) {
     return o1.getCltId().compareTo(o2.getCltId());

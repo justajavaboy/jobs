@@ -647,6 +647,19 @@ public class EsRelationship
     return serialVersionUID;
   }
 
+  /**
+   * This view (i.e., materialized query table) doesn't have a proper unique key, but a combination
+   * of several fields might come close.
+   */
+  @Override
+  public Serializable getPrimaryKey() {
+    return null;
+  }
+
+  // =====================
+  // IDENTITY:
+  // =====================
+
   @Override
   public int compare(EsRelationship o1, EsRelationship o2) {
     return o1.getThisLegacyId().compareTo(o2.getThisLegacyId());
@@ -655,15 +668,6 @@ public class EsRelationship
   @Override
   public int compareTo(EsRelationship o) {
     return compare(this, o);
-  }
-
-  /**
-   * This view (i.e., materialized query table) doesn't have a proper unique key, but a combination
-   * of several fields might come close.
-   */
-  @Override
-  public Serializable getPrimaryKey() {
-    return null;
   }
 
   /**

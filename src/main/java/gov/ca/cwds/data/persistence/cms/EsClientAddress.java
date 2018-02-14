@@ -39,7 +39,7 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
     query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
         + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
         + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
-        + "ORDER BY CLT_IDENTIFIER \n"
+        + "ORDER BY CLT_IDENTIFIER, CLA_IDENTIFIER, ADR_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR ",
     resultClass = EsClientAddress.class, readOnly = true)
 
@@ -48,7 +48,7 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
         query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
         + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
         + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
-        + "ORDER BY CLT_IDENTIFIER \n"
+        + "ORDER BY CLT_IDENTIFIER, CLA_IDENTIFIER, ADR_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR",
     resultClass = EsClientAddress.class, readOnly = true)
 
@@ -58,7 +58,7 @@ import gov.ca.cwds.neutron.util.NeutronDateUtils;
         + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
         + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
         + "AND x.CLT_SENSTV_IND != 'N' \n"
-        + "ORDER BY CLT_IDENTIFIER \n"
+        + "ORDER BY CLT_IDENTIFIER, CLA_IDENTIFIER, ADR_IDENTIFIER \n"
         + "FOR READ ONLY WITH UR ",
     resultClass = EsClientAddress.class, readOnly = true)
 //@formatter:on
@@ -114,6 +114,10 @@ public class EsClientAddress extends BaseEsClient
   public Serializable getPrimaryKey() {
     return null;
   }
+
+  // =====================
+  // IDENTITY:
+  // =====================
 
   @Override
   public int compare(EsClientAddress o1, EsClientAddress o2) {
