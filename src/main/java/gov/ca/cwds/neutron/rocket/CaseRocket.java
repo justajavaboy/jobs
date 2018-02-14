@@ -246,9 +246,12 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     stmt.setQueryTimeout(0);
     stmt.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
 
-    final ResultSet rs = stmt.executeQuery();
-    while (!isFailed() && rs.next()) {
-      list.add(Pair.of(rs.getString("CLIENT_ID"), rs.getString("CASE_ID")));
+    try (final ResultSet rs = stmt.executeQuery()) {
+      while (!isFailed() && rs.next()) {
+        list.add(Pair.of(rs.getString("CLIENT_ID"), rs.getString("CASE_ID")));
+      }
+    } finally {
+      // close result set
     }
   }
 
@@ -261,10 +264,14 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
 
     int cntr = 0;
     FocusChildParent m;
-    final ResultSet rs = stmt.executeQuery();
-    while (!isFailed() && rs.next() && (m = FocusChildParent.extract(rs)) != null) {
-      CheeseRay.logEvery(++cntr, "read", "focus child parent");
-      list.add(m);
+
+    try (final ResultSet rs = stmt.executeQuery()) {
+      while (!isFailed() && rs.next() && (m = FocusChildParent.extract(rs)) != null) {
+        CheeseRay.logEvery(++cntr, "read", "focus child parent");
+        list.add(m);
+      }
+    } finally {
+      // close result set
     }
   }
 

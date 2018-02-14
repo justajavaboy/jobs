@@ -768,7 +768,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       LOGGER.info("FOUND {} RECORDS", recs.size());
 
       // Convert denormalized rows to normalized persistence objects.
-      final List<M> groupRecs = new ArrayList<>();
+      final List<M> groupRecs = new ArrayList<>(recs.size());
       for (M m : recs) {
         if (!lastId.equals(m.getNormalizationGroupKey()) && !groupRecs.isEmpty()) {
           results.add(normalizeSingle(groupRecs));

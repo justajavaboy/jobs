@@ -32,7 +32,7 @@ public class ReporterIndexerJob extends BasePersonRocket<ReplicatedReporter, Rep
 
   private static final long serialVersionUID = 1L;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RelationshipIndexerJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ReporterIndexerJob.class);
 
   /**
    * Construct rocket with all required dependencies.

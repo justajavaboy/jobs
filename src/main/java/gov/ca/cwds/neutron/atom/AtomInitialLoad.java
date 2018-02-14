@@ -51,7 +51,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
     List<Pair<String, String>> ret;
     final FlightPlan flightPlan = getFlightPlan();
     if (flightPlan != null && flightPlan.isRangeGiven()) {
-      final List<Pair<String, String>> list = new ArrayList<>();
+      final List<Pair<String, String>> list = new ArrayList<>(allKeyPairs.size());
 
       final int start = ((int) flightPlan.getStartBucket()) - 1;
       final int end = ((int) flightPlan.getEndBucket()) - 1;

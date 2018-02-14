@@ -108,7 +108,7 @@ public class SchemaResetRocket
    * @param args command line arguments
    * @throws Exception on launch error
    */
-  public static void main(String... args) throws Throwable {
+  public static void main(String... args) throws Exception {
     LaunchCommand.launchOneWayTrip(SchemaResetRocket.class, args);
   }
 

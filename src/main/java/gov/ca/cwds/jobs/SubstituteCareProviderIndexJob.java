@@ -34,7 +34,7 @@ public class SubstituteCareProviderIndexJob
   private static final long serialVersionUID = 1L;
 
   private static final Logger LOGGER =
-      LoggerFactory.getLogger(CollateralIndividualIndexerJob.class);
+      LoggerFactory.getLogger(SubstituteCareProviderIndexJob.class);
 
   //@formatter:off
   static final String INSERT_LAST_CHG =

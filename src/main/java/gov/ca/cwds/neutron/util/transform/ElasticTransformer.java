@@ -326,7 +326,7 @@ public final class ElasticTransformer {
 
     if (p instanceof ApiMultipleLanguagesAware) {
       ApiMultipleLanguagesAware mlx = (ApiMultipleLanguagesAware) p;
-      ret = new ArrayList<>();
+      ret = new ArrayList<>(mlx.getLanguages().length);
       for (ApiLanguageAware lx : mlx.getLanguages()) {
         Integer languageId = lx.getLanguageSysId();
         ElasticSearchPersonLanguage lang = new ElasticSearchPersonLanguage(languageId.toString(),
@@ -383,8 +383,9 @@ public final class ElasticTransformer {
   protected static List<ElasticSearchPersonScreening> buildScreening(ApiPersonAware p) {
     List<ElasticSearchPersonScreening> ret = null;
     if (p instanceof ApiScreeningAware) {
-      ret = new ArrayList<>();
-      for (ElasticSearchPersonScreening scr : ((ApiScreeningAware) p).getEsScreenings()) {
+      final ApiScreeningAware screener = ((ApiScreeningAware) p);
+      ret = new ArrayList<>(screener.getEsScreenings().length);
+      for (ElasticSearchPersonScreening scr : screener.getEsScreenings()) {
         ret.add(scr);
       }
     }
