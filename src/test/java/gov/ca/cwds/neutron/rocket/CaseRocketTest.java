@@ -592,8 +592,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_collectFocusChildParents_A$Map$FocusChildParent() throws Exception {
     final Map mapFocusChildParents = new HashMap();
-    FocusChildParent rel = new FocusChildParent(1, DEFAULT_CLIENT_ID, "987654321abc", (short) 247,
-        "Fred", "Meyer", "N");
+    FocusChildParent rel = new FocusChildParent(DEFAULT_CLIENT_ID, "987654321abc", (short) 247, "Fred",
+        "Meyer", "N");
     target.collectFocusChildParents(mapFocusChildParents, rel);
   }
 
@@ -611,7 +611,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     final EsCaseRelatedPerson rawCase = new EsCaseRelatedPerson();
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     final Map<String, Map<String, FocusChildParent>> mapFocusChildParents = new HashMap<>();
-    target.reduceCase(cases, rawCase, mapClients, mapFocusChildParents);
+    target.reduceCase(cases, rawCase, mapFocusChildParents);
   }
 
   @Test
@@ -637,8 +637,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_assemblePieces_A$List$List$Map$Map$Map() throws Exception {
     final List<FocusChildParent> listFocusChildParents = new ArrayList<FocusChildParent>();
-    listFocusChildParents.add(new FocusChildParent(1, DEFAULT_CLIENT_ID, "abc1234567", (short) 205,
-        "Robert", "Plant", "N"));
+    listFocusChildParents.add(new FocusChildParent(DEFAULT_CLIENT_ID, "abc1234567", (short) 205, "Robert",
+        "Plant", "N"));
 
     final List listCaseClients = new ArrayList();
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();

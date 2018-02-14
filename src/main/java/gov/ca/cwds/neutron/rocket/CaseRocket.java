@@ -464,7 +464,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
   // =====================
 
   protected void reduceCase(final ReplicatedPersonCases cases, EsCaseRelatedPerson rawCase,
-      final Map<String, ReplicatedClient> mapClients,
       final Map<String, Map<String, FocusChildParent>> mapFocusChildParents) {
     if (rawCase != null) {
       final ElasticSearchPersonCase esPersonCase = new ElasticSearchPersonCase();
@@ -573,7 +572,7 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
       final Map<String, Map<String, FocusChildParent>> mapFocusChildParents) {
     final ReplicatedPersonCases ret = new ReplicatedPersonCases(clientId);
     mapClientCases.get(clientId).stream()
-        .forEach(k -> reduceCase(ret, mapCases.get(k), mapClients, mapFocusChildParents));
+        .forEach(k -> reduceCase(ret, mapCases.get(k), mapFocusChildParents));
     return ret;
   }
 

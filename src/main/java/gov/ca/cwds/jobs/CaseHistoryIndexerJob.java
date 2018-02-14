@@ -43,9 +43,8 @@ import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
  * 
  * @author CWDS API Team
  */
-public abstract class CaseHistoryIndexerJob
-    extends BasePersonRocket<ReplicatedPersonCases, EsPersonCase>
-    implements AtomRowMapper<EsPersonCase> {
+public abstract class CaseHistoryIndexerJob extends
+    BasePersonRocket<ReplicatedPersonCases, EsPersonCase> implements AtomRowMapper<EsPersonCase> {
 
   private static final long serialVersionUID = 1L;
 
@@ -156,7 +155,7 @@ public abstract class CaseHistoryIndexerJob
       LOGGER.info("FOUND {} RECORDS", recs.size());
 
       // Convert denormalized rows to normalized persistence objects.
-      final List<EsPersonCase> groupRecs = new ArrayList<>();
+      final List<EsPersonCase> groupRecs = new ArrayList<>(recs.size());
       for (EsPersonCase m : recs) {
         if (!lastId.equals(m.getNormalizationGroupKey()) && !groupRecs.isEmpty()) {
           results.add(normalizeSingle(groupRecs));

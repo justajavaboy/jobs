@@ -307,6 +307,7 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
       Thread.sleep(2000);
       LaunchCommand.getInstance().shutdown();
     } catch (InterruptedException | NeutronCheckedException e) {
+      LOGGER.debug("Shutdown thread interrupted", e);
       Thread.currentThread().interrupt();
     }
   }

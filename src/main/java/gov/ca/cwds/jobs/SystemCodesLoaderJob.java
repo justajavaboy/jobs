@@ -90,15 +90,15 @@ public class SystemCodesLoaderJob {
    * @throws NeutronCheckedException oops!
    */
   public Map<Integer, NsSystemCode> load() throws NeutronCheckedException {
-    final Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>();
-
     final Set<SystemMeta> allSystemMetas = SystemCodeCache.global().getAllSystemMetas();
     LOGGER.info("Found total {} system metas in legacy", allSystemMetas.size());
 
     final Set<SystemCode> allSystemCodes = SystemCodeCache.global().getAllSystemCodes();
     LOGGER.info("Found total {} system codes in legacy", allSystemCodes.size());
 
-    final Map<String, SystemMeta> systemMetaMap = new HashMap<>();
+    final Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>(7027);
+    final Map<String, SystemMeta> systemMetaMap = new HashMap<>(197);
+
     for (SystemMeta systemMeta : allSystemMetas) {
       systemMetaMap.put(StringUtils.trim(systemMeta.getLogicalTableDsdName()), systemMeta);
     }

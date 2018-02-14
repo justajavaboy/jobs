@@ -620,27 +620,27 @@ public class EsRelationship
   }
 
   public Date getRelationshipReplicationDate() {
-    return relationshipReplicationDate;
+    return NeutronDateUtils.freshDate(relationshipReplicationDate);
   }
 
   public void setRelationshipReplicationDate(Date relationshipReplicationDate) {
-    this.relationshipReplicationDate = relationshipReplicationDate;
+    this.relationshipReplicationDate = NeutronDateUtils.freshDate(relationshipReplicationDate);
   }
 
   public Date getThisClientReplicationDate() {
-    return thisClientReplicationDate;
+    return NeutronDateUtils.freshDate(thisClientReplicationDate);
   }
 
   public void setThisClientReplicationDate(Date thisClientReplicationDate) {
-    this.thisClientReplicationDate = thisClientReplicationDate;
+    this.thisClientReplicationDate = NeutronDateUtils.freshDate(thisClientReplicationDate);
   }
 
   public Date getRelatedClientReplicationDate() {
-    return relatedClientReplicationDate;
+    return NeutronDateUtils.freshDate(relatedClientReplicationDate);
   }
 
   public void setRelatedClientReplicationDate(Date relatedClientReplicationDate) {
-    this.relatedClientReplicationDate = relatedClientReplicationDate;
+    this.relatedClientReplicationDate = NeutronDateUtils.freshDate(relatedClientReplicationDate);
   }
 
   public static long getSerialversionuid() {

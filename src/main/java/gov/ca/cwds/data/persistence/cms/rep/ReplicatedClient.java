@@ -282,7 +282,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
           esAddress.setEffectiveStartDate(effectiveStartDate);
           esAddress.setEffectiveEndDate(effectiveEndDate);
           esAddress.setType(addressType);
-          esAddress.setActive(addressActive ? "true" : "false");
+          esAddress.setActive("true");
 
           final ElasticSearchSystemCode stateCode = new ElasticSearchSystemCode();
           esAddress.setStateSystemCode(stateCode);

@@ -36,6 +36,14 @@ public final class CollateralIndividualIndexerJob
   private static final Logger LOGGER =
       LoggerFactory.getLogger(CollateralIndividualIndexerJob.class);
 
+  //@formatter:off
+  static final String INSERT_LAST_CHG =
+      "INSERT INTO GT_ID (IDENTIFIER)\n" 
+       + " SELECT DISTINCT R.IDENTIFIER \n" 
+       + " FROM COLTRL_T R \n"
+       + " WHERE R.IBMSNAP_LOGMARKER > 'XYZ'";
+  // @formatter:on
+
   /**
    * Construct rocket with required dependencies.
    * 
@@ -51,14 +59,6 @@ public final class CollateralIndividualIndexerJob
       @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
-
-  //@formatter:off
-  static final String INSERT_LAST_CHG =
-      "INSERT INTO GT_ID (IDENTIFIER)\n" 
-       + " SELECT DISTINCT R.IDENTIFIER \n" 
-       + " FROM COLTRL_T R \n"
-       + " WHERE R.IBMSNAP_LOGMARKER > 'XYZ'";
-  // @formatter:on
 
   @Override
   public String getPrepLastChangeSQL() {

@@ -45,15 +45,6 @@ public class CaseClientRelative implements ApiMarker {
     addCodes(272, 273, 5620, 6360, 6361);
   }
 
-  private static void addCodes(int begin, int end) {
-    IntStream.rangeClosed(begin, end).boxed().map(i -> (short) i.intValue())
-        .forEach(setParentCodes::add);
-  }
-
-  private static void addCodes(int... x) {
-    IntStream.of(x).boxed().map(i -> (short) i.intValue()).forEach(setParentCodes::add);
-  }
-
   public CaseClientRelative(String caseId, String focusClientId, String thisClientId,
       short relationCode, boolean leftSideFocusChild) {
     this.relatedClientId = thisClientId;
@@ -61,6 +52,15 @@ public class CaseClientRelative implements ApiMarker {
     this.focusClientId = focusClientId;
     this.relationCode = relationCode;
     this.leftSideFocusChild = leftSideFocusChild;
+  }
+
+  private static void addCodes(int begin, int end) {
+    IntStream.rangeClosed(begin, end).boxed().map(i -> (short) i.intValue())
+        .forEach(setParentCodes::add);
+  }
+
+  private static void addCodes(int... x) {
+    IntStream.of(x).boxed().map(i -> (short) i.intValue()).forEach(setParentCodes::add);
   }
 
   public static CaseClientRelative extract(final ResultSet rs) throws SQLException {

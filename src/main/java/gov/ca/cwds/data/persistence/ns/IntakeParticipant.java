@@ -174,7 +174,7 @@ public class IntakeParticipant implements PersistentObject, ApiPersonAware,
 
   @Override
   public ElasticSearchPersonScreening[] getEsScreenings() {
-    List<ElasticSearchPersonScreening> ret = new ArrayList<>();
+    final List<ElasticSearchPersonScreening> ret = new ArrayList<>(screenings.values().size());
     for (IntakeScreening ess : screenings.values()) {
       ret.add(ess.toEsScreening());
     }

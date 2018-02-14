@@ -42,7 +42,6 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
@@ -314,8 +313,8 @@ public class ReferralHistoryIndexerJob
     LOGGER.info("pull referrals");
     final ResultSet rs = stmtSelReferral.executeQuery(); // NOSONAR
     while (!isFailed() && rs.next() && (m = EsPersonReferral.extractReferral(rs)) != null) {
-      JobLogs.logEvery(++cntr, "read", "bundle referral");
-      JobLogs.logEvery(LOGGER, 10000, rowsReadReferrals.incrementAndGet(), "Total read",
+      CheeseRay.logEvery(++cntr, "read", "bundle referral");
+      CheeseRay.logEvery(LOGGER, 10000, rowsReadReferrals.incrementAndGet(), "Total read",
           "referrals");
       if (m.getReferralClientReplicationOperation() != CmsReplicationOperation.D) {
         mapReferrals.put(m.getReferralId(), m);
@@ -335,8 +334,8 @@ public class ReferralHistoryIndexerJob
     LOGGER.info("pull allegations");
     final ResultSet rs = stmtSelAllegation.executeQuery(); // NOSONAR
     while (!isFailed() && rs.next() && (m = EsPersonReferral.extractAllegation(rs)) != null) {
-      JobLogs.logEvery(++cntr, "read", "bundle allegation");
-      JobLogs.logEvery(LOGGER, 15000, rowsReadAllegations.incrementAndGet(), "Total read",
+      CheeseRay.logEvery(++cntr, "read", "bundle allegation");
+      CheeseRay.logEvery(LOGGER, 15000, rowsReadAllegations.incrementAndGet(), "Total read",
           "allegations");
       listAllegations.add(m);
     }
@@ -495,7 +494,7 @@ public class ReferralHistoryIndexerJob
    * @param p partition (key) range to read
    * @return number of client documents affected
    */
-  protected int pullNextRange(final Pair<String, String> p) {
+  protected int pullNextRange(final Pair<String, String> p) throws NeutronCheckedException {
     final String threadName =
         "extract_" + nextThreadNum.incrementAndGet() + "_" + p.getLeft() + "_" + p.getRight();
     nameThread(threadName);
@@ -531,9 +530,9 @@ public class ReferralHistoryIndexerJob
         NeutronDB2Utils.monitorStopAndReport(monitor);
         con.commit();
       }
-    } catch (Exception e) {
+    } catch (SQLException e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "ERROR HANDLING RANGE {} - {}: {}", p.getLeft(),
+      throw CheeseRay.checked(LOGGER, e, "ERROR HANDLING RANGE {} - {}: {}", p.getLeft(),
           p.getRight(), e.getMessage());
     }
 
@@ -578,7 +577,7 @@ public class ReferralHistoryIndexerJob
       }
     } catch (Exception e) {
       fail();
-      throw JobLogs.runtime(LOGGER, e, "ERROR IN THREADED RETRIEVAL! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ERROR IN THREADED RETRIEVAL! {}", e.getMessage());
     } finally {
       doneRetrieve();
     }

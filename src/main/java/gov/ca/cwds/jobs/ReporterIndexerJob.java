@@ -34,6 +34,14 @@ public class ReporterIndexerJob extends BasePersonRocket<ReplicatedReporter, Rep
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReporterIndexerJob.class);
 
+  //@formatter:off
+  static final String INSERT_REPORTER_LAST_CHG =
+      "INSERT INTO GT_ID (IDENTIFIER)\n" 
+       + " SELECT DISTINCT R.FKREFERL_T\n" 
+       + " FROM REPTR_T R \n"
+       + " WHERE R.IBMSNAP_LOGMARKER > 'XYZ'";
+  // @formatter:on
+
   /**
    * Construct rocket with all required dependencies.
    * 
@@ -49,14 +57,6 @@ public class ReporterIndexerJob extends BasePersonRocket<ReplicatedReporter, Rep
       @LastRunFile final String lastRunFile, final ObjectMapper mapper, FlightPlan flightPlan) {
     super(dao, esDao, lastRunFile, mapper, flightPlan);
   }
-
-  //@formatter:off
-  static final String INSERT_REPORTER_LAST_CHG =
-      "INSERT INTO GT_ID (IDENTIFIER)\n" 
-       + " SELECT DISTINCT R.FKREFERL_T\n" 
-       + " FROM REPTR_T R \n"
-       + " WHERE R.IBMSNAP_LOGMARKER > 'XYZ'";
-  // @formatter:on
 
   @Override
   public String getPrepLastChangeSQL() {
