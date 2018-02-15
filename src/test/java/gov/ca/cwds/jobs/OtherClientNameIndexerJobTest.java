@@ -4,13 +4,16 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
@@ -27,6 +30,7 @@ import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.data.es.ElasticSearchPersonAka;
 import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
+import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 
 /**
  * 
@@ -45,8 +49,33 @@ public class OtherClientNameIndexerJobTest extends Goddard {
     super.setup();
     normDao = new ReplicatedAkaDao(sessionFactory);
     denormDao = new ReplicatedOtherClientNameDao(sessionFactory);
-    target = new OtherClientNameIndexerJob(normDao, denormDao, esDao, MAPPER,
-        flightPlan);
+
+    final javax.persistence.Query q = mock(javax.persistence.Query.class);
+    when(em.createNativeQuery(any(String.class), any(Class.class))).thenReturn(q);
+    final List<BatchBucket> buckets = new ArrayList<>();
+    final BatchBucket b = new BatchBucket();
+    b.setBucket(1);
+    b.setBucketCount(2);
+    b.setMaxId("1");
+    b.setMaxId("2");
+    buckets.add(b);
+    when(q.getResultList()).thenReturn(buckets);
+    final NativeQuery<ReplicatedOtherClientName> qn = mock(NativeQuery.class);
+    when(session.getNamedNativeQuery(any(String.class))).thenReturn(qn);
+    when(qn.setString(any(String.class), any(String.class))).thenReturn(qn);
+    when(qn.setHibernateFlushMode(any(FlushMode.class))).thenReturn(qn);
+    when(qn.setReadOnly(any(Boolean.class))).thenReturn(qn);
+    when(qn.setCacheMode(any(CacheMode.class))).thenReturn(qn);
+    when(qn.setFetchSize(any(Integer.class))).thenReturn(qn);
+    when(qn.setCacheable(any(Boolean.class))).thenReturn(qn);
+    final ScrollableResults results = mock(ScrollableResults.class);
+    when(qn.scroll(any(ScrollMode.class))).thenReturn(results);
+    final List<ReplicatedOtherClientName> denorms = new ArrayList<>();
+    final ReplicatedOtherClientName m = new ReplicatedOtherClientName();
+    denorms.add(m);
+    when(qn.list()).thenReturn(denorms);
+
+    target = new OtherClientNameIndexerJob(normDao, denormDao, esDao, MAPPER, flightPlan);
   }
 
   @Test
@@ -71,35 +100,6 @@ public class OtherClientNameIndexerJobTest extends Goddard {
 
   @Test
   public void getPartitionRanges_Args__() throws Exception {
-    final javax.persistence.Query q = mock(javax.persistence.Query.class);
-    when(em.createNativeQuery(any(String.class), any(Class.class))).thenReturn(q);
-
-    final List<BatchBucket> buckets = new ArrayList<>();
-    final BatchBucket b = new BatchBucket();
-    b.setBucket(1);
-    b.setBucketCount(2);
-    b.setMaxId("1");
-    b.setMaxId("2");
-    buckets.add(b);
-    when(q.getResultList()).thenReturn(buckets);
-
-    final NativeQuery<ReplicatedOtherClientName> qn = mock(NativeQuery.class);
-    when(session.getNamedNativeQuery(any(String.class))).thenReturn(qn);
-    when(qn.setString(any(String.class), any(String.class))).thenReturn(qn);
-    when(qn.setHibernateFlushMode(any(FlushMode.class))).thenReturn(qn);
-    when(qn.setReadOnly(any(Boolean.class))).thenReturn(qn);
-    when(qn.setCacheMode(any(CacheMode.class))).thenReturn(qn);
-    when(qn.setFetchSize(any(Integer.class))).thenReturn(qn);
-    when(qn.setCacheable(any(Boolean.class))).thenReturn(qn);
-
-    final ScrollableResults results = mock(ScrollableResults.class);
-    when(qn.scroll(any(ScrollMode.class))).thenReturn(results);
-
-    final List<ReplicatedOtherClientName> denorms = new ArrayList<>();
-    final ReplicatedOtherClientName m = new ReplicatedOtherClientName();
-    denorms.add(m);
-    when(qn.list()).thenReturn(denorms);
-
     final List<?> actual = target.getPartitionRanges();
     assertThat(actual, notNullValue());
   }
@@ -120,10 +120,9 @@ public class OtherClientNameIndexerJobTest extends Goddard {
   @Test
   public void normalizeSingle_Args__List() throws Exception {
     final List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
-    ReplicatedOtherClientName m = new ReplicatedOtherClientName();
+    final ReplicatedOtherClientName m = new ReplicatedOtherClientName();
     m.setClientId(DEFAULT_CLIENT_ID);
     recs.add(m);
-
     final ReplicatedAkas actual = target.normalizeSingle(recs);
     assertThat(actual, notNullValue());
   }
@@ -137,13 +136,12 @@ public class OtherClientNameIndexerJobTest extends Goddard {
 
   @Test
   public void prepareUpsertRequest_Args__ElasticSearchPerson__ReplicatedAkas() throws Exception {
-    ElasticSearchPerson esp = new ElasticSearchPerson();
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
     final ReplicatedAkas p = new ReplicatedAkas(DEFAULT_CLIENT_ID);
-    ElasticSearchPersonAka aka = new ElasticSearchPersonAka();
+    final ElasticSearchPersonAka aka = new ElasticSearchPersonAka();
     aka.setFirstName("Albert");
     aka.setLastName("Einstein");
     p.addAka(aka);
-
     final UpdateRequest actual = target.prepareUpsertRequest(esp, p);
     assertThat(actual, notNullValue());
   }
@@ -171,8 +169,142 @@ public class OtherClientNameIndexerJobTest extends Goddard {
   @Test
   public void main_Args__StringArray() throws Exception {
     final String[] args = new String[] {"-c", "config/local.yaml", "-l",
-        "/Users/CWS-NS3/client_indexer_time.txt", "-S"};
+        "/Users/dsmith/client_indexer_time.txt", "-S"};
     OtherClientNameIndexerJob.main(args);
+  }
+
+  @Test
+  public void getPrepLastChangeSQL_A$() throws Exception {
+    final String actual = target.getPrepLastChangeSQL();
+    final String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void extract_A$ResultSet() throws Exception {
+    final ReplicatedOtherClientName actual = target.extract(rs);
+    final ReplicatedOtherClientName expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test(expected = SQLException.class)
+  public void extract_A$ResultSet_T$SQLException() throws Exception {
+    when(rs.next()).thenThrow(SQLException.class);
+    target.extract(rs);
+  }
+
+  @Test
+  public void getDenormalizedClass_A$() throws Exception {
+    Object actual = target.getDenormalizedClass();
+    Object expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void normalizeSingle_A$List() throws Exception {
+    List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
+    ReplicatedAkas actual = target.normalizeSingle(recs);
+    ReplicatedAkas expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void normalize_A$List() throws Exception {
+    List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
+    List<ReplicatedAkas> actual = target.normalize(recs);
+    List<ReplicatedAkas> expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getDriverTable_A$() throws Exception {
+    String actual = target.getDriverTable();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getOptionalElementName_A$() throws Exception {
+    String actual = target.getOptionalElementName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedAkas() throws Exception {
+    ElasticSearchPerson esp = new ElasticSearchPerson();
+    ReplicatedAkas p = new ReplicatedAkas();
+    UpdateRequest actual = target.prepareUpsertRequest(esp, p);
+    // UpdateRequest expected = null;
+    // assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedAkas_T$NeutronCheckedException()
+      throws Exception {
+    ElasticSearchPerson esp = new ElasticSearchPerson();
+    ReplicatedAkas p = new ReplicatedAkas();
+    try {
+      target.prepareUpsertRequest(esp, p);
+      fail("Expected exception was not thrown!");
+    } catch (NeutronCheckedException e) {
+    }
+  }
+
+  @Test
+  public void getInitialLoadViewName_A$() throws Exception {
+    String actual = target.getInitialLoadViewName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getJdbcOrderBy_A$() throws Exception {
+    String actual = target.getJdbcOrderBy();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void isInitialLoadJdbc_A$() throws Exception {
+    boolean actual = target.isInitialLoadJdbc();
+    boolean expected = false;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPartitionRanges_A$() throws Exception {
+    final List<Pair<String, String>> actual = target.getPartitionRanges();
+    final List<Pair<String, String>> expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPartitionRanges_A$_T$NeutronCheckedException() throws Exception {
+    try {
+      target.getPartitionRanges();
+      fail("Expected exception was not thrown!");
+    } catch (NeutronCheckedException e) {
+    }
+  }
+
+  @Test
+  public void getInitialLoadQuery_A$String() throws Exception {
+    final String dbSchemaName = null;
+    final String actual = target.getInitialLoadQuery(dbSchemaName);
+    final String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void main_A$StringArray_T$Exception() throws Exception {
+    String[] args = new String[] {};
+    try {
+      OtherClientNameIndexerJob.main(args);
+      fail("Expected exception was not thrown!");
+    } catch (Exception e) {
+    }
   }
 
 }
