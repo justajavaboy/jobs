@@ -36,24 +36,6 @@ public class FlightPlan implements ApiMarker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlightPlan.class);
 
-  public static final String CMD_LINE_ES_CONFIG_PEOPLE = "config-people";
-  public static final String CMD_LINE_ES_CONFIG_PEOPLE_SUMMARY = "config-people-summary";
-  public static final String CMD_LINE_INDEX_NAME = "index-name";
-  public static final String CMD_LINE_LAST_RUN_TIME = "last-run-time";
-  public static final String CMD_LINE_LAST_RUN_FILE = "last-run-file";
-  public static final String CMD_LINE_ALT_INPUT_FILE = "alt-input-file";
-  public static final String CMD_LINE_BASE_DIRECTORY = "base-directory";
-  public static final String CMD_LINE_BUCKET_RANGE = "bucket-range";
-  public static final String CMD_LINE_BUCKET_TOTAL = "total-buckets";
-  public static final String CMD_LINE_THREADS = "thread-num";
-  public static final String CMD_LINE_MIN_ID = "min_id";
-  public static final String CMD_LINE_MAX_ID = "max_id";
-  public static final String CMD_LINE_LOAD_SEALED_AND_SENSITIVE = "load-sealed-sensitive";
-  public static final String CMD_LINE_INITIAL_LOAD = "initial_load";
-  public static final String CMD_LINE_REFRESH_MQT = "refresh_mqt";
-  public static final String CMD_LINE_DROP_INDEX = "drop_index";
-  public static final String CMD_LINE_SIMULATE_LAUNCH = "simulate_launch";
-
   /**
    * Location of Elasticsearch configuration file for people index.
    */
@@ -76,6 +58,8 @@ public class FlightPlan implements ApiMarker {
    * stamp given in last run time file is ignored.
    */
   private Date overrideLastRunTime;
+
+  private Date overrideLastEndTime;
 
   /**
    * Location of last run file.
@@ -250,7 +234,6 @@ public class FlightPlan implements ApiMarker {
     return lastRunLoc;
   }
 
-  @SuppressWarnings("javadoc")
   public void setLastRunLoc(String lastRunLoc) {
     this.lastRunLoc = lastRunLoc;
   }
@@ -423,61 +406,61 @@ public class FlightPlan implements ApiMarker {
       // enum members (evaluated at compile time), are not considered "constants."
       for (final Option opt : cmd.getOptions()) {
         switch (opt.getArgName()) {
-          case CMD_LINE_ES_CONFIG_PEOPLE:
+          case NeutronLongCmdLineName.CMD_LINE_ES_CONFIG_PEOPLE:
             esConfigPeopleLoc = opt.getValue().trim();
             break;
 
-          case CMD_LINE_ES_CONFIG_PEOPLE_SUMMARY:
+          case NeutronLongCmdLineName.CMD_LINE_ES_CONFIG_PEOPLE_SUMMARY:
             esConfigPeopleSummaryLoc = opt.getValue().trim();
             break;
 
-          case CMD_LINE_INDEX_NAME:
+          case NeutronLongCmdLineName.CMD_LINE_INDEX_NAME:
             indexName = opt.getValue().trim();
             break;
 
-          case CMD_LINE_LAST_RUN_TIME:
+          case NeutronLongCmdLineName.CMD_LINE_LAST_RUN_TIME:
             String lastRunTimeStr = opt.getValue().trim();
             lastRunTime = createDate(lastRunTimeStr);
             break;
 
-          case CMD_LINE_LAST_RUN_FILE:
+          case NeutronLongCmdLineName.CMD_LINE_LAST_RUN_FILE:
             lastRunLoc = opt.getValue().trim();
             break;
 
-          case CMD_LINE_BASE_DIRECTORY:
+          case NeutronLongCmdLineName.CMD_LINE_BASE_DIRECTORY:
             lastRunMode = true;
             baseDirectory = opt.getValue().trim();
             break;
 
-          case CMD_LINE_INITIAL_LOAD:
+          case NeutronLongCmdLineName.CMD_LINE_INITIAL_LOAD:
             lastRunMode = false;
             break;
 
-          case CMD_LINE_BUCKET_RANGE:
+          case NeutronLongCmdLineName.CMD_LINE_BUCKET_RANGE:
             lastRunMode = false;
             rangeGiven = true;
             bucketRange = parseBuckets(opt.getValues());
             break;
 
-          case CMD_LINE_THREADS:
+          case NeutronLongCmdLineName.CMD_LINE_THREADS:
             threadCount = Long.parseLong(opt.getValue());
             break;
 
-          case CMD_LINE_LOAD_SEALED_AND_SENSITIVE:
+          case NeutronLongCmdLineName.CMD_LINE_LOAD_SEALED_AND_SENSITIVE:
             loadSealedAndSensitive = Boolean.parseBoolean(opt.getValue().trim());
             break;
 
-          case CMD_LINE_REFRESH_MQT:
+          case NeutronLongCmdLineName.CMD_LINE_REFRESH_MQT:
             lastRunMode = false;
             refreshMqt = true;
             break;
 
-          case CMD_LINE_DROP_INDEX:
+          case NeutronLongCmdLineName.CMD_LINE_DROP_INDEX:
             lastRunMode = false;
             dropIndex = true;
             break;
 
-          case CMD_LINE_SIMULATE_LAUNCH:
+          case NeutronLongCmdLineName.CMD_LINE_SIMULATE_LAUNCH:
             simulateLaunch = true;
             break;
 
@@ -582,6 +565,14 @@ public class FlightPlan implements ApiMarker {
 
   public String getEsConfigPeopleSummaryLoc() {
     return esConfigPeopleSummaryLoc;
+  }
+
+  public Date getOverrideLastEndTime() {
+    return overrideLastEndTime;
+  }
+
+  public void setOverrideLastEndTime(Date overrideLastEndTime) {
+    this.overrideLastEndTime = overrideLastEndTime;
   }
 
 }
