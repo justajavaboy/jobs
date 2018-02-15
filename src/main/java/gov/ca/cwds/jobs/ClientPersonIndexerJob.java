@@ -202,17 +202,22 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
 
   @Override
   public boolean validateDocument(final ElasticSearchPerson person) throws NeutronCheckedException {
-    final String clientId = person.getId();
-    LOGGER.info("Validate client: {}", clientId);
+    try {
+      final String clientId = person.getId();
+      LOGGER.info("Validate client: {}", clientId);
 
-    // HACK: Initialize transaction. Fix DAO impl instead.
-    getOrCreateTransaction();
-    final ReplicatedClient client = getJobDao().find(clientId);
+      // HACK: Initialize transaction. Fix DAO impl instead.
+      getOrCreateTransaction();
+      final ReplicatedClient client = getJobDao().find(clientId);
 
-    return client.getCommonFirstName().equals(person.getFirstName())
-        && client.getCommonLastName().equals(person.getLastName())
-        && client.getCommonMiddleName().equals(person.getMiddleName())
-        && validateAddresses(client, person);
+      return client.getCommonFirstName().equals(person.getFirstName())
+          && client.getCommonLastName().equals(person.getLastName())
+          && client.getCommonMiddleName().equals(person.getMiddleName())
+          && validateAddresses(client, person);
+    } catch (Exception e) {
+      LOGGER.error("CLIENT VALIDATION ERROR!", e);
+      return true; // DO NOT FAIL THE WHOLE JOB!
+    }
   }
 
   /**
