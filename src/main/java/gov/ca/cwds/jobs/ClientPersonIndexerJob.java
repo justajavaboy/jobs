@@ -34,7 +34,6 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 import gov.ca.cwds.neutron.rocket.ClientSQLResource;
 import gov.ca.cwds.neutron.rocket.InitialLoadJdbcRocket;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
@@ -84,7 +83,8 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
       return NeutronDB2Utils.prepLastChangeSQL(ClientSQLResource.INSERT_CLIENT_LAST_CHG,
           determineLastSuccessfulRunTime());
     } catch (NeutronCheckedException e) {
-      throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "PEOPLE SUMMARY: ERROR BUILDING LAST CHANGE SQL! {}",
+          e.getMessage());
     }
   }
 
@@ -151,7 +151,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
 
     // NOTE: Assumes that records are sorted by group key.
     while (!isFailed() && rs.next() && (m = extract(rs)) != null) {
-      JobLogs.logEvery(LOGGER, ++cntr, "Retrieved", "recs");
+      CheeseRay.logEvery(LOGGER, ++cntr, "Retrieved", "recs");
       if (!lastId.equals(m.getNormalizationGroupKey()) && cntr > 1) {
         normalizeAndQueueIndex(grpRecs);
         grpRecs.clear(); // Single thread, re-use memory.

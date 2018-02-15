@@ -59,6 +59,14 @@ public class FlightPlan implements ApiMarker {
    */
   private Date overrideLastRunTime;
 
+  /**
+   * Optional end date for standalone last change runs. Pseudo code:
+   * {@code BETWEEN :overrideLastRunTime AND overrideLastEndTime}.
+   * 
+   * <p>
+   * If not provided, defaults to current timestamp.
+   * </p>
+   */
   private Date overrideLastEndTime;
 
   /**
@@ -322,7 +330,7 @@ public class FlightPlan implements ApiMarker {
     ret.addOption(NeutronCmdLineOption.DROP_INDEX.getOpt());
 
     ret.addOption(NeutronCmdLineOption.BUCKET_RANGE.getOpt());
-    ret.addOption(NeutronCmdLineOption.BUCKET_TOTAL.getOpt());
+    ret.addOption(NeutronCmdLineOption.BUCKET_TOTAL.getOpt()); // Obsolete
     ret.addOption(NeutronCmdLineOption.MIN_ID.getOpt());
     ret.addOption(NeutronCmdLineOption.MAX_ID.getOpt());
 

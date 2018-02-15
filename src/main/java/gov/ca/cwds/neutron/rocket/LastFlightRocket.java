@@ -73,7 +73,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
 
   @Override
   public final void run() {
-    LOGGER.warn("last run time file: {}", lastRunTimeFilename);
+    LOGGER.debug("last run time file: {}", lastRunTimeFilename);
     final FlightLog flightLog = getFlightLog();
     flightLog.start();
 
@@ -93,8 +93,8 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
     }
 
     // SLF4J does not yet support conditional invocation.
-    if (LOGGER.isWarnEnabled()) {
-      LOGGER.warn(flightLog.toString());
+    if (LOGGER.isInfoEnabled()) {
+      LOGGER.info(flightLog.toString());
     }
   }
 
@@ -143,7 +143,7 @@ public abstract class LastFlightRocket implements Rocket, AtomShared, AtomRocket
           .parse(br.readLine().trim()); // NOSONAR
     } catch (IOException | ParseException e) {
       fail();
-      throw CheeseRay.checked(LOGGER, e, "ERROR FINDING LAST RUN TIME: {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "ERROR READING LAST RUN TIME: {}", e.getMessage());
     }
 
     return ret;

@@ -79,7 +79,7 @@ public class WorkPrepareLastChange implements Work {
         stmt.setString(i, strLastRunTime);
       }
 
-      LOGGER.info("Find keys new/changed since {}", strLastRunTime);
+      LOGGER.info("Find keys changed since {}", strLastRunTime);
       final int cntNewChanged = stmt.executeUpdate();
       LOGGER.info("Total keys {} changed since {}", cntNewChanged, strLastRunTime);
     }

@@ -85,7 +85,7 @@ public class RocketFactory implements AtomRocketFactory {
       throw new SchedulerException("NO SUCH ROCKET CLASS!", e);
     }
 
-    LOGGER.warn("LAUNCH! {}", klazz);
+    LOGGER.info("LAUNCH! {}", klazz);
     NeutronRocket ret;
     try {
       final FlightPlan flightPlan = flightPlanRegistry.getFlightPlan(klazz);
