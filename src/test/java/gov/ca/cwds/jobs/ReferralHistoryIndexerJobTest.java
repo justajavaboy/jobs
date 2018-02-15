@@ -45,6 +45,7 @@ import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 public class ReferralHistoryIndexerJobTest
     extends Goddard<ReplicatedPersonReferrals, EsPersonReferral> {
 
+  @SuppressWarnings("serial")
   public static class TestReferralHistoryIndexerJob extends ReferralHistoryIndexerJob {
 
     private boolean fakePull = true;
@@ -393,7 +394,7 @@ public class ReferralHistoryIndexerJobTest
     target.pullNextRange(p);
   }
 
-  @Test(expected = NeutronRuntimeException.class)
+  @Test(expected = NeutronCheckedException.class)
   public void pullNextRange_Args__Pair__boom() throws Exception {
     final String schema = target.getDBSchemaName();
     final PreparedStatement stmtInsClient = mock(PreparedStatement.class);

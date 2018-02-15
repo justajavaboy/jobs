@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 
 import gov.ca.cwds.data.es.ElasticSearchPerson;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 
 public interface AtomValidateDocument extends AtomShared {
 
@@ -19,7 +19,7 @@ public interface AtomValidateDocument extends AtomShared {
     try {
       return ElasticSearchPerson.MAPPER.readValue(json, ElasticSearchPerson.class);
     } catch (Exception e) {
-      throw JobLogs.checked(getLogger(), e, "ERROR READING PERSON DOC! {}", e.getMessage(), e);
+      throw CheeseRay.checked(getLogger(), e, "ERROR READING PERSON DOC! {}", e.getMessage(), e);
     }
   }
 
@@ -43,11 +43,12 @@ public interface AtomValidateDocument extends AtomShared {
         validateDocument(person);
       }
     } catch (IOException e) {
-      throw JobLogs.checked(logger, e, "ERROR READING DOCUMENT! doc id: {}", docId);
+      throw CheeseRay.checked(logger, e, "ERROR READING DOCUMENT! doc id: {}", docId);
     }
   }
 
-  default boolean validateDocument(final ElasticSearchPerson person) throws NeutronCheckedException {
+  default boolean validateDocument(final ElasticSearchPerson person)
+      throws NeutronCheckedException {
     return true;
   }
 

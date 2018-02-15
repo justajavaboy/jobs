@@ -216,7 +216,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
           && validateAddresses(client, person);
     } catch (Exception e) {
       LOGGER.error("CLIENT VALIDATION ERROR!", e);
-      return true; // DO NOT FAIL THE WHOLE JOB!
+      return false;
     }
   }
 

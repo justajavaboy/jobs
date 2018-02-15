@@ -220,7 +220,6 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
       LOGGER.warn("set size: docAddresses: {}, repAddresses: {}, client addrs: {}, doc addrs: {}",
           docAddresses.size(), repAddresses.size(), client.getClientAddresses().size(),
           person.getAddresses().size());
-
     } catch (Exception e) {
       LOGGER.error("ERROR VALIDATING!", e);
       return false;
@@ -234,14 +233,19 @@ public class ClientIndexerJob extends InitialLoadJdbcRocket<ReplicatedClient, Es
     final String clientId = person.getId();
     LOGGER.info("Validate client: {}", clientId);
 
-    // HACK: Initialize transaction. Fix DAO implementation instead.
-    getOrCreateTransaction();
-    final ReplicatedClient client = getJobDao().find(clientId);
+    try {
+      // HACK: Initialize transaction. Fix DAO implementation instead.
+      getOrCreateTransaction();
+      final ReplicatedClient client = getJobDao().find(clientId);
 
-    return client.getCommonFirstName().equals(person.getFirstName())
-        && client.getCommonLastName().equals(person.getLastName())
-        && client.getCommonMiddleName().equals(person.getMiddleName())
-        && validateAddresses(client, person);
+      return client.getCommonFirstName().equals(person.getFirstName())
+          && client.getCommonLastName().equals(person.getLastName())
+          && client.getCommonMiddleName().equals(person.getMiddleName())
+          && validateAddresses(client, person);
+    } catch (Exception e) {
+      LOGGER.error("CLIENT VALIDATION ERROR!", e);
+      return false;
+    }
   }
 
   /**
