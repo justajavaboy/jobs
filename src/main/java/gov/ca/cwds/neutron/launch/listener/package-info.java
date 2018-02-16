@@ -1,5 +1,5 @@
 /**
- * 
+ * Quartz listeners.
  */
 /**
  * @author CWDS API Team

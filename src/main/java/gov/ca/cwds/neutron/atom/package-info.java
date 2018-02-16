@@ -1,5 +1,5 @@
 /**
- * 
+ * Functional interfaces by component (aka, "atoms")
  */
 /**
  * @author CWDS API Team

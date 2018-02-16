@@ -1,5 +1,5 @@
 /**
- * 
+ * Logging and exception handling.
  */
 /**
  * @author CWDS API Team

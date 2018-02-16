@@ -1,5 +1,5 @@
 /**
- * 
+ * Classes for Referrals rocket.
  */
 /**
  * @author CWDS API Team

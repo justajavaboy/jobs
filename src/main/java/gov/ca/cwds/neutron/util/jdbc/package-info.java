@@ -1,5 +1,5 @@
 /**
- * 
+ * JDBC utilities.
  */
 /**
  * @author CWDS API Team

@@ -1,5 +1,5 @@
 /**
- * 
+ * Internal launch components.
  */
 /**
  * @author CWDS API Team

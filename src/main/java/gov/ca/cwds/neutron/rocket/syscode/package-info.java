@@ -1,5 +1,5 @@
 /**
- * 
+ * System codes loader for PostgreSQL.
  */
 /**
  * @author CWDS API Team

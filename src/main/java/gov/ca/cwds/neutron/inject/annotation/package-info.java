@@ -1,5 +1,5 @@
 /**
- * 
+ * Neutron annotations for dependency injection.
  */
 /**
  * @author CWDS API Team
