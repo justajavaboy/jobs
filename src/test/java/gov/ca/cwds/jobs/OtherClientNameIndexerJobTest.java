@@ -4,11 +4,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,13 +31,14 @@ import gov.ca.cwds.data.es.ElasticSearchPersonAka;
 import gov.ca.cwds.data.persistence.cms.ReplicatedAkas;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherClientName;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
+import gov.ca.cwds.utils.JsonUtils;
 
 /**
  * 
  * @author CWDS API Team
  */
-@SuppressWarnings("javadoc")
-public class OtherClientNameIndexerJobTest extends Goddard {
+public class OtherClientNameIndexerJobTest
+    extends Goddard<ReplicatedAkas, ReplicatedOtherClientName> {
 
   ReplicatedAkaDao normDao;
   ReplicatedOtherClientNameDao denormDao;
@@ -60,6 +61,7 @@ public class OtherClientNameIndexerJobTest extends Goddard {
     b.setMaxId("2");
     buckets.add(b);
     when(q.getResultList()).thenReturn(buckets);
+
     final NativeQuery<ReplicatedOtherClientName> qn = mock(NativeQuery.class);
     when(session.getNamedNativeQuery(any(String.class))).thenReturn(qn);
     when(qn.setString(any(String.class), any(String.class))).thenReturn(qn);
@@ -68,14 +70,22 @@ public class OtherClientNameIndexerJobTest extends Goddard {
     when(qn.setCacheMode(any(CacheMode.class))).thenReturn(qn);
     when(qn.setFetchSize(any(Integer.class))).thenReturn(qn);
     when(qn.setCacheable(any(Boolean.class))).thenReturn(qn);
+
     final ScrollableResults results = mock(ScrollableResults.class);
     when(qn.scroll(any(ScrollMode.class))).thenReturn(results);
+
     final List<ReplicatedOtherClientName> denorms = new ArrayList<>();
     final ReplicatedOtherClientName m = new ReplicatedOtherClientName();
     denorms.add(m);
     when(qn.list()).thenReturn(denorms);
 
     target = new OtherClientNameIndexerJob(normDao, denormDao, esDao, MAPPER, flightPlan);
+  }
+
+  private ReplicatedOtherClientName makeReplicatedBean() throws IOException {
+    return (ReplicatedOtherClientName) JsonUtils.from(
+        "{\"clientId\":\"abc123456789\",\"clientIndexNumber\":null,\"clientSensitivityIndicator\":null,\"firstName\":\"abc123456789\",\"id\":\"abc123456789\",\"lastName\":\"abc123456789\",\"lastUpdatedId\":\"abc123456789\",\"lastUpdatedTime\":\"2018-02-15\",\"legacyDescriptor\":{\"legacy_id\":\"abc123456789\",\"legacy_ui_id\":\"abc123456789\",\"legacy_last_updated\":\"2018-02-15T16:42:25.726-0800\",\"legacy_table_name\":\"OCL_NM_T\",\"legacy_table_description\":\"Alias or other client name\"},\"legacyId\":\"abc123456789\",\"middleName\":\"abc123456789\",\"namePrefixDescription\":\"abc123456789\",\"nameType\":0,\"normalizationClass\":\"gov.ca.cwds.data.persistence.cms.ReplicatedAkas\",\"normalizationGroupKey\":\"abc123456789\",\"primaryKey\":\"abc123456789\",\"replicatedEntity\":{\"replicationOperation\":null,\"replicationDate\":null},\"replicationDate\":null,\"replicationOperation\":null,\"sensitivityIndicator\":null,\"soc158SealedClientIndicator\":null,\"suffixTitleDescription\":\"abc123456789\",\"thirdId\":\"abc123456789\"}",
+        ReplicatedOtherClientName.class);
   }
 
   @Test
@@ -183,7 +193,7 @@ public class OtherClientNameIndexerJobTest extends Goddard {
   @Test
   public void extract_A$ResultSet() throws Exception {
     final ReplicatedOtherClientName actual = target.extract(rs);
-    final ReplicatedOtherClientName expected = null;
+    final ReplicatedOtherClientName expected = makeReplicatedBean();
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -212,7 +222,7 @@ public class OtherClientNameIndexerJobTest extends Goddard {
   public void normalize_A$List() throws Exception {
     final List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
     final List<ReplicatedAkas> actual = target.normalize(recs);
-    final List<ReplicatedAkas> expected = null;
+    final List<ReplicatedAkas> expected = new ArrayList<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -226,7 +236,7 @@ public class OtherClientNameIndexerJobTest extends Goddard {
   @Test
   public void getOptionalElementName_A$() throws Exception {
     final String actual = target.getOptionalElementName();
-    final String expected = null;
+    final String expected = "akas";
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -243,23 +253,23 @@ public class OtherClientNameIndexerJobTest extends Goddard {
   @Test(expected = NeutronCheckedException.class)
   public void prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedAkas_T$NeutronCheckedException()
       throws Exception {
-    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    when(rs.next()).thenThrow(SQLException.class);
+    final ElasticSearchPerson esp = null;
     final ReplicatedAkas p = new ReplicatedAkas();
-
     target.prepareUpsertRequest(esp, p);
   }
 
   @Test
   public void getInitialLoadViewName_A$() throws Exception {
     final String actual = target.getInitialLoadViewName();
-    final String expected = null;
+    final String expected = "MQT_OTHER_CLIENT_NAME";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getJdbcOrderBy_A$() throws Exception {
     final String actual = target.getJdbcOrderBy();
-    final String expected = null;
+    final String expected = " ORDER BY x.FKCLIENT_T ";
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -277,13 +287,9 @@ public class OtherClientNameIndexerJobTest extends Goddard {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test
+  @Test(expected = NeutronCheckedException.class)
   public void getPartitionRanges_A$_T$NeutronCheckedException() throws Exception {
-    try {
-      target.getPartitionRanges();
-      fail("Expected exception was not thrown!");
-    } catch (NeutronCheckedException e) {
-    }
+    target.getPartitionRanges();
   }
 
   @Test
@@ -294,14 +300,10 @@ public class OtherClientNameIndexerJobTest extends Goddard {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test
+  @Test(expected = Exception.class)
   public void main_A$StringArray_T$Exception() throws Exception {
-    String[] args = new String[] {};
-    try {
-      OtherClientNameIndexerJob.main(args);
-      fail("Expected exception was not thrown!");
-    } catch (Exception e) {
-    }
+    final String[] args = new String[] {};
+    OtherClientNameIndexerJob.main(args);
   }
 
 }

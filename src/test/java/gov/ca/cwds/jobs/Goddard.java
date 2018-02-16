@@ -270,6 +270,7 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
     when(flightPlan.isLoadSealedAndSensitive()).thenReturn(false);
     when(flightPlan.getEsConfigLoc()).thenReturn(esConfileFile.getAbsolutePath());
     when(flightPlan.getThreadCount()).thenReturn(1L);
+    when(flightPlan.getLastRunLoc()).thenReturn(this.lastRunFile);
 
     // Queries.
     nq = mock(NativeQuery.class);
