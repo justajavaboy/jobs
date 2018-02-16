@@ -4,7 +4,7 @@ import java.util.List;
 
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
@@ -63,7 +63,7 @@ public interface AtomTransform<T extends PersistentObject, M extends ApiGroupNor
    * Increment normalized record count.
    */
   default void incrementNormalizeCount() {
-    JobLogs.logEvery(getFlightLog().incrementNormalized(), "Normalize", "single");
+    CheeseRay.logEvery(getFlightLog().incrementNormalized(), "Normalize", "single");
   }
 
   /**

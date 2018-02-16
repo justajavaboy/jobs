@@ -58,16 +58,19 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 //@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsPersonReferral.findAllUpdatedAfter",
     query = "SELECT DISTINCT " + EsPersonReferral.COLUMNS
-        + " FROM {h-schema}VW_LST_REFERRAL_HIST r "
-        + "WHERE (1=1 OR current timestamp < :after) "
-        + "ORDER BY CLIENT_ID,REFERRAL_ID,ALLEGATION_ID,VICTIM_ID WITH UR ",
+        + " FROM {h-schema}VW_LST_REFERRAL_HIST r \n"
+        + "WHERE (1=1 OR current timestamp < :after) \n"
+        + "ORDER BY CLIENT_ID,REFERRAL_ID,ALLEGATION_ID,VICTIM_ID \n"
+        + "WITH UR ",
     resultClass = EsPersonReferral.class, readOnly = true)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsPersonReferral.findAllUpdatedAfterWithUnlimitedAccess",
     query = "SELECT DISTINCT " + EsPersonReferral.COLUMNS
-        + " FROM {h-schema}VW_LST_REFERRAL_HIST r " 
-        + "WHERE (1=1 OR current timestamp < :after)"
-        + "AND r.LIMITED_ACCESS_CODE = 'N' ORDER BY CLIENT_ID,REFERRAL_ID,ALLEGATION_ID,VICTIM_ID WITH UR ",
+        + " FROM {h-schema}VW_LST_REFERRAL_HIST r \n" 
+        + "WHERE (1=1 OR current timestamp < :after) \n"
+        + "AND r.LIMITED_ACCESS_CODE = 'N' \n"
+        + "ORDER BY CLIENT_ID,REFERRAL_ID,ALLEGATION_ID,VICTIM_ID \n"
+        + "WITH UR ",
     resultClass = EsPersonReferral.class, readOnly = true)
 //@formatter:on
 public class EsPersonReferral

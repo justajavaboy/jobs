@@ -1,5 +1,5 @@
 /**
- * 
+ * Enums for common Neutron constants.
  */
 /**
  * @author CWDS API Team
