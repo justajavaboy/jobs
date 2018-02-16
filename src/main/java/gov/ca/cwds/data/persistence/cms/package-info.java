@@ -1,5 +1,5 @@
 /**
- * 
+ * CMS entity beans.
  */
 /**
  * @author CWDS API Team
