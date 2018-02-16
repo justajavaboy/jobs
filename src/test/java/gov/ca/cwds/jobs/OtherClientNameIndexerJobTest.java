@@ -195,81 +195,78 @@ public class OtherClientNameIndexerJobTest extends Goddard {
 
   @Test
   public void getDenormalizedClass_A$() throws Exception {
-    Object actual = target.getDenormalizedClass();
-    Object expected = null;
+    final Object actual = target.getDenormalizedClass();
+    final Object expected = ReplicatedOtherClientName.class;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void normalizeSingle_A$List() throws Exception {
-    List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
-    ReplicatedAkas actual = target.normalizeSingle(recs);
-    ReplicatedAkas expected = null;
+    final List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
+    final ReplicatedAkas actual = target.normalizeSingle(recs);
+    final ReplicatedAkas expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void normalize_A$List() throws Exception {
-    List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
-    List<ReplicatedAkas> actual = target.normalize(recs);
-    List<ReplicatedAkas> expected = null;
+    final List<ReplicatedOtherClientName> recs = new ArrayList<ReplicatedOtherClientName>();
+    final List<ReplicatedAkas> actual = target.normalize(recs);
+    final List<ReplicatedAkas> expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getDriverTable_A$() throws Exception {
-    String actual = target.getDriverTable();
-    String expected = null;
+    final String actual = target.getDriverTable();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getOptionalElementName_A$() throws Exception {
-    String actual = target.getOptionalElementName();
-    String expected = null;
+    final String actual = target.getOptionalElementName();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedAkas() throws Exception {
-    ElasticSearchPerson esp = new ElasticSearchPerson();
-    ReplicatedAkas p = new ReplicatedAkas();
-    UpdateRequest actual = target.prepareUpsertRequest(esp, p);
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final ReplicatedAkas p = new ReplicatedAkas();
+    final UpdateRequest actual = target.prepareUpsertRequest(esp, p);
     // UpdateRequest expected = null;
     // assertThat(actual, is(equalTo(expected)));
     assertThat(actual, is(notNullValue()));
   }
 
-  @Test
+  @Test(expected = NeutronCheckedException.class)
   public void prepareUpsertRequest_A$ElasticSearchPerson$ReplicatedAkas_T$NeutronCheckedException()
       throws Exception {
-    ElasticSearchPerson esp = new ElasticSearchPerson();
-    ReplicatedAkas p = new ReplicatedAkas();
-    try {
-      target.prepareUpsertRequest(esp, p);
-      fail("Expected exception was not thrown!");
-    } catch (NeutronCheckedException e) {
-    }
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final ReplicatedAkas p = new ReplicatedAkas();
+
+    target.prepareUpsertRequest(esp, p);
   }
 
   @Test
   public void getInitialLoadViewName_A$() throws Exception {
-    String actual = target.getInitialLoadViewName();
-    String expected = null;
+    final String actual = target.getInitialLoadViewName();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getJdbcOrderBy_A$() throws Exception {
-    String actual = target.getJdbcOrderBy();
-    String expected = null;
+    final String actual = target.getJdbcOrderBy();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void isInitialLoadJdbc_A$() throws Exception {
-    boolean actual = target.isInitialLoadJdbc();
-    boolean expected = false;
+    final boolean actual = target.isInitialLoadJdbc();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 

@@ -487,6 +487,7 @@ public class ReferralHistoryIndexerJob
    * 
    * @param p partition (key) range to read
    * @return number of client documents affected
+   * @throws NeutronCheckedException general error
    */
   protected int pullNextRange(final Pair<String, String> p) throws NeutronCheckedException {
     final String threadName =
