@@ -57,11 +57,10 @@ public class NeutronTriggerListener implements TriggerListener {
     try {
       answer = neutronScheduler.isLaunchVetoed(className);
     } catch (Exception e) {
-      throw CheeseRay.runtime(LOGGER, e, "ERROR FINDING LAUNCH PAD! rocket class: {}", className,
-          e);
+      throw CheeseRay.runtime(LOGGER, e, "NO LAUNCH PAD! rocket class: {}", className, e);
     }
 
-    LOGGER.warn("veto job execution: {}", answer);
+    LOGGER.debug("veto job execution: {}", answer);
     return answer;
   }
 
@@ -76,7 +75,7 @@ public class NeutronTriggerListener implements TriggerListener {
   public void triggerComplete(Trigger trigger, JobExecutionContext context,
       CompletedExecutionInstruction triggerInstructionCode) {
     final TriggerKey key = trigger.getKey();
-    LOGGER.info("trigger complete: key: {}", key);
+    LOGGER.debug("TRIGGER COMPLETE: key: {}", key);
     neutronScheduler.removeExecutingJob(key);
   }
 

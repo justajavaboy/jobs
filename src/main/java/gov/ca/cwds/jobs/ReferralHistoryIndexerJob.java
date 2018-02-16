@@ -81,7 +81,7 @@ public class ReferralHistoryIndexerJob
       + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID\n"
       + "     FROM ALLGTN_T ALG \n"
       + "     WHERE ALG.IBMSNAP_LOGMARKER > 'XYZ' \n"
-      + " ), "
+      + " ), \n"
       + " step2 AS (\n"
       + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID \n"
       + "     FROM CLIENT_T C \n"
@@ -97,20 +97,23 @@ public class ReferralHistoryIndexerJob
       + "     SELECT RFL.IDENTIFIER AS REFERRAL_ID \n"
       + "     FROM REFERL_T RFL \n"
       + "     WHERE RFL.IBMSNAP_LOGMARKER > 'XYZ' \n"
-      + " ), "
+      + " ), \n"
       + " step5 AS (\n"
       + "     SELECT RPT.FKREFERL_T AS REFERRAL_ID \n"
       + "     FROM REPTR_T RPT \n"
       + "     WHERE RPT.IBMSNAP_LOGMARKER > 'XYZ' \n"
       + " ), \n"
       + " hoard AS (\n"
-      + "     SELECT s1.REFERRAL_ID FROM STEP1 s1 UNION ALL\n"
-      + "     SELECT s2.REFERRAL_ID FROM STEP2 s2 UNION ALL\n"
-      + "     SELECT s3.REFERRAL_ID FROM STEP3 s3 UNION ALL\n"
-      + "     SELECT s4.REFERRAL_ID FROM STEP4 s4 UNION ALL\n"
-      + "     SELECT s5.REFERRAL_ID FROM STEP5 s5 \n"
+      + "     SELECT DISTINCT s1.REFERRAL_ID FROM STEP1 s1 UNION \n"
+      + "     SELECT DISTINCT s2.REFERRAL_ID FROM STEP2 s2 UNION \n"
+      + "     SELECT DISTINCT s3.REFERRAL_ID FROM STEP3 s3 UNION \n"
+      + "     SELECT DISTINCT s4.REFERRAL_ID FROM STEP4 s4 UNION \n"
+      + "     SELECT DISTINCT s5.REFERRAL_ID FROM STEP5 s5 \n"
       + " ) \n"
-      + " SELECT DISTINCT g.REFERRAL_ID FROM hoard g \n";
+      + " SELECT DISTINCT rc2.FKREFERL_T \n"
+      + " FROM hoard h \n"
+      + " JOIN REFR_CLT rc1 ON rc1.FKREFERL_T = h.REFERRAL_ID \n"
+      + " JOIN REFR_CLT rc2 ON rc2.FKCLIENT_T = rc1.FKCLIENT_T ";
 //@formatter:on
 
 //@formatter:off
@@ -487,6 +490,7 @@ public class ReferralHistoryIndexerJob
    * 
    * @param p partition (key) range to read
    * @return number of client documents affected
+   * @throws NeutronCheckedException general error
    */
   protected int pullNextRange(final Pair<String, String> p) throws NeutronCheckedException {
     final String threadName =

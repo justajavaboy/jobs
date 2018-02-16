@@ -592,8 +592,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_collectFocusChildParents_A$Map$FocusChildParent() throws Exception {
     final Map mapFocusChildParents = new HashMap();
-    FocusChildParent rel = new FocusChildParent(DEFAULT_CLIENT_ID, "987654321abc", (short) 247, "Fred",
-        "Meyer", "N");
+    FocusChildParent rel =
+        new FocusChildParent(DEFAULT_CLIENT_ID, "987654321abc", (short) 247, "Fred", "Meyer", "N");
     target.collectFocusChildParents(mapFocusChildParents, rel);
   }
 
@@ -637,8 +637,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_assemblePieces_A$List$List$Map$Map$Map() throws Exception {
     final List<FocusChildParent> listFocusChildParents = new ArrayList<FocusChildParent>();
-    listFocusChildParents.add(new FocusChildParent(DEFAULT_CLIENT_ID, "abc1234567", (short) 205, "Robert",
-        "Plant", "N"));
+    listFocusChildParents.add(
+        new FocusChildParent(DEFAULT_CLIENT_ID, "abc1234567", (short) 205, "Robert", "Plant", "N"));
 
     final List listCaseClients = new ArrayList();
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
@@ -670,13 +670,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     } catch (NeutronCheckedException e) {
     }
   }
-
-  // @Test
-  // public void test_pullNextRange_A$Pair() throws Exception {
-  // final int actual = target.pullNextRange(pair);
-  // final int expected = 1;
-  // assertEquals(expected, actual);
-  // }
 
   // @Test
   // public void test_runMultiThreadIndexing_A$() throws Exception {
