@@ -2,6 +2,8 @@
  * Replicated entity beans for normalized data.
  */
 /**
+ * Replicated entity beans for normalized data.
+ * 
  * @author CWDS API Team
  *
  */
