@@ -76,6 +76,7 @@ import gov.ca.cwds.neutron.launch.RocketFactory;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
+import gov.ca.cwds.neutron.vox.jmx.VoxLaunchPadMBean;
 import gov.ca.cwds.rest.ElasticsearchConfiguration;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 
@@ -163,6 +164,7 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
   public SearchHit[] hitArray;
   public SearchResponse sr;
 
+  public VoxLaunchPadMBean mbean;
 
   @Before
   public void setup() throws Exception {
@@ -340,6 +342,9 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
         .thenReturn(mach1Rocket);
 
     when(scheduler.getListenerManager()).thenReturn(listenerManager);
+
+    mbean = mock(VoxLaunchPadMBean.class);
+
     markTestDone();
   }
 
