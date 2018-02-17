@@ -2,6 +2,8 @@
  * 
  */
 /**
+ * VOX REST implementation. Not yet in use.
+ * 
  * @author CWDS API Team
  *
  */

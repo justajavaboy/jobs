@@ -2,6 +2,8 @@
  * 
  */
 /**
+ * Normalization, entity to JSON, Elasticsearch upserts
+ * 
  * @author CWDS API Team
  *
  */
