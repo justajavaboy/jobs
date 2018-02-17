@@ -3,14 +3,14 @@ package gov.ca.cwds.neutron.rocket.cases;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import gov.ca.cwds.data.std.ApiMarker;
+import gov.ca.cwds.data.std.ApiObjectIdentity;
 
 /**
  * Convenient carrier bean for client/case keys.
  * 
  * @author CWDS API Team
  */
-public class MinClientCase implements ApiMarker {
+public class MinClientCase extends ApiObjectIdentity {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,5 +41,6 @@ public class MinClientCase implements ApiMarker {
   public void setCaseId(String referralId) {
     this.caseId = referralId;
   }
+
 
 }

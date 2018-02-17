@@ -38,14 +38,14 @@ public class IndexResetPeopleSummaryRocketTest
   @Test
   public void getIndexSettingsLocation_A$() throws Exception {
     String actual = target.getIndexSettingsLocation();
-    String expected = null;
+    String expected = "/elasticsearch/setting/people-summary-index-settings.json";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getDocumentMappingLocation_A$() throws Exception {
     String actual = target.getDocumentMappingLocation();
-    String expected = null;
+    String expected = "/elasticsearch/mapping/map_person_summary.json";
     assertThat(actual, is(equalTo(expected)));
   }
 
