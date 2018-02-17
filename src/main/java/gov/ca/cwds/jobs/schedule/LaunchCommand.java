@@ -37,7 +37,7 @@ import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
-import gov.ca.cwds.neutron.util.NeutronStringUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronStringUtils;
 
 /**
  * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy

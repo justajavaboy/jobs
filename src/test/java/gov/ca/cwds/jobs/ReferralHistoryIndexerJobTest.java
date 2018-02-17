@@ -34,13 +34,13 @@ import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.EsPersonReferral;
 import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
-import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.flight.FlightPlanTest;
 import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
+import gov.ca.cwds.neutron.util.NeutronThreadUtils;
+import gov.ca.cwds.neutron.util.jdbc.NeutronDB2Utils;
 
 public class ReferralHistoryIndexerJobTest
     extends Goddard<ReplicatedPersonReferrals, EsPersonReferral> {

@@ -17,7 +17,7 @@ import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.neutron.rocket.ClientSQLResource;
-import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronDateUtils;
 
 /**
  * Entity bean for view VW_LST_CLIENT_ADDRESS.

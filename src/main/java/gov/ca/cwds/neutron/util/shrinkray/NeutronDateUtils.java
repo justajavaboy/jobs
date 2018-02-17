@@ -1,4 +1,4 @@
-package gov.ca.cwds.neutron.util;
+package gov.ca.cwds.neutron.util.shrinkray;
 
 import java.util.Calendar;
 import java.util.Date;

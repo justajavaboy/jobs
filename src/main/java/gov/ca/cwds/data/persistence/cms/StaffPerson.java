@@ -1,6 +1,6 @@
 package gov.ca.cwds.data.persistence.cms;
 
-import static gov.ca.cwds.neutron.util.NeutronDateUtils.freshDate;
+import static gov.ca.cwds.neutron.util.shrinkray.NeutronDateUtils.freshDate;
 
 import java.math.BigDecimal;
 import java.util.Date;

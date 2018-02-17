@@ -27,7 +27,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
-import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronDateUtils;
 
 /**
  * Entity bean for PostgreSQL view, VW_SCREENING_HISTORY.

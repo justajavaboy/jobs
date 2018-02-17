@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import gov.ca.cwds.data.std.ApiMarker;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
-import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronDateUtils;
 
 /**
  * Represents batch rocket options from the command line.

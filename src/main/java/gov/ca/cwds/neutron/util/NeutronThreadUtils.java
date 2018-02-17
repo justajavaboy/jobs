@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.util.jdbc;
+package gov.ca.cwds.neutron.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
