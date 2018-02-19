@@ -9,9 +9,10 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import gov.ca.cwds.jobs.Goddard;
 import gov.ca.cwds.neutron.vox.jmx.VoxLaunchPadMBean;
 
-public class VoxCommandFetchLogsTest {
+public class VoxCommandFetchLogsTest extends Goddard {
 
   static final class TestVoxCommandFetchLogs extends VoxCommandFetchLogs {
 
@@ -32,6 +33,7 @@ public class VoxCommandFetchLogsTest {
   VoxLaunchPadMBean mbean;
   VoxCommandFetchLogs target;
 
+  @Override
   @Before
   public void setup() throws Exception {
     mbean = mock(VoxLaunchPadMBean.class);
