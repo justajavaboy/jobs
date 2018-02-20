@@ -11,9 +11,9 @@ import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.es.ElasticsearchDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.neutron.flight.FlightPlan;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
  * Drops and creates an Elasticsearch index, if requested.
@@ -79,7 +79,7 @@ public abstract class IndexResetRocket
 
       esDao.createIndexIfNeeded(effectiveIndexName, documentType, settingFile, mappingFile);
     } catch (Exception e) {
-      JobLogs.checked(LOGGER, e, "ES INDEX MANAGEMENT ERROR! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "ES INDEX MANAGEMENT ERROR! {}", e.getMessage());
     }
 
     return lastRunDate;

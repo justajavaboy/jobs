@@ -120,7 +120,7 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
 
   @Test
   public void writeLastSuccessfulRunTime_Args__Date() throws Exception {
-    FlightLog track = mock(FlightLog.class);
+    final FlightLog track = mock(FlightLog.class);
     when(track.isFailed()).thenReturn(false);
     target.track = track;
 
@@ -132,7 +132,7 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
 
   @Test(expected = NeutronCheckedException.class)
   public void writeLastSuccessfulRunTime_Args__bomb() throws Exception {
-    FlightLog track = mock(FlightLog.class);
+    final FlightLog track = mock(FlightLog.class);
     when(track.isFailed()).thenReturn(false);
     target.track = track;
 
@@ -176,51 +176,51 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
 
   @Test
   public void isRunning_Args__() throws Exception {
-    boolean actual = target.isRunning();
-    boolean expected = true;
+    final boolean actual = target.isRunning();
+    final boolean expected = true;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void isFailed_Args__() throws Exception {
-    boolean actual = target.isFailed();
-    boolean expected = false;
+    final boolean actual = target.isFailed();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void isRetrieveDone_Args__() throws Exception {
-    boolean actual = target.isRetrieveDone();
-    boolean expected = false;
+    final boolean actual = target.isRetrieveDone();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void isTransformDone_Args__() throws Exception {
-    boolean actual = target.isTransformDone();
-    boolean expected = false;
+    final boolean actual = target.isTransformDone();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void isIndexDone_Args__() throws Exception {
-    boolean actual = target.isIndexDone();
-    boolean expected = false;
+    final boolean actual = target.isIndexDone();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void calcLastRunDate_Args__Date__JobOptions() throws Exception {
-    Date lastSuccessfulRunTime = new Date();
-    Date actual = target.calcLastRunDate(lastSuccessfulRunTime, flightPlan);
+    final Date lastSuccessfulRunTime = new Date();
+    final Date actual = target.calcLastRunDate(lastSuccessfulRunTime, flightPlan);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void calcLastRunDate_Args__Date() throws Exception {
-    Date lastSuccessfulRunTime = new Date();
+    final Date lastSuccessfulRunTime = new Date();
 
-    FlightPlan opts = new FlightPlan();
+    final FlightPlan opts = new FlightPlan();
     opts.setOverrideLastRunTime(lastSuccessfulRunTime);
     target.setFlightPlan(opts);
 
@@ -230,9 +230,10 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
 
   @Test
   public void getOpts_Args__() throws Exception {
-    FlightPlan opts = new FlightPlan();
+    final FlightPlan opts = new FlightPlan();
     target.setFlightPlan(opts);
-    FlightPlan actual = target.getFlightPlan();
+
+    final FlightPlan actual = target.getFlightPlan();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -243,7 +244,7 @@ public class LastFlightRocketTest extends Goddard<TestNormalizedEntity, TestDeno
 
   @Test
   public void getLogger_Args__() throws Exception {
-    Logger actual = target.getLogger();
+    final Logger actual = target.getLogger();
     assertThat(actual, is(notNullValue()));
   }
 

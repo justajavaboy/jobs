@@ -21,6 +21,7 @@ public class IndexResetPeopleSummaryRocketTest
   public void setup() throws Exception {
     super.setup();
 
+    flightPlan.setDropIndex(true);
     dao = new ReplicatedOtherAdultInPlacemtHomeDao(sessionFactory);
     target = new IndexResetPeopleSummaryRocket(dao, esDao, mapper, flightPlan);
   }
@@ -37,15 +38,15 @@ public class IndexResetPeopleSummaryRocketTest
 
   @Test
   public void getIndexSettingsLocation_A$() throws Exception {
-    String actual = target.getIndexSettingsLocation();
-    String expected = "/elasticsearch/setting/people-summary-index-settings.json";
+    final String actual = target.getIndexSettingsLocation();
+    final String expected = "/elasticsearch/setting/people-summary-index-settings.json";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getDocumentMappingLocation_A$() throws Exception {
-    String actual = target.getDocumentMappingLocation();
-    String expected = "/elasticsearch/mapping/map_person_summary.json";
+    final String actual = target.getDocumentMappingLocation();
+    final String expected = "/elasticsearch/mapping/map_person_summary.json";
     assertThat(actual, is(equalTo(expected)));
   }
 
