@@ -417,7 +417,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
         isHispanicCode = HISPANIC_CODE_OTHER_ID.equals(systemCode.getOtherCd());
       }
 
-      ElasticSearchSystemCode esCode = new ElasticSearchSystemCode();
+      final ElasticSearchSystemCode esCode = new ElasticSearchSystemCode();
       esCode.setId(codeId.toString());
       esCode.setDescription(description);
 

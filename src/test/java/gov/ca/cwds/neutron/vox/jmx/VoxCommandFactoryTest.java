@@ -23,7 +23,7 @@ public class VoxCommandFactoryTest extends Goddard {
   public void build_A$VoxCommandType$VoxCommandInstruction() throws Exception {
     final VoxCommandType cmdType = VoxCommandType.DISABLE;
     final String[] args = new String[] {};
-    VoxCommandInstruction cmd = VoxCommandInstruction.parseCommandLine(args);
+    final VoxCommandInstruction cmd = VoxCommandInstruction.parseCommandLine(args);
     final VoxJMXCommandClient actual = VoxCommandFactory.build(cmdType, cmd);
     final VoxJMXCommandClient expected = new VoxCommandLastRunStatus();
     assertThat(actual, is(equalTo(expected)));
@@ -34,7 +34,7 @@ public class VoxCommandFactoryTest extends Goddard {
       throws Exception {
     final VoxCommandType cmdType = null;
     final String[] args = new String[] {"-r", "fake_rocket", "-c", "fake_cmd"};
-    VoxCommandInstruction cmd = VoxCommandInstruction.parseCommandLine(args);
+    final VoxCommandInstruction cmd = VoxCommandInstruction.parseCommandLine(args);
     VoxCommandFactory.build(cmdType, cmd);
   }
 

@@ -92,6 +92,11 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
 
   @Test
   public void getAddresses_Args__() throws Exception {
+    final ReplicatedClientAddress clientAddress = new ReplicatedClientAddress();
+    clientAddress.setId(DEFAULT_CLIENT_ID);
+    clientAddress.setAddressType((short) 27);
+    target.addClientAddress(clientAddress);
+
     List<ElasticSearchPersonAddress> actual = target.getElasticSearchPersonAddresses();
     List<ElasticSearchPersonAddress> expected = new ArrayList<>();
     assertThat(actual, is(equalTo(expected)));
