@@ -17,9 +17,9 @@ import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
 
 /**
  * Refreshes a <strong>TEST</strong> transactional schema and its companion, replicated schema.
@@ -55,7 +55,7 @@ public class SchemaResetRocket
     try {
       refreshSchema();
     } catch (Exception e) {
-      JobLogs.checked(LOGGER, e, "SCHEMA REFRESH ERROR!! {}", e.getMessage());
+      CheeseRay.checked(LOGGER, e, "SCHEMA REFRESH ERROR!! {}", e.getMessage());
     }
 
     return lastRunDate;
@@ -93,7 +93,7 @@ public class SchemaResetRocket
       LOGGER.info("refresh schema proc: status: {}, msg: {}", returnStatus, returnMsg);
 
       if (StringUtils.isNotBlank(returnStatus) && returnStatus.charAt(0) != '0') {
-        JobLogs.runtime(LOGGER, "SCHEMA REFRESH ERROR! {}", returnMsg);
+        CheeseRay.runtime(LOGGER, "SCHEMA REFRESH ERROR! {}", returnMsg);
       } else {
         LOGGER.warn("SCHEMA REFRESH KICKED OFF!!!");
       }

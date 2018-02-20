@@ -9,6 +9,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDataMap;
@@ -21,6 +23,7 @@ import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.Goddard;
 import gov.ca.cwds.neutron.atom.AtomFlightRecorder;
 import gov.ca.cwds.neutron.atom.AtomLaunchDirector;
+import gov.ca.cwds.neutron.enums.NeutronSchedulerConstants;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.neutron.flight.FlightPlan;
@@ -29,6 +32,8 @@ public class LaunchPadTest extends Goddard {
 
   StandardFlightSchedule sched;
   LaunchPad target;
+  // File tempFile = tempFolder.newFile("tempFile.txt");
+
 
   @Override
   @Before
@@ -92,9 +97,11 @@ public class LaunchPadTest extends Goddard {
     JobDataMap jdm = new JobDataMap();
     jdm.put("job_class", "TestNeutronJob");
     jdm.put("cmd_line", "--invalid");
+
     final FlightLog track = new FlightLog();
     jdm.put("track", track);
     when(jd.getJobDataMap()).thenReturn(jdm);
+
     flightRecorder.logFlight(ClientIndexerJob.class, track);
     target.status();
   }
@@ -197,6 +204,142 @@ public class LaunchPadTest extends Goddard {
   public void getLaunchScheduler_Args__() throws Exception {
     AtomLaunchDirector actual = target.getLaunchDirector();
     assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void run_A$String() throws Exception {
+    String cmdLine = null;
+    String actual = target.run(cmdLine);
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void schedule_A$() throws Exception {
+    target.schedule();
+  }
+
+  @Test
+  public void unschedule_A$() throws Exception {
+    target.unschedule();
+  }
+
+  @Test
+  public void status_A$() throws Exception {
+    String actual = target.status();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void history_A$() throws Exception {
+    String actual = target.history();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void logs_A$() throws Exception {
+    final File folder = tempFolder.newFolder("jobrunner", "rocketlog");
+    File.createTempFile("client", "log", folder);
+    flightPlan
+        .setBaseDirectory(tempFolder.getRoot().getAbsolutePath() + File.separator + "jobrunner");
+
+    final String actual = target.logs();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void resetTimestamp_A$boolean$int() throws Exception {
+    boolean initialMode = false;
+    int hoursInPast = 0;
+    target.resetTimestamp(initialMode, hoursInPast);
+  }
+
+  @Test
+  public void waybackHours_A$int() throws Exception {
+    final int hoursInPast = 0;
+    target.waybackHours(hoursInPast);
+  }
+
+  @Test
+  public void stop_A$() throws Exception {
+    target.stop();
+  }
+
+  @Test
+  public void pause_A$() throws Exception {
+    target.pause();
+  }
+
+  @Test
+  public void resume_A$() throws Exception {
+    target.resume();
+  }
+
+  @Test
+  public void threadShutdownLaunchCommand_A$() throws Exception {
+    target.threadShutdownLaunchCommand();
+  }
+
+  @Test
+  public void shutdown_A$() throws Exception {
+    final String actual = target.shutdown();
+    final String expected = "Requested shutdown!";
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getJd_A$() throws Exception {
+    final JobDetail actual = target.getJd();
+    final JobDetail expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getFlightSchedule_A$() throws Exception {
+    final StandardFlightSchedule actual = target.getFlightSchedule();
+    final StandardFlightSchedule expected = StandardFlightSchedule.CLIENT;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getFlightRecorder_A$() throws Exception {
+    final AtomFlightRecorder actual = target.getFlightRecorder();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void getRocketName_A$() throws Exception {
+    final String actual = target.getRocketName();
+    final String expected = StandardFlightSchedule.CLIENT.getRocketName();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getTriggerName_A$() throws Exception {
+    final String actual = target.getTriggerName();
+    final String expected = StandardFlightSchedule.CLIENT.getRocketName();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getJobKey_A$() throws Exception {
+    final JobKey actual = target.getJobKey();
+    final JobKey expected = new JobKey(StandardFlightSchedule.CLIENT.getRocketName(),
+        NeutronSchedulerConstants.GRP_LST_CHG);
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getLaunchDirector_A$() throws Exception {
+    final AtomLaunchDirector actual = target.getLaunchDirector();
+    assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void getTriggerKey_A$() throws Exception {
+    final TriggerKey actual = target.getTriggerKey();
+    final TriggerKey expected = new TriggerKey(StandardFlightSchedule.CLIENT.getRocketName(),
+        NeutronSchedulerConstants.GRP_LST_CHG);
+    assertThat(actual, is(equalTo(expected)));
   }
 
 }
