@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,21 +71,21 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
     target.parseBiDirectionalRelationship(rel);
   }
 
-  // @Test
-  // public void normalize_A$Map() throws Exception {
-  // final Map<Object, ReplicatedRelationships> map = new HashMap<Object,
-  // ReplicatedRelationships>();
-  // final ReplicatedRelationships actual = target.normalize(map);
-  //
-  // final ReplicatedRelationships expected = new ReplicatedRelationships();
-  // expected.setId(DEFAULT_CLIENT_ID);
-  // // expected.getReplicatedEntity().setReplicationDate(new Date());
-  // // expected.getReplicatedEntity().setReplicationOperation(CmsReplicationOperation.I);
-  // // expected.setReplicationDate(new Date());
-  // // expected.setReplicationOperation(CmsReplicationOperation.I);
-  //
-  // assertThat(actual, is(equalTo(expected)));
-  // }
+  @Test
+  public void normalize_A$Map() throws Exception {
+    final Map<Object, ReplicatedRelationships> map = new HashMap<>();
+    final ReplicatedRelationships actual = target.normalize(map);
+
+    final ReplicatedRelationships expected = new ReplicatedRelationships();
+    expected.setId(DEFAULT_CLIENT_ID);
+    // expected.getReplicatedEntity().setReplicationDate(new Date());
+    // expected.getReplicatedEntity().setReplicationOperation(CmsReplicationOperation.I);
+    // expected.setReplicationDate(new Date());
+    // expected.setReplicationOperation(CmsReplicationOperation.I);
+
+    // assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
+  }
 
   @Test
   public void getNormalizationGroupKey_A$() throws Exception {
@@ -200,6 +202,12 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
     final boolean actual = target.equals(obj);
     final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void toString_A$() throws Exception {
+    String actual = target.toString();
+    assertThat(actual, is(notNullValue()));
   }
 
 }
