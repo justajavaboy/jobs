@@ -28,8 +28,11 @@ import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.jobs.Goddard;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
+import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddress> {
+
   ReplicatedClient target;
 
   @Override
@@ -77,7 +80,7 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
 
   @Test
   public void setClientAddresses_Args__Set() throws Exception {
-    Set<ReplicatedClientAddress> clientAddresses = mock(Set.class);
+    Set<ReplicatedClientAddress> clientAddresses = new HashSet<>();
     target.setClientAddresses(clientAddresses);
   }
 
@@ -203,7 +206,7 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
 
   @Test
   public void addAka_Args__ElasticSearchPersonAka() throws Exception {
-    ElasticSearchPersonAka aka = mock(ElasticSearchPersonAka.class);
+    ElasticSearchPersonAka aka = new ElasticSearchPersonAka();
     target.addAka(aka);
   }
 
@@ -250,6 +253,101 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
   public void getClientSafetyAlerts_Args__() throws Exception {
     List<ElasticSearchSafetyAlert> actual = target.getClientSafetyAlerts();
     List<ElasticSearchSafetyAlert> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void addClientAddress_A$ReplicatedClientAddress() throws Exception {
+    ReplicatedClientAddress clientAddress = mock(ReplicatedClientAddress.class);
+    target.addClientAddress(clientAddress);
+  }
+
+  @Test
+  public void addClientRace_A$Short() throws Exception {
+    Short clientRace = null;
+    target.addClientRace(clientRace);
+  }
+
+  @Test
+  public void addAka_A$ElasticSearchPersonAka() throws Exception {
+    final ElasticSearchPersonAka aka = new ElasticSearchPersonAka();
+    target.addAka(aka);
+  }
+
+  @Test
+  public void addSafetyAlert_A$ElasticSearchSafetyAlert() throws Exception {
+    final ElasticSearchSafetyAlert safetyAlert = new ElasticSearchSafetyAlert();
+    target.addSafetyAlert(safetyAlert);
+  }
+
+  @Test
+  public void getElasticSearchPersonAddresses_A$() throws Exception {
+    List<ElasticSearchPersonAddress> actual = target.getElasticSearchPersonAddresses();
+    List<ElasticSearchPersonAddress> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPhones_A$() throws Exception {
+    final ApiPhoneAware[] actual = target.getPhones();
+    final ApiPhoneAware[] expected = new ApiPhoneAware[0];
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getLegacyId_A$() throws Exception {
+    final String actual = target.getLegacyId();
+    final String expected = DEFAULT_CLIENT_ID;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getLegacyDescriptor_A$() throws Exception {
+    final ElasticSearchLegacyDescriptor actual = target.getLegacyDescriptor();
+    final ElasticSearchLegacyDescriptor expected = ElasticTransformer
+        .createLegacyDescriptor(target.getId(), target.getLastUpdatedTime(), LegacyTable.CLIENT);
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getOtherClientNames_A$() throws Exception {
+    final List<ElasticSearchPersonAka> actual = target.getOtherClientNames();
+    final List<ElasticSearchPersonAka> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getClientSafetyAlerts_A$() throws Exception {
+    final List<ElasticSearchSafetyAlert> actual = target.getClientSafetyAlerts();
+    final List<ElasticSearchSafetyAlert> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getRaceAndEthnicity_A$() throws Exception {
+    final ElasticSearchRaceAndEthnicity actual = target.getRaceAndEthnicity();
+
+    final ElasticSearchRaceAndEthnicity expected = new ElasticSearchRaceAndEthnicity();
+    expected.setRaceCodes(new ArrayList<>());
+    expected.setHispanicCodes(new ArrayList<>());
+    expected.setHispanicOriginCode("");
+    expected.setHispanicUnableToDetermineCode("");
+    expected.setUnableToDetermineCode("");
+
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void hashCode_A$() throws Exception {
+    final int actual = target.hashCode();
+    assertThat(actual, is(not(0)));
+  }
+
+  @Test
+  public void equals_A$Object() throws Exception {
+    Object obj = null;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 

@@ -52,7 +52,7 @@ public class VoxCommandLastRunStatusTest {
   @Test
   public void run_Args__() throws Exception {
     when(mbean.status()).thenReturn("some flight log");
-    String actual = target.run();
+    final String actual = target.run();
     assertThat(actual, is(notNullValue()));
   }
 
