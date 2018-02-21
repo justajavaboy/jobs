@@ -896,13 +896,14 @@ public class EsPersonReferralTest extends Goddard {
     target.setLimitedAccessGovernmentEntityId(limitedAccessGovernmentEntityId);
   }
 
-  // @Test
-  // public void normalize_A$Map() throws Exception {
-  // Map<Object, ReplicatedPersonReferrals> map = new HashMap<Object, ReplicatedPersonReferrals>();
-  // target.setClientId(DEFAULT_CLIENT_ID);
-  // ReplicatedPersonReferrals actual = target.normalize(map);
-  // ReplicatedPersonReferrals expected = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
-  // assertThat(actual, is(equalTo(expected)));
-  // }
+  @Test
+  public void normalize_A$Map() throws Exception {
+    Map<Object, ReplicatedPersonReferrals> map = new HashMap<Object, ReplicatedPersonReferrals>();
+    target.setClientId(DEFAULT_CLIENT_ID);
+    target.setReferralId(DEFAULT_CLIENT_ID);
+    ReplicatedPersonReferrals actual = target.normalize(map);
+    ReplicatedPersonReferrals expected = new ReplicatedPersonReferrals(DEFAULT_CLIENT_ID);
+    assertThat(actual, is(equalTo(expected)));
+  }
 
 }
