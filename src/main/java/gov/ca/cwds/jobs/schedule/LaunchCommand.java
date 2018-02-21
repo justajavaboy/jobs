@@ -77,7 +77,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
-  private static final List<String> DB_PROPERTY_LIST = asList("DB_NS_USER", "DB_NS_PASSWORD",
+  public static final List<String> DB_PROPERTY_LIST = asList("DB_NS_USER", "DB_NS_PASSWORD",
       "DB_NS_JDBC_URL", "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA");
 
   private LaunchCommand() {

@@ -18,6 +18,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.syscode.NsSystemCode;
@@ -169,6 +170,7 @@ public class SystemCodesLoaderJob {
     LOGGER.info("Loading system codes from legacy to new system...");
 
     try {
+      LaunchCommand.setSysPropsFromEnvVars(LaunchCommand.DB_PROPERTY_LIST);
       final Injector injector = Guice.createInjector(new SystemCodesLoaderModule());
 
       // Initialize system code cache.
