@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import gov.ca.cwds.data.es.ElasticSearchPersonAllegation;
 import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
+import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.jobs.Goddard;
 import gov.ca.cwds.neutron.flight.FlightPlan;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
@@ -81,30 +82,17 @@ public class EsPersonReferralTest extends Goddard {
     assertThat(actual, is(equalTo(expected)));
   }
 
-  // @Test
-  // public void hashCode_Args__() throws Exception {
-  //
-  //
-  //
-  //
-  // int actual = target.hashCode();
-  //
-  //
-  // int expected = 0;
-  // assertThat(actual, is(equalTo(expected)));
-  // }
-
   @Test
   public void equals_Args__Object() throws Exception {
     Object obj = null;
-    boolean actual = target.equals(obj);
-    boolean expected = false;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void toString_Args__() throws Exception {
-    String actual = target.toString();
+    final String actual = target.toString();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -113,20 +101,25 @@ public class EsPersonReferralTest extends Goddard {
     target.setClientId("xyz789");
     target.setAllegationId("abc1234");
     target.setReferralId("ddusicnz7");
-    Map<Object, ReplicatedPersonReferrals> map = new HashMap<Object, ReplicatedPersonReferrals>();
-    ReplicatedPersonReferrals actual = target.normalize(map);
-    ReplicatedPersonReferrals expected = new ReplicatedPersonReferrals("xyz789");
-    ElasticSearchPersonAllegation allegation = new ElasticSearchPersonAllegation();
+
+    final Map<Object, ReplicatedPersonReferrals> map =
+        new HashMap<Object, ReplicatedPersonReferrals>();
+    final ReplicatedPersonReferrals actual = target.normalize(map);
+    final ReplicatedPersonReferrals expected = new ReplicatedPersonReferrals("xyz789");
+
+    final ElasticSearchPersonAllegation allegation = new ElasticSearchPersonAllegation();
     allegation.setId("abc1234");
     allegation.setLegacyId("abc1234");
     allegation.setLegacyDescriptor(gov.ca.cwds.neutron.util.transform.ElasticTransformer
         .createLegacyDescriptor("abc1234", null, LegacyTable.ALLEGATION));
-    ElasticSearchPersonReferral referral = new ElasticSearchPersonReferral();
+
+    final ElasticSearchPersonReferral referral = new ElasticSearchPersonReferral();
     referral.setId("ddusicnz7");
     referral.setLegacyId("ddusicnz7");
     referral.setLegacyDescriptor(
         ElasticTransformer.createLegacyDescriptor("ddusicnz7", null, LegacyTable.REFERRAL));
     expected.addReferral(referral, allegation);
+
     // Value is a literal "null"? Is this right?
     // expected.geReferrals().get(0).getAccessLimitation().setLimitedAccessGovernmentEntityId("null");
     // referral.setCountyId("null");
@@ -139,65 +132,66 @@ public class EsPersonReferralTest extends Goddard {
   public void getLastChange_Args__() throws Exception {
     final Date expected = new Date();
     target.setLastChange(expected);
+
     final Date actual = target.getLastChange();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setLastChange_Args__Date() throws Exception {
-    Date lastChange = new Date();
+    final Date lastChange = new Date();
     target.setLastChange(lastChange);
   }
 
   @Test
   public void getClientId_Args__() throws Exception {
-    String actual = target.getClientId();
-    String expected = DEFAULT_CLIENT_ID;
+    final String actual = target.getClientId();
+    final String expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setClientId_Args__String() throws Exception {
-    String clientId = null;
+    final String clientId = null;
     target.setClientId(clientId);
   }
 
   @Test
   public void getReferralId_Args__() throws Exception {
-    String actual = target.getReferralId();
-    String expected = null;
+    final String actual = target.getReferralId();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setReferralId_Args__String() throws Exception {
-    String referralId = null;
+    final String referralId = null;
     target.setReferralId(referralId);
   }
 
   @Test
   public void getStartDate_Args__() throws Exception {
-    Date actual = target.getStartDate();
-    Date expected = null;
+    final Date actual = target.getStartDate();
+    final Date expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setStartDate_Args__Date() throws Exception {
-    Date startDate = new Date();
+    final Date startDate = new Date();
     target.setStartDate(startDate);
   }
 
   @Test
   public void getEndDate_Args__() throws Exception {
-    Date actual = target.getEndDate();
-    Date expected = null;
+    final Date actual = target.getEndDate();
+    final Date expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setEndDate_Args__Date() throws Exception {
-    Date endDate = new Date();
+    final Date endDate = new Date();
     target.setEndDate(endDate);
   }
 
@@ -698,63 +692,68 @@ public class EsPersonReferralTest extends Goddard {
 
   @Test
   public void getNormalizationClass_A$() throws Exception {
-    Class<ReplicatedPersonReferrals> actual = target.getNormalizationClass();
-    Class<ReplicatedPersonReferrals> expected = ReplicatedPersonReferrals.class;
+    final Class<ReplicatedPersonReferrals> actual = target.getNormalizationClass();
+    final Class<ReplicatedPersonReferrals> expected = ReplicatedPersonReferrals.class;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void mergeClientReferralInfo_A$String$EsPersonReferral() throws Exception {
-    String clientId = null;
-    EsPersonReferral ref = mock(EsPersonReferral.class);
+    final String clientId = null;
+    final EsPersonReferral ref = mock(EsPersonReferral.class);
     target.mergeClientReferralInfo(clientId, ref);
   }
 
   @Test
   public void normalizeAllegation_A$ReplicatedPersonReferrals$ElasticSearchPersonReferral()
       throws Exception {
-    ReplicatedPersonReferrals ret = mock(ReplicatedPersonReferrals.class);
-    ElasticSearchPersonReferral r = mock(ElasticSearchPersonReferral.class);
+    final ReplicatedPersonReferrals ret = new ReplicatedPersonReferrals();
+    ret.setClientId(DEFAULT_CLIENT_ID);
+
+    final ElasticSearchPersonReferral r = new ElasticSearchPersonReferral();
+    r.setId(DEFAULT_CLIENT_ID);
+
+    target.setAllegationReplicationOperation(CmsReplicationOperation.U);
     target.normalizeAllegation(ret, r);
   }
 
   @Test
   public void getNormalizationGroupKey_A$() throws Exception {
-    String actual = target.getNormalizationGroupKey();
-    String expected = DEFAULT_CLIENT_ID;
+    final String actual = target.getNormalizationGroupKey();
+    final String expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getPrimaryKey_A$() throws Exception {
-    Serializable actual = target.getPrimaryKey();
-    Serializable expected = null;
+    final Serializable actual = target.getPrimaryKey();
+    final Serializable expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getWorkerId_A$() throws Exception {
-    String actual = target.getWorkerId();
-    String expected = null;
+    final String actual = target.getWorkerId();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setWorkerId_A$String() throws Exception {
-    String workerId = null;
+    final String workerId = null;
     target.setWorkerId(workerId);
   }
 
   @Test
   public void getWorkerFirstName_A$() throws Exception {
-    String actual = target.getWorkerFirstName();
-    String expected = null;
+    final String actual = target.getWorkerFirstName();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setWorkerFirstName_A$String() throws Exception {
-    String workerFirstName = null;
+    final String workerFirstName = null;
     target.setWorkerFirstName(workerFirstName);
   }
 

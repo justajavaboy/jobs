@@ -688,6 +688,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
     try {
       final NativeQuery<T> q = session.getNamedNativeQuery(namedQueryName);
+      q.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
       q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
           NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
@@ -760,6 +761,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       // Insert into session temp table that drives a last change view.
       prepHibernateLastChange(session, lastRunTime);
       final NativeQuery<M> q = session.getNamedNativeQuery(namedQueryName);
+      q.setCacheMode(CacheMode.IGNORE);
+      q.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
+
       q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
           NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
@@ -820,7 +824,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
         this.sessionFactory.close();
       }
 
-      catchYourBreath();
+      catchYourBreath(); // a lock would be better
     }
   }
 

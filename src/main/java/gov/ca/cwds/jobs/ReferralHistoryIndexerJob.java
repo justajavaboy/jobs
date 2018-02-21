@@ -177,7 +177,7 @@ public class ReferralHistoryIndexerJob
       + "JOIN REFERL_T          RFL  ON RFL.IDENTIFIER = RC.FKREFERL_T \n"
       + "LEFT JOIN REPTR_T      RPT  ON RPT.FKREFERL_T = RFL.IDENTIFIER \n"
       + "LEFT JOIN STFPERST     STP  ON RFL.FKSTFPERST = STP.IDENTIFIER ";
-//  @formatter:on
+   //@formatter:on
 
   /**
    * Allocate memory once for each thread and reuse per key range.
