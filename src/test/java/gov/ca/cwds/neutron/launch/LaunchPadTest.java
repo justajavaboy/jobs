@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDataMap;
@@ -238,7 +239,10 @@ public class LaunchPadTest extends Goddard {
   @Test
   public void logs_A$() throws Exception {
     final File folder = tempFolder.newFolder("jobrunner", "rocketlog");
-    File.createTempFile("client", "log", folder);
+    final File logFile = new File(folder, "client.log");
+    FileUtils.writeStringToFile(logFile,
+        "It's alive!\nWe have a winner!\nLifetime supply of Twinkies!");
+
     flightPlan
         .setBaseDirectory(tempFolder.getRoot().getAbsolutePath() + File.separator + "jobrunner");
 
