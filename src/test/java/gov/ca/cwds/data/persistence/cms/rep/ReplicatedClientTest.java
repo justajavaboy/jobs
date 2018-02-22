@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
@@ -28,12 +29,18 @@ import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.jobs.Goddard;
+import gov.ca.cwds.jobs.test.SimpleTestSystemCodeCache;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddress> {
 
   ReplicatedClient target;
+
+  @BeforeClass
+  public static void setupClass() {
+    SimpleTestSystemCodeCache.init();
+  }
 
   @Override
   @Before

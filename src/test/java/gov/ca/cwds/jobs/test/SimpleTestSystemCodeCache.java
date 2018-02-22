@@ -1,8 +1,13 @@
 package gov.ca.cwds.jobs.test;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
+import gov.ca.cwds.data.persistence.cms.SystemCodeDaoFileImpl;
 import gov.ca.cwds.rest.api.domain.cms.SystemCode;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 import gov.ca.cwds.rest.api.domain.cms.SystemCodeDescriptor;
@@ -13,6 +18,8 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
 
   private static SimpleTestSystemCodeCache instance;
 
+  private final Map<Short, SystemCode> mapSysCodes;
+
   public static synchronized void init() {
     if (instance == null) {
       instance = new SimpleTestSystemCodeCache();
@@ -20,6 +27,17 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
   }
 
   public SimpleTestSystemCodeCache() {
+    mapSysCodes = new SystemCodeDaoFileImpl().getAllSystemCodes().stream()
+        .map(c -> new SystemCode((short) c.getSysId(), // system_id
+            StringUtils.isNotBlank(c.getCategoryId()) ? Short.parseShort(c.getCategoryId()) : null, // category_id
+            c.getInactvInd(), // inactive_indicator
+            c.getOtherCd(), // other_cd
+            c.getShortDsc(), // short_description
+            c.getLgcId(), // logical_id
+            "third_id", // third_id
+            c.getFksMetaT(), // foreign_key_meta_table
+            c.getLongDsc() // long_description
+        )).collect(Collectors.toMap(SystemCode::getSystemId, e -> e));
     register();
   }
 
@@ -49,7 +67,7 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
 
   @Override
   public Set<SystemMeta> getAllSystemMetas() {
-    Set<SystemMeta> systemMetas = new HashSet<>();
+    final Set<SystemMeta> systemMetas = new HashSet<>();
     systemMetas.add(new SystemMeta("META_A", "META_A", "META_A_DESC"));
     systemMetas.add(new SystemMeta("META_B", "META_B", "META_B_DESC"));
     systemMetas.add(new SystemMeta("META_C", "META_C", "META_C_DESC"));
@@ -58,15 +76,7 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
 
   @Override
   public SystemCode getSystemCode(Number id) {
-    if (196 == id.intValue()) {
-      return new SystemCode(id.shortValue(), null, null, null, "Daughter/Mother (Birth)", null,
-          null, "CLNTRELC", null);
-    } else if (241 == id.intValue()) {
-      return new SystemCode(id.shortValue(), null, null, null, "Guardian/Ward", null, null,
-          "CLNTRELC", null);
-    }
-
-    return null;
+    return this.mapSysCodes.get(id.shortValue());
   }
 
   @Override
@@ -98,4 +108,5 @@ public class SimpleTestSystemCodeCache implements SystemCodeCache {
   public SystemCodeDescriptor getSystemCodeDescriptor(Number arg0) {
     return null;
   }
+
 }

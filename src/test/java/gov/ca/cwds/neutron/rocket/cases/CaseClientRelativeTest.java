@@ -56,95 +56,93 @@ public class CaseClientRelativeTest extends Goddard {
 
   @Test
   public void hasRelation_Args__() throws Exception {
-    boolean actual = target.hasRelation();
-    boolean expected = true;
+    final boolean actual = target.hasRelation();
+    final boolean expected = true;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void hasNoRelation_Args__() throws Exception {
-    boolean actual = target.hasNoRelation();
-    boolean expected = false;
+    final boolean actual = target.hasNoRelation();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getRelatedClientId_Args__() throws Exception {
-    String actual = target.getRelatedClientId();
-    String expected = "x051982732";
+    final String actual = target.getRelatedClientId();
+    final String expected = "x051982732";
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setRelatedClientId_Args__String() throws Exception {
-    String clientId_ = null;
+    final String clientId_ = null;
     target.setRelatedClientId(clientId_);
   }
 
   @Test
   public void getCaseId_Args__() throws Exception {
-    String actual = target.getCaseId();
-    String expected = DEFAULT_CASE_ID;
+    final String actual = target.getCaseId();
+    final String expected = DEFAULT_CASE_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setCaseId_Args__String() throws Exception {
-    String referralId = null;
+    final String referralId = null;
     target.setCaseId(referralId);
   }
 
   @Test
   public void getFocusClientId_Args__() throws Exception {
-    String actual = target.getFocusClientId();
-    String expected = DEFAULT_CLIENT_ID;
+    final String actual = target.getFocusClientId();
+    final String expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setFocusClientId_Args__String() throws Exception {
-    String focusClientId_ = null;
+    final String focusClientId_ = null;
     target.setFocusClientId(focusClientId_);
   }
 
   @Test
   public void getRelationCode_Args__() throws Exception {
-    short actual = target.getRelationCode();
-    short expected = (short) 203;
+    final short actual = target.getRelationCode();
+    final short expected = (short) 203;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setRelationCode_Args__short() throws Exception {
-    short relationCode_ = 0;
+    final short relationCode_ = 0;
     target.setRelationCode(relationCode_);
   }
 
   @Test
   public void isParentRelation_Args__() throws Exception {
-    boolean actual = target.isParentRelation();
-    boolean expected = true;
+    final boolean actual = target.isParentRelation();
+    final boolean expected = true;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void translateRelationship_Args__() throws Exception {
-    SystemCode actual = target.translateRelationship();
-    SystemCode expected = null;
-    assertThat(actual, is(equalTo(expected)));
+    final SystemCode actual = target.translateRelationship();
+    assertThat(actual.getShortDescription(), is(equalTo("Daughter/Father (Adoptive)")));
   }
 
   @Test
   public void toString_Args__() throws Exception {
-    String actual = target.toString();
-    String expected = null;
+    final String actual = target.toString();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void hashCode_Args__() throws Exception {
-    int actual = target.hashCode();
-    int expected =
+    final int actual = target.hashCode();
+    final int expected =
         new CaseClientRelative(DEFAULT_CASE_ID, "r2d2abcdef", DEFAULT_CLIENT_ID, (short) 187, false)
             .hashCode();
     assertThat(actual, is(not(expected)));
@@ -153,49 +151,49 @@ public class CaseClientRelativeTest extends Goddard {
   @Test
   public void equals_Args__Object() throws Exception {
     Object obj = null;
-    boolean actual = target.equals(obj);
-    boolean expected = false;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   public void test_extract_A$ResultSet() throws Exception {
-    CaseClientRelative actual = CaseClientRelative.extract(rs);
-    CaseClientRelative expected = null;
+    final CaseClientRelative actual = CaseClientRelative.extract(rs);
+    final CaseClientRelative expected = null;
     assertEquals(expected, actual);
   }
 
   public void test_isParentRelation_A$() throws Exception {
-    boolean actual = target.isParentRelation();
-    boolean expected = false;
+    final boolean actual = target.isParentRelation();
+    final boolean expected = false;
     assertEquals(expected, actual);
   }
 
   public void test_hasRelation_A$() throws Exception {
-    boolean actual = target.hasRelation();
-    boolean expected = false;
+    final boolean actual = target.hasRelation();
+    final boolean expected = false;
     assertEquals(expected, actual);
   }
 
   public void test_hasNoRelation_A$() throws Exception {
-    boolean actual = target.hasNoRelation();
-    boolean expected = false;
+    final boolean actual = target.hasNoRelation();
+    final boolean expected = false;
     assertEquals(expected, actual);
   }
 
   public void test_translateRelationship_A$() throws Exception {
-    SystemCode actual = target.translateRelationship();
-    SystemCode expected = null;
+    final SystemCode actual = target.translateRelationship();
+    final SystemCode expected = null;
     assertEquals(expected, actual);
   }
 
   public void test_translateRelationshipToString_A$() throws Exception {
-    String actual = target.translateRelationshipToString();
-    String expected = null;
+    final String actual = target.translateRelationshipToString();
+    final String expected = null;
     assertEquals(expected, actual);
   }
 
   public void test_toString_A$() throws Exception {
-    String actual = target.toString();
+    final String actual = target.toString();
     String expected = null;
     assertEquals(expected, actual);
   }
