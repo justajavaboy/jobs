@@ -118,7 +118,8 @@ public class ReferralHistoryIndexerJob
 
   //@formatter:off
   protected static final String SELECT_CLIENT =
-        "SELECT rc.FKCLIENT_T, rc.FKREFERL_T, rc.SENSTV_IND, c.IBMSNAP_OPERATION AS CLT_IBMSNAP_OPERATION \n" 
+        "SELECT rc.FKCLIENT_T, rc.FKREFERL_T, rc.SENSTV_IND, "
+      + "c.IBMSNAP_OPERATION AS CLT_IBMSNAP_OPERATION \n" 
       + "FROM GT_REFR_CLT RC \n"
       + "JOIN CLIENT_T C ON C.IDENTIFIER = RC.FKCLIENT_T";
   //@formatter:on
