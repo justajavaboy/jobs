@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
@@ -19,7 +18,6 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.ca.cwds.dao.ApiLegacyAware;
@@ -46,7 +44,7 @@ import gov.ca.cwds.neutron.atom.AtomPersonDocPrep;
 import gov.ca.cwds.neutron.flight.FlightLog;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
-public class ElasticTransformerTest extends Goddard {
+public class ElasticTransformerTest extends Goddard<TestNormalizedEntity, TestDenormalizedEntity> {
 
   TestNormalizedEntityDao dao;
   TestIndexerJob target;
@@ -69,18 +67,18 @@ public class ElasticTransformerTest extends Goddard {
 
   @Test
   public void handleLanguage_Args__ApiPersonAware() throws Exception {
-    ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    List<ElasticSearchPersonLanguage> actual = ElasticTransformer.buildLanguage(p);
-    List<ElasticSearchPersonLanguage> expected = new ArrayList<>();
+    final ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final List<ElasticSearchPersonLanguage> actual = ElasticTransformer.buildLanguage(p);
+    final List<ElasticSearchPersonLanguage> expected = new ArrayList<>();
     expected.add(new ElasticSearchPersonLanguage("1249", null, false));
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void handlePhone_Args__ApiPersonAware() throws Exception {
-    ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    List<ElasticSearchPersonPhone> actual = ElasticTransformer.buildPhone(p);
-    List<ElasticSearchPersonPhone> expected = null;
+    final ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final List<ElasticSearchPersonPhone> actual = ElasticTransformer.buildPhone(p);
+    final List<ElasticSearchPersonPhone> expected = null;
     assertThat(actual, notNullValue());
   }
 
@@ -98,15 +96,15 @@ public class ElasticTransformerTest extends Goddard {
   @Test
   public void handleScreening_Args__ApiPersonAware() throws Exception {
     final ApiPersonAware p = new TestOnlyApiPersonAware();
-    List<ElasticSearchPersonScreening> actual = ElasticTransformer.buildScreening(p);
-    List<ElasticSearchPersonScreening> expected = null;
+    final List<ElasticSearchPersonScreening> actual = ElasticTransformer.buildScreening(p);
+    final List<ElasticSearchPersonScreening> expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void buildElasticSearchPersonDoc_Args__ObjectMapper__ApiPersonAware() throws Exception {
-    TestNormalizedEntity p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    ElasticSearchPerson actual = ElasticTransformer.buildElasticSearchPersonDoc(MAPPER, p);
+    final TestNormalizedEntity p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final ElasticSearchPerson actual = ElasticTransformer.buildElasticSearchPersonDoc(MAPPER, p);
     // ElasticSearchPerson expected = mapper.readValue(
     // this.getClass().getResourceAsStream("/fixtures/ElasticTransformerTestFixture.json"),
     // ElasticSearchPerson.class);
@@ -118,65 +116,61 @@ public class ElasticTransformerTest extends Goddard {
       throws Exception {
     final ApiPersonAware p = mock(ApiPersonAware.class);
     doThrow(new IllegalArgumentException("whatever")).when(p).getPrimaryKey();
-    try {
-      ElasticTransformer.buildElasticSearchPersonDoc(MAPPER, p);
-      fail("Expected exception was not thrown!");
-    } catch (JsonProcessingException e) {
-    }
+    ElasticTransformer.buildElasticSearchPersonDoc(MAPPER, p);
   }
 
   @Test
   public void handleLegacyDescriptor_Args__ApiPersonAware() throws Exception {
     final ApiPersonAware p = new TestOnlyApiPersonAware();
-    ElasticSearchLegacyDescriptor actual = ElasticTransformer.buildLegacyDescriptor(p);
+    final ElasticSearchLegacyDescriptor actual = ElasticTransformer.buildLegacyDescriptor(p);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void jsonify_Args__Object() throws Exception {
-    TestNormalizedEntity t = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    String actual = ElasticTransformer.jsonify(t);
+    final TestNormalizedEntity t = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final String actual = ElasticTransformer.jsonify(t);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void pushToBulkProcessor_Args__JobProgressTrack__BulkProcessor__DocWriteRequest()
       throws Exception {
-    FlightLog track = mock(FlightLog.class);
-    BulkProcessor bp = mock(BulkProcessor.class);
-    DocWriteRequest<?> t = mock(DocWriteRequest.class);
+    final FlightLog track = mock(FlightLog.class);
+    final BulkProcessor bp = mock(BulkProcessor.class);
+    final DocWriteRequest<?> t = mock(DocWriteRequest.class);
     ElasticTransformer.pushToBulkProcessor(track, bp, t);
   }
 
   @Test
   public void determineId_Args__ApiLegacyAware__ElasticSearchPerson() throws Exception {
-    ApiLegacyAware l = mock(ApiLegacyAware.class);
-    ElasticSearchPerson esp = mock(ElasticSearchPerson.class);
-    String actual = ElasticTransformer.determineId(l, esp);
-    String expected = null;
+    final ApiLegacyAware l = mock(ApiLegacyAware.class);
+    final ElasticSearchPerson esp = mock(ElasticSearchPerson.class);
+    final String actual = ElasticTransformer.determineId(l, esp);
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void determineId_Args__CmsReplicatedEntity__ElasticSearchPerson() throws Exception {
-    CmsReplicatedEntity l =
+    final CmsReplicatedEntity l =
         new TestDenormalizedEntity(DEFAULT_CLIENT_ID, "dave", "jey", "mariam", "jim");
-    ElasticSearchPerson esp = new ElasticSearchPerson();
-    String actual = ElasticTransformer.determineId(l, esp);
-    String expected = DEFAULT_CLIENT_ID;
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final String actual = ElasticTransformer.determineId(l, esp);
+    final String expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void prepareUpsertRequest_Args__AtomPersonDocPrep__String__String__ElasticSearchPerson__Object()
       throws Exception {
-    AtomPersonDocPrep<TestNormalizedEntity> docPrep = target;
-    String alias = null;
-    String docType = null;
-    ElasticSearchPerson esp = new ElasticSearchPerson();
-    TestNormalizedEntity t = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    UpdateRequest actual = ElasticTransformer.<TestNormalizedEntity>prepareUpsertRequest(docPrep,
-        alias, docType, esp, t);
+    final AtomPersonDocPrep<TestNormalizedEntity> docPrep = target;
+    final String alias = null;
+    final String docType = null;
+    final ElasticSearchPerson esp = new ElasticSearchPerson();
+    final TestNormalizedEntity t = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final UpdateRequest actual = ElasticTransformer
+        .<TestNormalizedEntity>prepareUpsertRequest(docPrep, alias, docType, esp, t);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -190,71 +184,72 @@ public class ElasticTransformerTest extends Goddard {
     t.addEntry(new TestNormalizedEntry("xyz1234567", "crap"));
 
     final String elementName = "relationships";
-    List list = new ArrayList();
-    ESOptionalCollection[] keep = new ESOptionalCollection[] {};
+    final List list = new ArrayList();
+    final ESOptionalCollection[] keep = new ESOptionalCollection[] {};
     final Pair<String, String> actual = ElasticTransformer
         .<TestNormalizedEntity>prepareUpsertJson(docPrep, esp, t, elementName, list, keep);
+
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void buildElasticSearchPersons_Args__PersistentObject() throws Exception {
-    TestNormalizedEntity p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final TestNormalizedEntity p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
     p.addEntry(new TestNormalizedEntry("xyz1234567", "crap"));
-    ElasticSearchPerson[] actual = ElasticTransformer.buildElasticSearchPersons(p);
+    final ElasticSearchPerson[] actual = ElasticTransformer.buildElasticSearchPersons(p);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void buildElasticSearchPerson_Args__ApiPersonAware() throws Exception {
-    ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    ElasticSearchPerson actual = ElasticTransformer.buildElasticSearchPerson(p);
+    final ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final ElasticSearchPerson actual = ElasticTransformer.buildElasticSearchPerson(p);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void createLegacyDescriptor_Args__String__Date__LegacyTable() throws Exception {
-    String legacyId = DEFAULT_CLIENT_ID;
-    Date legacyLastUpdated = new Date();
-    LegacyTable legacyTable = LegacyTable.CLIENT;
-    ElasticSearchLegacyDescriptor actual =
+    final String legacyId = DEFAULT_CLIENT_ID;
+    final Date legacyLastUpdated = new Date();
+    final LegacyTable legacyTable = LegacyTable.CLIENT;
+    final ElasticSearchLegacyDescriptor actual =
         ElasticTransformer.createLegacyDescriptor(legacyId, legacyLastUpdated, legacyTable);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void handleRaceEthnicity_Args__ApiPersonAware() throws Exception {
-    ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    ElasticSearchRaceAndEthnicity actual = ElasticTransformer.buildRaceEthnicity(p);
-    ElasticSearchRaceAndEthnicity expected = null;
-    assertThat(actual, is(equalTo(expected)));
+    final ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final ElasticSearchRaceAndEthnicity actual = ElasticTransformer.buildRaceEthnicity(p);
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void handleClientCounty_Args__ApiPersonAware() throws Exception {
-    ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    ElasticSearchSystemCode actual = ElasticTransformer.buildClientCounty(p);
-    ElasticSearchSystemCode expected = null;
+    final ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final ElasticSearchSystemCode actual = ElasticTransformer.buildClientCounty(p);
+    final ElasticSearchSystemCode expected = new ElasticSearchSystemCode();
+    expected.setId("1115");
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void buildElasticSearchPersonDoc_Args__ApiPersonAware() throws Exception {
-    ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
-    ElasticSearchPerson actual = ElasticTransformer.buildElasticSearchPersonDoc(p);
+    final ApiPersonAware p = new TestNormalizedEntity(DEFAULT_CLIENT_ID);
+    final ElasticSearchPerson actual = ElasticTransformer.buildElasticSearchPersonDoc(p);
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getMapper_Args__() throws Exception {
-    ObjectMapper actual = ElasticTransformer.getMapper();
-    ObjectMapper expected = MAPPER;
+    final ObjectMapper actual = ElasticTransformer.getMapper();
+    final ObjectMapper expected = MAPPER;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setMapper_Args__ObjectMapper() throws Exception {
-    ObjectMapper mapper = mock(ObjectMapper.class);
+    final ObjectMapper mapper = mock(ObjectMapper.class);
     ElasticTransformer.setMapper(mapper);
   }
 

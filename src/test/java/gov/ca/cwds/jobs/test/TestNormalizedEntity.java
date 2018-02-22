@@ -11,10 +11,20 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import gov.ca.cwds.dao.ApiClientCaseAware;
+import gov.ca.cwds.dao.ApiClientCountyAware;
+import gov.ca.cwds.dao.ApiClientRaceAndEthnicityAware;
+import gov.ca.cwds.dao.ApiClientSafetyAlertsAware;
 import gov.ca.cwds.dao.ApiLegacyAware;
+import gov.ca.cwds.dao.ApiOtherClientNamesAware;
+import gov.ca.cwds.dao.ApiScreeningAware;
 import gov.ca.cwds.data.ApiTypedIdentifier;
 import gov.ca.cwds.data.ReadablePhone;
 import gov.ca.cwds.data.es.ElasticSearchLegacyDescriptor;
+import gov.ca.cwds.data.es.ElasticSearchPersonAka;
+import gov.ca.cwds.data.es.ElasticSearchPersonScreening;
+import gov.ca.cwds.data.es.ElasticSearchRaceAndEthnicity;
+import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiAddressAware;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
@@ -26,14 +36,17 @@ import gov.ca.cwds.data.std.ApiObjectIdentity;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.data.std.ApiPhoneAware.PhoneType;
+import gov.ca.cwds.jobs.Goddard;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 
 @JsonPropertyOrder(alphabetic = true)
 @Entity
 @Table(name = "GOOBER_T")
-public class TestNormalizedEntity extends ApiObjectIdentity implements PersistentObject,
-    ApiPersonAware, ApiTypedIdentifier<String>, ApiLegacyAware, ApiMultiplePhonesAware,
-    ApiMultipleAddressesAware, ApiMultipleLanguagesAware, ApiGroupNormalizer<PersistentObject> {
+public class TestNormalizedEntity extends ApiObjectIdentity
+    implements PersistentObject, ApiPersonAware, ApiTypedIdentifier<String>, ApiLegacyAware,
+    ApiMultiplePhonesAware, ApiMultipleAddressesAware, ApiMultipleLanguagesAware,
+    ApiClientSafetyAlertsAware, ApiOtherClientNamesAware, ApiClientCaseAware, ApiClientCountyAware,
+    ApiClientRaceAndEthnicityAware, ApiScreeningAware, ApiGroupNormalizer<PersistentObject> {
 
   private String id;
 
@@ -178,6 +191,42 @@ public class TestNormalizedEntity extends ApiObjectIdentity implements Persisten
   @Override
   public PersistentObject normalize(final Map<Object, PersistentObject> map) {
     return null;
+  }
+
+  @Override
+  public List<ElasticSearchSafetyAlert> getClientSafetyAlerts() {
+    final List<ElasticSearchSafetyAlert> ret = new ArrayList<>();
+    ret.add(new ElasticSearchSafetyAlert());
+    return ret;
+  }
+
+  @Override
+  public List<ElasticSearchPersonAka> getOtherClientNames() {
+    final List<ElasticSearchPersonAka> ret = new ArrayList<>();
+    ret.add(new ElasticSearchPersonAka());
+    return ret;
+  }
+
+  @Override
+  public String getOpenCaseId() {
+    return Goddard.DEFAULT_CLIENT_ID;
+  }
+
+  @Override
+  public Short getClientCounty() {
+    return (short) 1115;
+  }
+
+  @Override
+  public ElasticSearchRaceAndEthnicity getRaceAndEthnicity() {
+    final ElasticSearchRaceAndEthnicity ret = new ElasticSearchRaceAndEthnicity();
+    return ret;
+  }
+
+  @Override
+  public ElasticSearchPersonScreening[] getEsScreenings() {
+    final ElasticSearchPersonScreening[] ret = {new ElasticSearchPersonScreening()};
+    return ret;
   }
 
 }

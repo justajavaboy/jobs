@@ -107,7 +107,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
    */
   protected ObjectMapper mapper;
 
-  private final NeutronBulkProcessorBuilder bulkProcessorBuilder;
+  private transient NeutronBulkProcessorBuilder bulkProcessorBuilder;
 
   /**
    * Main DAO for the supported persistence class.
