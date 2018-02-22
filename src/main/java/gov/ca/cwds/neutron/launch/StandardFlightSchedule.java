@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.listeners.JobChainingJobListener;
 
-import gov.ca.cwds.jobs.ChildCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ClientIndexerJob;
 import gov.ca.cwds.jobs.ClientPersonIndexerJob;
 import gov.ca.cwds.jobs.CollateralIndividualIndexerJob;
@@ -18,7 +17,6 @@ import gov.ca.cwds.jobs.EducationProviderContactIndexerJob;
 import gov.ca.cwds.jobs.IntakeScreeningJob;
 import gov.ca.cwds.jobs.OtherAdultInPlacemtHomeIndexerJob;
 import gov.ca.cwds.jobs.OtherChildInPlacemtHomeIndexerJob;
-import gov.ca.cwds.jobs.ParentCaseHistoryIndexerJob;
 import gov.ca.cwds.jobs.ReferralHistoryIndexerJob;
 import gov.ca.cwds.jobs.RelationshipIndexerJob;
 import gov.ca.cwds.jobs.ReporterIndexerJob;
@@ -111,8 +109,7 @@ public enum StandardFlightSchedule {
   //
 
   /**
-   * Combines child and parent case. {@link ParentCaseHistoryIndexerJob} and
-   * {@link ChildCaseHistoryIndexerJob} are obsolete.
+   * Combines child and parent case.
    */
   CASES(CaseRocket.class, "case", 70, 30, 550, "cases", true, true),
 
