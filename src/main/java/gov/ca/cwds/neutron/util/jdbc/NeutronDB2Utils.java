@@ -1,4 +1,4 @@
-package gov.ca.cwds.jobs.util.jdbc;
+package gov.ca.cwds.neutron.util.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -16,7 +16,6 @@ import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
 import gov.ca.cwds.neutron.jetpack.JobLogs;
-import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 
 /**
  * Miscellaneous DB2 utilities for Neutron rockets.

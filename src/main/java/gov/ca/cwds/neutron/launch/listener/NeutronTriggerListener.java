@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchDirector;
 import gov.ca.cwds.neutron.launch.NeutronRocket;
+import gov.ca.cwds.neutron.util.NeutronThreadUtils;
 
 /**
  * Neutron implementation of Quartz TriggerListener.

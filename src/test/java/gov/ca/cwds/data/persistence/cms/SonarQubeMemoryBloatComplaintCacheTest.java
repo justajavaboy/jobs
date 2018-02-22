@@ -75,8 +75,8 @@ public class SonarQubeMemoryBloatComplaintCacheTest
 
   @Test
   public void getNormalizationClass_Args__() throws Exception {
-    Class<ReplicatedRelationships> actual = target.getNormalizationClass();
-    Class<ReplicatedRelationships> expected = ReplicatedRelationships.class;
+    final Class<ReplicatedRelationships> actual = target.getNormalizationClass();
+    final Class<ReplicatedRelationships> expected = ReplicatedRelationships.class;
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -84,6 +84,7 @@ public class SonarQubeMemoryBloatComplaintCacheTest
   public void parseBiDirectionalRelationship_Args__ElasticSearchPersonRelationship()
       throws Exception {
     target.setRelCode((short) 196);
+
     final ElasticSearchPersonRelationship rel = new ElasticSearchPersonRelationship();
     rel.setIndexedPersonRelationship("daughter");
     rel.setRelatedPersonFirstName("Britney");
@@ -99,6 +100,7 @@ public class SonarQubeMemoryBloatComplaintCacheTest
     target.setRelatedLegacyId("abc12340x7");
     target.setRelatedFirstName("Idina");
     target.setRelatedLastName("Menzel");
+
     final Map<Object, ReplicatedRelationships> map = new HashMap<Object, ReplicatedRelationships>();
     final ReplicatedRelationships actual = target.normalize(map);
     assertThat(actual, is(notNullValue()));
@@ -113,74 +115,74 @@ public class SonarQubeMemoryBloatComplaintCacheTest
 
   @Test
   public void getPrimaryKey_Args__() throws Exception {
-    Serializable actual = target.getPrimaryKey();
-    Serializable expected = null;
+    final Serializable actual = target.getPrimaryKey();
+    final Serializable expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void hashCode_Args__() throws Exception {
-    int actual = target.hashCode();
+    final int actual = target.hashCode();
     assertThat(actual, not(equalTo(0)));
   }
 
   @Test
   public void equals_Args__Object() throws Exception {
     Object obj = null;
-    boolean actual = target.equals(obj);
-    boolean expected = false;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void toString_Args__() throws Exception {
-    String actual = target.toString();
+    final String actual = target.toString();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getThisLegacyId_Args__() throws Exception {
-    String actual = target.getThisLegacyId();
-    String expected = DEFAULT_CLIENT_ID;
+    final String actual = target.getThisLegacyId();
+    final String expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setThisLegacyId_Args__String() throws Exception {
-    String thisLegacyId = DEFAULT_CLIENT_ID;
+    final String thisLegacyId = DEFAULT_CLIENT_ID;
     target.setThisLegacyId(thisLegacyId);
   }
 
   @Test
   public void getThisFirstName_Args__() throws Exception {
-    String actual = target.getThisFirstName();
-    String expected = null;
+    final String actual = target.getThisFirstName();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setThisFirstName_Args__String() throws Exception {
-    String thisFirstName = null;
+    final String thisFirstName = null;
     target.setThisFirstName(thisFirstName);
   }
 
   @Test
   public void getThisLastName_Args__() throws Exception {
-    String actual = target.getThisLastName();
-    String expected = null;
+    final String actual = target.getThisLastName();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setThisLastName_Args__String() throws Exception {
-    String thisLastName = null;
+    final String thisLastName = null;
     target.setThisLastName(thisLastName);
   }
 
   @Test
   public void getRelCode_Args__() throws Exception {
-    Short actual = target.getRelCode();
-    Short expected = null;
+    final Short actual = target.getRelCode();
+    final Short expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 

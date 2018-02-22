@@ -26,6 +26,7 @@ project.ext {
     elasticsearchVersion = "5.5.0"
     personIndexerJob = "gov.ca.cwds.jobs.PersonIndexerJob"
     dropwizardVersion = "1.1.0"
+    powerMockVersion = "1.7.3"
 }
 
 version = 0.42
@@ -90,6 +91,9 @@ dependencies {
 
     compile fileTree(dir: 'lib', include: ['*.jar'])
 
+	testCompile group: 'org.powermock', name: 'powermock-module-junit4', version: powerMockVersion
+    testCompile group: 'org.powermock', name: 'powermock-api-mockito2', version: powerMockVersion
+    
     testCompile group: 'junit', name: 'junit', version: '4.+'
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.195'
 	testCompile group: 'org.mockito', name: 'mockito-core', version: '2.10.0'

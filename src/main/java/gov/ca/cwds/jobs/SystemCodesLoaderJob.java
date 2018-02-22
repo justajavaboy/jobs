@@ -18,8 +18,9 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import gov.ca.cwds.jobs.schedule.LaunchCommand;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.syscode.NsSystemCode;
 import gov.ca.cwds.neutron.rocket.syscode.NsSystemCodeDao;
 import gov.ca.cwds.neutron.rocket.syscode.SystemCodesLoaderModule;
@@ -93,17 +94,18 @@ public class SystemCodesLoaderJob {
     final Set<SystemMeta> allSystemMetas = SystemCodeCache.global().getAllSystemMetas();
     LOGGER.info("Found total {} system metas in legacy", allSystemMetas.size());
 
+    final int primeCapacityCodes = 7027;
     final Set<SystemCode> allSystemCodes = SystemCodeCache.global().getAllSystemCodes();
     LOGGER.info("Found total {} system codes in legacy", allSystemCodes.size());
 
-    final Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>(7027);
+    final Map<Integer, NsSystemCode> loadedSystemCodes = new HashMap<>(primeCapacityCodes);
     final Map<String, SystemMeta> systemMetaMap = new HashMap<>(197);
 
     for (SystemMeta systemMeta : allSystemMetas) {
       systemMetaMap.put(StringUtils.trim(systemMeta.getLogicalTableDsdName()), systemMeta);
     }
 
-    final Map<Short, SystemCode> systemCodeMap = new HashMap<>();
+    final Map<Short, SystemCode> systemCodeMap = new HashMap<>(primeCapacityCodes);
     for (SystemCode systemCode : allSystemCodes) {
       systemCodeMap.put(systemCode.getSystemId(), systemCode);
     }
@@ -141,7 +143,7 @@ public class SystemCodesLoaderJob {
       }
     } catch (Exception e) {
       tx.rollback();
-      throw JobLogs.checked(LOGGER, e, "ERROR loading system codes, rolling back...",
+      throw CheeseRay.checked(LOGGER, e, "ERROR loading system codes, rolling back...",
           e.getMessage());
     }
 
@@ -168,6 +170,7 @@ public class SystemCodesLoaderJob {
     LOGGER.info("Loading system codes from legacy to new system...");
 
     try {
+      LaunchCommand.setSysPropsFromEnvVars(LaunchCommand.DB_PROPERTY_LIST);
       final Injector injector = Guice.createInjector(new SystemCodesLoaderModule());
 
       // Initialize system code cache.
@@ -178,7 +181,7 @@ public class SystemCodesLoaderJob {
       systemCodesJob.load();
       LOGGER.info("DONE loading system codes from legacy to new system.");
     } catch (Exception e) {
-      LOGGER.error("SYSTEM CODES LOADER FAILED: {}", e.getMessage(), e);
+      LOGGER.error("\n\nSYSTEM CODES LOADER FAILED@!! {}\n\n", e.getMessage(), e);
       System.exit(-1);
     }
 

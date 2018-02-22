@@ -17,7 +17,7 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.jobs.util.JobReader;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
-import gov.ca.cwds.neutron.jetpack.JobLogs;
+import gov.ca.cwds.neutron.jetpack.CheeseRay;
 
 /**
  * @param <T> persistence class
@@ -63,7 +63,7 @@ public class JdbcJobReader<T extends PersistentObject> implements JobReader<T> {
       resultSet = statement.executeQuery();
     } catch (SQLException e) {
       destroy();
-      throw JobLogs.checked(LOGGER, e, "JDBC READ INIT ERROR! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "JDBC READ INIT ERROR! {}", e.getMessage());
     }
   }
 
@@ -72,7 +72,7 @@ public class JdbcJobReader<T extends PersistentObject> implements JobReader<T> {
     try {
       return resultSet.next() ? rowMapper.mapRow(resultSet) : null;
     } catch (SQLException e) {
-      throw JobLogs.checked(LOGGER, e, "JDBC READ ERROR! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "JDBC READ ERROR! {}", e.getMessage());
     }
   }
 
@@ -84,13 +84,12 @@ public class JdbcJobReader<T extends PersistentObject> implements JobReader<T> {
         statement = null;
       }
     } catch (SQLException e) {
-      throw JobLogs.checked(LOGGER, e, "JDBC DESTROY ERROR! {}", e.getMessage());
+      throw CheeseRay.checked(LOGGER, e, "JDBC DESTROY ERROR! {}", e.getMessage());
     } finally {
       sessionFactory.close();
     }
   }
 
-  @SuppressWarnings("javadoc")
   public String getQuery() {
     return query;
   }

@@ -37,7 +37,7 @@ import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.launch.LaunchCommandSettings;
 import gov.ca.cwds.neutron.launch.StandardFlightSchedule;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
-import gov.ca.cwds.neutron.util.NeutronStringUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronStringUtils;
 
 /**
  * Launch rockets a la carte or on a schedule with Quartz. The master of ceremonies, AKA, Jimmy
@@ -77,7 +77,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
-  private static final List<String> DB_PROPERTY_LIST = asList("DB_NS_USER", "DB_NS_PASSWORD",
+  public static final List<String> DB_PROPERTY_LIST = asList("DB_NS_USER", "DB_NS_PASSWORD",
       "DB_NS_JDBC_URL", "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA");
 
   private LaunchCommand() {

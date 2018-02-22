@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import gov.ca.cwds.data.es.ElasticSearchPersonAllegation;
 import gov.ca.cwds.data.es.ElasticSearchPersonReferral;
@@ -63,7 +65,6 @@ public class ReplicatedPersonReferrals implements RetrovillePerson {
     return referrals.containsKey(referralId);
   }
 
-  @SuppressWarnings("javadoc")
   public ElasticSearchPersonReferral getReferral(String referralId) {
     return referrals.get(referralId);
   }
@@ -105,12 +106,10 @@ public class ReplicatedPersonReferrals implements RetrovillePerson {
     return this.clientId;
   }
 
-  @SuppressWarnings("javadoc")
   public String getClientId() {
     return clientId;
   }
 
-  @SuppressWarnings("javadoc")
   public void setClientId(String clientId) {
     this.clientId = clientId;
   }
@@ -123,6 +122,11 @@ public class ReplicatedPersonReferrals implements RetrovillePerson {
   @Override
   public boolean equals(Object obj) {
     return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, true);
   }
 
 }

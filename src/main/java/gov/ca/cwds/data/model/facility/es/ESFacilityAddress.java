@@ -13,9 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ESFacilityAddress implements Serializable {
 
-  /**
-   * Default serialization.
-   */
   private static final long serialVersionUID = 1L;
 
   @JsonProperty("state_code_type")

@@ -38,7 +38,7 @@ import gov.ca.cwds.data.persistence.cms.rep.EmbeddableStaffWorker;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.neutron.atom.AtomDocumentSecurity;
 import gov.ca.cwds.neutron.flight.FlightPlan;
-import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronDateUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 import gov.ca.cwds.rest.api.domain.DomainChef;
 import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
@@ -57,19 +57,21 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 @Table(name = "VW_LST_REFERRAL_HIST")
 //@formatter:off
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsPersonReferral.findAllUpdatedAfter",
-    query = "SELECT DISTINCT " + EsPersonReferral.COLUMNS
+    query = "SELECT DISTINCT " 
+        + EsPersonReferral.COLUMNS
         + " FROM {h-schema}VW_LST_REFERRAL_HIST r \n"
         + "WHERE (1=1 OR current timestamp < :after) \n"
-        + "ORDER BY CLIENT_ID,REFERRAL_ID,ALLEGATION_ID,VICTIM_ID \n"
+        + "ORDER BY CLIENT_ID, REFERRAL_ID, ALLEGATION_ID, VICTIM_ID \n"
         + "WITH UR ",
     resultClass = EsPersonReferral.class, readOnly = true)
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.EsPersonReferral.findAllUpdatedAfterWithUnlimitedAccess",
-    query = "SELECT DISTINCT " + EsPersonReferral.COLUMNS
+    query = "SELECT DISTINCT " 
+        + EsPersonReferral.COLUMNS
         + " FROM {h-schema}VW_LST_REFERRAL_HIST r \n" 
         + "WHERE (1=1 OR current timestamp < :after) \n"
         + "AND r.LIMITED_ACCESS_CODE = 'N' \n"
-        + "ORDER BY CLIENT_ID,REFERRAL_ID,ALLEGATION_ID,VICTIM_ID \n"
+        + "ORDER BY CLIENT_ID, REFERRAL_ID, ALLEGATION_ID, VICTIM_ID \n"
         + "WITH UR ",
     resultClass = EsPersonReferral.class, readOnly = true)
 //@formatter:on
@@ -529,7 +531,6 @@ public class EsPersonReferral
     }
   }
 
-
   @Override
   public ReplicatedPersonReferrals normalize(Map<Object, ReplicatedPersonReferrals> map) {
     ReplicatedPersonReferrals ret = map.get(this.clientId);
@@ -852,31 +853,6 @@ public class EsPersonReferral
     EsPersonReferral.opts = opts;
   }
 
-  @Override
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE, false);
-  }
-
-  @Override
-  public int compare(EsPersonReferral o1, EsPersonReferral o2) {
-    return o1.getClientId().compareTo(o2.getClientId());
-  }
-
-  @Override
-  public int compareTo(EsPersonReferral o) {
-    return compare(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this, false);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
-  }
-
   public EmbeddableAccessLimitation getAccessLimitation() {
     return accessLimitation;
   }
@@ -950,6 +926,31 @@ public class EsPersonReferral
   public void setAllegationReplicationOperation(
       CmsReplicationOperation allegationReplicationOperation) {
     this.allegationReplicationOperation = allegationReplicationOperation;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE, false);
+  }
+
+  @Override
+  public int compare(EsPersonReferral o1, EsPersonReferral o2) {
+    return o1.getClientId().compareTo(o2.getClientId());
+  }
+
+  @Override
+  public int compareTo(EsPersonReferral o) {
+    return compare(this, o);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

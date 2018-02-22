@@ -10,6 +10,11 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
@@ -32,7 +37,7 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
       return JMXConnectorFactory.connect(new JMXServiceURL(
           "service:jmx:rmi:///jndi/rmi://" + theHost + ":" + thePort + "/jmxrmi"));
     } catch (IOException e) {
-      throw CheeseRay.runtime(LOGGER, e, "FAILED TO CONNECT VIA JMX! {}", e.getMessage());
+      throw CheeseRay.runtime(LOGGER, e, "FAILED TO CONNECT JMX! {}", e.getMessage());
     }
   };
 
@@ -168,6 +173,21 @@ public abstract class VoxJMXCommandClient implements AutoCloseable, VoxCommandAc
 
   public void setArgs(String args) {
     this.args = args;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, true);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
 }

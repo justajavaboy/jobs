@@ -12,7 +12,7 @@ import javax.persistence.Embeddable;
 import org.hibernate.annotations.Type;
 
 import gov.ca.cwds.data.std.ApiMarker;
-import gov.ca.cwds.neutron.util.NeutronDateUtils;
+import gov.ca.cwds.neutron.util.shrinkray.NeutronDateUtils;
 
 @Embeddable
 public class EmbeddableAccessLimitation implements ApiMarker {

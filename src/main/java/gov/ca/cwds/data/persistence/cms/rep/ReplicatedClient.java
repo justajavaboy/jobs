@@ -64,30 +64,37 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
 //@formatter:off
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findAllUpdatedAfter",
-    query = "select z.IDENTIFIER, z.ADPTN_STCD, trim(z.ALN_REG_NO) ALN_REG_NO, z.BIRTH_DT, "
-        + "trim(z.BR_FAC_NM) BR_FAC_NM, z.B_STATE_C, z.B_CNTRY_C, z.CHLD_CLT_B, "
-        + "trim(z.COM_FST_NM) COM_FST_NM, trim(z.COM_LST_NM) COM_LST_NM, "
-        + "trim(z.COM_MID_NM) COM_MID_NM, z.CONF_EFIND, z.CONF_ACTDT, z.CREATN_DT, "
-        + "z.DEATH_DT, trim(z.DTH_RN_TXT) DTH_RN_TXT, trim(z.DRV_LIC_NO) DRV_LIC_NO, "
+    query = "select z.IDENTIFIER, z.ADPTN_STCD, TRIM(z.ALN_REG_NO) ALN_REG_NO, z.BIRTH_DT, "
+        + "TRIM(z.BR_FAC_NM) BR_FAC_NM, z.B_STATE_C, z.B_CNTRY_C, z.CHLD_CLT_B, "
+        + "TRIM(z.COM_FST_NM) COM_FST_NM, TRIM(z.COM_LST_NM) COM_LST_NM, "
+        + "TRIM(z.COM_MID_NM) COM_MID_NM, z.CONF_EFIND, z.CONF_ACTDT, z.CREATN_DT, "
+        + "z.DEATH_DT, TRIM(z.DTH_RN_TXT) DTH_RN_TXT, TRIM(z.DRV_LIC_NO) DRV_LIC_NO, "
         + "z.D_STATE_C, z.GENDER_CD, z.I_CNTRY_C, z.IMGT_STC, z.INCAPC_CD, "
-        + "z.LITRATE_CD, z.MAR_HIST_B, z.MRTL_STC, z.MILT_STACD, trim(z.NMPRFX_DSC) NMPRFX_DSC, "
+        + "z.LITRATE_CD, z.MAR_HIST_B, z.MRTL_STC, z.MILT_STACD, TRIM(z.NMPRFX_DSC) NMPRFX_DSC, "
         + "z.NAME_TPC, z.OUTWRT_IND, z.P_ETHNCTYC, z.P_LANG_TPC, z.RLGN_TPC, "
-        + "z.S_LANG_TC, z.SENSTV_IND, z.SNTV_HLIND, trim(z.SS_NO) SS_NO, z.SSN_CHG_CD, "
-        + "trim(z.SUFX_TLDSC) SUFX_TLDSC, z.UNEMPLY_CD, z.LST_UPD_ID, z.LST_UPD_TS, "
-        + "trim(z.COMMNT_DSC) COMMNT_DSC, z.EST_DOB_CD, z.BP_VER_IND, z.HISP_CD, "
-        + "z.CURRCA_IND, z.CURREG_IND, trim(z.COTH_DESC), z.PREVCA_IND, z.PREREG_IND, "
-        + "trim(z.POTH_DESC) POTH_DESC, z.HCARE_IND, z.LIMIT_IND, "
-        + "trim(z.BIRTH_CITY) BIRTH_CITY, trim(z.HEALTH_TXT) HEALTH_TXT, "
-        + "z.MTERM_DT, z.FTERM_DT, z.ZIPPY_IND, trim(z.DEATH_PLC) DEATH_PLC, "
+        + "z.S_LANG_TC, z.SENSTV_IND, z.SNTV_HLIND, TRIM(z.SS_NO) SS_NO, z.SSN_CHG_CD, "
+        + "TRIM(z.SUFX_TLDSC) SUFX_TLDSC, z.UNEMPLY_CD, z.LST_UPD_ID, z.LST_UPD_TS, "
+        + "TRIM(z.COMMNT_DSC) COMMNT_DSC, z.EST_DOB_CD, z.BP_VER_IND, z.HISP_CD, "
+        + "z.CURRCA_IND, z.CURREG_IND, TRIM(z.COTH_DESC), z.PREVCA_IND, z.PREREG_IND, "
+        + "TRIM(z.POTH_DESC) POTH_DESC, z.HCARE_IND, z.LIMIT_IND, "
+        + "TRIM(z.BIRTH_CITY) BIRTH_CITY, TRIM(z.HEALTH_TXT) HEALTH_TXT, "
+        + "z.MTERM_DT, z.FTERM_DT, z.ZIPPY_IND, TRIM(z.DEATH_PLC) DEATH_PLC, "
         + "z.TR_MBVRT_B, z.TRBA_CLT_B, z.SOC158_IND, z.DTH_DT_IND, "
-        + "trim(z.EMAIL_ADDR) EMAIL_ADDR, z.ADJDEL_IND, z.ETH_UD_CD, "
+        + "TRIM(z.EMAIL_ADDR) EMAIL_ADDR, z.ADJDEL_IND, z.ETH_UD_CD, "
         + "z.HISP_UD_CD, z.SOCPLC_CD, z.CL_INDX_NO, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-        + "from {h-schema}CLIENT_T z WHERE z.IBMSNAP_LOGMARKER >= :after FOR READ ONLY WITH UR",
+        + "from {h-schema}CLIENT_T z \n"
+        + "WHERE z.IBMSNAP_LOGMARKER >= :after \n"
+        + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedClient.class)
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findByTemp",
-    query = "\nSELECT \n" + "    c.IDENTIFIER \n" + "  , trim(c.COM_FST_NM) AS COM_FST_NM \n"
-        + "  , trim(c.COM_LST_NM) AS COM_LST_NM \n" + "  , c.SENSTV_IND \n" + "  , c.LST_UPD_TS \n"
-        + "  , c.IBMSNAP_LOGMARKER \n" + "  , c.IBMSNAP_OPERATION \n"
+    query = "\nSELECT \n" 
+        + "    c.IDENTIFIER \n" 
+        + "  , TRIM(c.COM_FST_NM) AS COM_FST_NM \n"
+        + "  , TRIM(c.COM_LST_NM) AS COM_LST_NM \n" 
+        + "  , c.SENSTV_IND \n" 
+        + "  , c.LST_UPD_TS \n"
+        + "  , c.IBMSNAP_LOGMARKER \n" 
+        + "  , c.IBMSNAP_OPERATION \n"
         + " FROM {h-schema}GT_ID GT \n"
         + " JOIN {h-schema}CLIENT_T C ON C.IDENTIFIER = GT.IDENTIFIER \n"
         + " FOR READ ONLY WITH UR ",
@@ -410,7 +417,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
         isHispanicCode = HISPANIC_CODE_OTHER_ID.equals(systemCode.getOtherCd());
       }
 
-      ElasticSearchSystemCode esCode = new ElasticSearchSystemCode();
+      final ElasticSearchSystemCode esCode = new ElasticSearchSystemCode();
       esCode.setId(codeId.toString());
       esCode.setDescription(description);
 

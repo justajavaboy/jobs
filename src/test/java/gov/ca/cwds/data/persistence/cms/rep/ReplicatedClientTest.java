@@ -28,8 +28,11 @@ import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.jobs.Goddard;
+import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
+import gov.ca.cwds.rest.api.domain.cms.LegacyTable;
 
 public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddress> {
+
   ReplicatedClient target;
 
   @Override
@@ -43,18 +46,19 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
   @Test
   public void testReplicationOperation() throws Exception {
     target.setReplicationOperation(CmsReplicationOperation.I);
-    CmsReplicationOperation actual = target.getReplicationOperation();
-    CmsReplicationOperation expected = CmsReplicationOperation.I;
+    final CmsReplicationOperation actual = target.getReplicationOperation();
+    final CmsReplicationOperation expected = CmsReplicationOperation.I;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void testReplicationDate() throws Exception {
-    DateFormat fmt = new SimpleDateFormat("yyyy-mm-dd");
-    Date date = fmt.parse("2012-10-31");
+    final DateFormat fmt = new SimpleDateFormat("yyyy-mm-dd");
+    final Date date = fmt.parse("2012-10-31");
     target.setReplicationDate(date);
-    Date actual = target.getReplicationDate();
-    Date expected = fmt.parse("2012-10-31");
+
+    final Date actual = target.getReplicationDate();
+    final Date expected = fmt.parse("2012-10-31");
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -70,110 +74,122 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
 
   @Test
   public void getClientAddresses_Args__() throws Exception {
-    Set<ReplicatedClientAddress> actual = target.getClientAddresses();
-    Set<ReplicatedClientAddress> expected = new HashSet<>();
+    final Set<ReplicatedClientAddress> actual = target.getClientAddresses();
+    final Set<ReplicatedClientAddress> expected = new HashSet<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setClientAddresses_Args__Set() throws Exception {
-    Set<ReplicatedClientAddress> clientAddresses = mock(Set.class);
+    final Set<ReplicatedClientAddress> clientAddresses = new HashSet<>();
     target.setClientAddresses(clientAddresses);
   }
 
   @Test
   public void addClientAddress_Args__ReplicatedClientAddress() throws Exception {
-    ReplicatedClientAddress clientAddress = mock(ReplicatedClientAddress.class);
+    final ReplicatedClientAddress clientAddress = mock(ReplicatedClientAddress.class);
     target.addClientAddress(clientAddress);
   }
 
   @Test
   public void getAddresses_Args__() throws Exception {
-    List<ElasticSearchPersonAddress> actual = target.getElasticSearchPersonAddresses();
-    List<ElasticSearchPersonAddress> expected = new ArrayList<>();
-    assertThat(actual, is(equalTo(expected)));
+    final ReplicatedClientAddress clientAddress = new ReplicatedClientAddress();
+    clientAddress.setId(DEFAULT_CLIENT_ID);
+    clientAddress.setAddressType((short) 27);
+    target.addClientAddress(clientAddress);
+
+    final ReplicatedAddress address = new ReplicatedAddress();
+    clientAddress.addAddress(address);
+    address.setState((short) 1873);
+    address.setGovernmentEntityCd((short) 1104);
+
+    final List<ElasticSearchPersonAddress> actual = target.getElasticSearchPersonAddresses();
+    // List<ElasticSearchPersonAddress> expected = new ArrayList<>();
+    // assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getPhones_Args__() throws Exception {
-    ApiPhoneAware[] actual = target.getPhones();
-    ApiPhoneAware[] expected = new ApiPhoneAware[0];
+    final ApiPhoneAware[] actual = target.getPhones();
+    final ApiPhoneAware[] expected = new ApiPhoneAware[0];
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getLegacyId_Args__() throws Exception {
-    String actual = target.getLegacyId();
-    String expected = DEFAULT_CLIENT_ID;
+    final String actual = target.getLegacyId();
+    final String expected = DEFAULT_CLIENT_ID;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void toString_Args__() throws Exception {
-    String actual = target.toString();
+    final String actual = target.toString();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void hashCode_Args__() throws Exception {
-    int actual = target.hashCode();
+    final int actual = target.hashCode();
     assertThat(actual, is(not(0)));
   }
 
   @Test
   public void equals_Args__Object() throws Exception {
-    Object obj = null;
-    boolean actual = target.equals(obj);
-    boolean expected = false;
+    final Object obj = null;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getLegacyDescriptor_Args__() throws Exception {
-    Date lastUpdatedTime = new Date();
+    final Date lastUpdatedTime = new Date();
     target.setReplicationOperation(CmsReplicationOperation.U);
     target.setLastUpdatedId("0x5");
     target.setLastUpdatedTime(lastUpdatedTime);
     target.setReplicationDate(lastUpdatedTime);
-    ElasticSearchLegacyDescriptor actual = target.getLegacyDescriptor();
+
+    final ElasticSearchLegacyDescriptor actual = target.getLegacyDescriptor();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getClientCounty_Args__() throws Exception {
-    Short actual = target.getClientCounty();
-    Short expected = null;
+    final Short actual = target.getClientCounty();
+    final Short expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setClientCounty_Args__Short() throws Exception {
-    Short clinetCountyId = null;
-    target.setClientCounty(clinetCountyId);
+    final Short clientCountyId = null;
+    target.setClientCounty(clientCountyId);
   }
 
   @Test
   public void getClientRaces_Args__() throws Exception {
-    List<Short> actual = target.getClientRaces();
-    List<Short> expected = new ArrayList<>();
+    final List<Short> actual = target.getClientRaces();
+    final List<Short> expected = new ArrayList<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setClientRaces_Args__List() throws Exception {
-    List<Short> clientRaces = new ArrayList<>();
+    final List<Short> clientRaces = new ArrayList<>();
     target.setClientRaces(clientRaces);
   }
 
   @Test
   public void addClientRace_Args__Short() throws Exception {
-    Short clientRace = null;
+    final Short clientRace = null;
     target.addClientRace(clientRace);
   }
 
   @Test
   public void getReplicatedEntity_Args__() throws Exception {
-    EmbeddableCmsReplicatedEntity actual = target.getReplicatedEntity();
+    final EmbeddableCmsReplicatedEntity actual = target.getReplicatedEntity();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -184,72 +200,168 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
     clientRaces.add((short) 824);
     clientRaces.add((short) 3164);
     target.setClientRaces(clientRaces);
-    ElasticSearchRaceAndEthnicity actual = target.getRaceAndEthnicity();
+
+    final ElasticSearchRaceAndEthnicity actual = target.getRaceAndEthnicity();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getAkas_Args__() throws Exception {
-    Map<String, ElasticSearchPersonAka> actual = target.getAkas();
-    Map<String, ElasticSearchPersonAka> expected = new HashMap<>();
+    final Map<String, ElasticSearchPersonAka> actual = target.getAkas();
+    final Map<String, ElasticSearchPersonAka> expected = new HashMap<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setAkas_Args__Map() throws Exception {
-    Map<String, ElasticSearchPersonAka> akas = new HashMap<>();
+    final Map<String, ElasticSearchPersonAka> akas = new HashMap<>();
     target.setAkas(akas);
   }
 
   @Test
   public void addAka_Args__ElasticSearchPersonAka() throws Exception {
-    ElasticSearchPersonAka aka = mock(ElasticSearchPersonAka.class);
+    final ElasticSearchPersonAka aka = new ElasticSearchPersonAka();
     target.addAka(aka);
   }
 
   @Test
   public void getSafetyAlerts_Args__() throws Exception {
-    Map<String, ElasticSearchSafetyAlert> actual = target.getSafetyAlerts();
-    Map<String, ElasticSearchSafetyAlert> expected = new HashMap<>();
+    final Map<String, ElasticSearchSafetyAlert> actual = target.getSafetyAlerts();
+    final Map<String, ElasticSearchSafetyAlert> expected = new HashMap<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setSafetyAlerts_Args__Map() throws Exception {
-    Map<String, ElasticSearchSafetyAlert> safetyAlerts = new HashMap<>();
+    final Map<String, ElasticSearchSafetyAlert> safetyAlerts = new HashMap<>();
     target.setSafetyAlerts(safetyAlerts);
   }
 
   @Test
   public void addSafetyAlert_Args__ElasticSearchSafetyAlert() throws Exception {
-    ElasticSearchSafetyAlert safetyAlert = mock(ElasticSearchSafetyAlert.class);
+    final ElasticSearchSafetyAlert safetyAlert = mock(ElasticSearchSafetyAlert.class);
     target.addSafetyAlert(safetyAlert);
   }
 
   @Test
   public void getOpenCaseId_Args__() throws Exception {
-    String actual = target.getOpenCaseId();
-    String expected = null;
+    final String actual = target.getOpenCaseId();
+    final String expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setOpenCaseId_Args__String() throws Exception {
-    String openCaseId = null;
+    final String openCaseId = null;
     target.setOpenCaseId(openCaseId);
   }
 
   @Test
   public void getOtherClientNames_Args__() throws Exception {
-    List<ElasticSearchPersonAka> actual = target.getOtherClientNames();
-    List<ElasticSearchPersonAka> expected = new ArrayList<>();
+    final List<ElasticSearchPersonAka> actual = target.getOtherClientNames();
+    final List<ElasticSearchPersonAka> expected = new ArrayList<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getClientSafetyAlerts_Args__() throws Exception {
-    List<ElasticSearchSafetyAlert> actual = target.getClientSafetyAlerts();
-    List<ElasticSearchSafetyAlert> expected = new ArrayList<>();
+    final List<ElasticSearchSafetyAlert> actual = target.getClientSafetyAlerts();
+    final List<ElasticSearchSafetyAlert> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void addClientAddress_A$ReplicatedClientAddress() throws Exception {
+    final ReplicatedClientAddress clientAddress = mock(ReplicatedClientAddress.class);
+    target.addClientAddress(clientAddress);
+  }
+
+  @Test
+  public void addClientRace_A$Short() throws Exception {
+    final Short clientRace = null;
+    target.addClientRace(clientRace);
+  }
+
+  @Test
+  public void addAka_A$ElasticSearchPersonAka() throws Exception {
+    final ElasticSearchPersonAka aka = new ElasticSearchPersonAka();
+    target.addAka(aka);
+  }
+
+  @Test
+  public void addSafetyAlert_A$ElasticSearchSafetyAlert() throws Exception {
+    final ElasticSearchSafetyAlert safetyAlert = new ElasticSearchSafetyAlert();
+    target.addSafetyAlert(safetyAlert);
+  }
+
+  @Test
+  public void getElasticSearchPersonAddresses_A$() throws Exception {
+    List<ElasticSearchPersonAddress> actual = target.getElasticSearchPersonAddresses();
+    List<ElasticSearchPersonAddress> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getPhones_A$() throws Exception {
+    final ApiPhoneAware[] actual = target.getPhones();
+    final ApiPhoneAware[] expected = new ApiPhoneAware[0];
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getLegacyId_A$() throws Exception {
+    final String actual = target.getLegacyId();
+    final String expected = DEFAULT_CLIENT_ID;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getLegacyDescriptor_A$() throws Exception {
+    final ElasticSearchLegacyDescriptor actual = target.getLegacyDescriptor();
+    final ElasticSearchLegacyDescriptor expected = ElasticTransformer
+        .createLegacyDescriptor(target.getId(), target.getLastUpdatedTime(), LegacyTable.CLIENT);
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getOtherClientNames_A$() throws Exception {
+    final List<ElasticSearchPersonAka> actual = target.getOtherClientNames();
+    final List<ElasticSearchPersonAka> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getClientSafetyAlerts_A$() throws Exception {
+    final List<ElasticSearchSafetyAlert> actual = target.getClientSafetyAlerts();
+    final List<ElasticSearchSafetyAlert> expected = new ArrayList<>();
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void getRaceAndEthnicity_A$() throws Exception {
+    final ElasticSearchRaceAndEthnicity actual = target.getRaceAndEthnicity();
+
+    final ElasticSearchRaceAndEthnicity expected = new ElasticSearchRaceAndEthnicity();
+    expected.setRaceCodes(new ArrayList<>());
+    expected.setHispanicCodes(new ArrayList<>());
+    expected.setHispanicOriginCode("");
+    expected.setHispanicUnableToDetermineCode("");
+    expected.setUnableToDetermineCode("");
+
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void hashCode_A$() throws Exception {
+    final int actual = target.hashCode();
+    assertThat(actual, is(not(0)));
+  }
+
+  @Test
+  public void equals_A$Object() throws Exception {
+    final Object obj = null;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 

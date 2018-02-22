@@ -46,7 +46,6 @@ import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.data.std.ApiPersonAware;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.atom.AtomDocumentSecurity;
 import gov.ca.cwds.neutron.atom.AtomInitialLoad;
 import gov.ca.cwds.neutron.atom.AtomPersonDocPrep;
@@ -65,6 +64,7 @@ import gov.ca.cwds.neutron.inject.annotation.LastRunFile;
 import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.jetpack.ConditionalLogger;
 import gov.ca.cwds.neutron.jetpack.JetPackLogger;
+import gov.ca.cwds.neutron.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.ElasticTransformer;
 
@@ -589,8 +589,8 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
   protected void sizeQueues(final Date lastRun) {
     // Configure queue sizes for last run or initial load.
     if (determineInitialLoad(lastRun)) {
-      queueNormalize = new LinkedBlockingDeque<>(2000);
-      queueIndex = new LinkedBlockingDeque<>(5000);
+      queueNormalize = new LinkedBlockingDeque<>(8000);
+      queueIndex = new LinkedBlockingDeque<>(16000);
     } else {
       queueNormalize = new LinkedBlockingDeque<>(50000);
       queueIndex = new LinkedBlockingDeque<>(125000);
@@ -688,6 +688,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
 
     try {
       final NativeQuery<T> q = session.getNamedNativeQuery(namedQueryName);
+      q.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
       q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
           NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
@@ -760,6 +761,9 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
       // Insert into session temp table that drives a last change view.
       prepHibernateLastChange(session, lastRunTime);
       final NativeQuery<M> q = session.getNamedNativeQuery(namedQueryName);
+      q.setCacheMode(CacheMode.IGNORE);
+      q.setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
+
       q.setParameter(NeutronColumn.SQL_COLUMN_AFTER.getValue(),
           NeutronJdbcUtils.makeTimestampStringLookBack(lastRunTime), StringType.INSTANCE);
 
@@ -820,7 +824,7 @@ public abstract class BasePersonRocket<T extends PersistentObject, M extends Api
         this.sessionFactory.close();
       }
 
-      catchYourBreath();
+      catchYourBreath(); // a lock would be better
     }
   }
 

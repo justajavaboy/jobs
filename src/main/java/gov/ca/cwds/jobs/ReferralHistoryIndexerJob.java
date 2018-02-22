@@ -34,8 +34,6 @@ import gov.ca.cwds.data.persistence.cms.ReplicatedPersonReferrals;
 import gov.ca.cwds.data.persistence.cms.rep.CmsReplicationOperation;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
 import gov.ca.cwds.jobs.schedule.LaunchCommand;
-import gov.ca.cwds.jobs.util.jdbc.NeutronDB2Utils;
-import gov.ca.cwds.jobs.util.jdbc.NeutronThreadUtils;
 import gov.ca.cwds.neutron.atom.AtomRowMapper;
 import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 import gov.ca.cwds.neutron.exception.NeutronCheckedException;
@@ -45,6 +43,8 @@ import gov.ca.cwds.neutron.jetpack.CheeseRay;
 import gov.ca.cwds.neutron.rocket.BasePersonRocket;
 import gov.ca.cwds.neutron.rocket.referral.MinClientReferral;
 import gov.ca.cwds.neutron.rocket.referral.ReferralJobRanges;
+import gov.ca.cwds.neutron.util.NeutronThreadUtils;
+import gov.ca.cwds.neutron.util.jdbc.NeutronDB2Utils;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
@@ -60,7 +60,7 @@ public class ReferralHistoryIndexerJob
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReferralHistoryIndexerJob.class);
 
-//@formatter:off
+  //@formatter:off
   protected static final String INSERT_CLIENT_FULL =
       "INSERT INTO GT_REFR_CLT (FKREFERL_T, FKCLIENT_T, SENSTV_IND)"
           + "\nSELECT rc.FKREFERL_T, rc.FKCLIENT_T, c.SENSTV_IND"
@@ -69,13 +69,13 @@ public class ReferralHistoryIndexerJob
           + "\nWHERE rc.FKCLIENT_T BETWEEN ? AND ?"
           + "\nAND c.IBMSNAP_OPERATION IN ('I','U') " // don't update a deleted Client document
           ;
-//@formatter:on
+  //@formatter:on
 
   /**
    * Filter <strong>deleted</strong> Client, Referral, Referral/Client, and Allegation.
    */
-//@formatter:off
-  protected static final String INSERT_CLIENT_LAST_CHG = 
+  //@formatter:off
+  protected static final String INSERT_REFERRAL_LAST_CHG = 
       "INSERT INTO GT_ID (IDENTIFIER)\n"
       + " WITH step1 AS (\n"
       + "     SELECT ALG.FKREFERL_T AS REFERRAL_ID\n"
@@ -114,16 +114,17 @@ public class ReferralHistoryIndexerJob
       + " FROM hoard h \n"
       + " JOIN REFR_CLT rc1 ON rc1.FKREFERL_T = h.REFERRAL_ID \n"
       + " JOIN REFR_CLT rc2 ON rc2.FKCLIENT_T = rc1.FKCLIENT_T ";
-//@formatter:on
+  //@formatter:on
 
-//@formatter:off
+  //@formatter:off
   protected static final String SELECT_CLIENT =
-        "SELECT rc.FKCLIENT_T, rc.FKREFERL_T, rc.SENSTV_IND, c.IBMSNAP_OPERATION AS CLT_IBMSNAP_OPERATION \n" 
+        "SELECT rc.FKCLIENT_T, rc.FKREFERL_T, rc.SENSTV_IND, "
+      + "c.IBMSNAP_OPERATION AS CLT_IBMSNAP_OPERATION \n" 
       + "FROM GT_REFR_CLT RC \n"
       + "JOIN CLIENT_T C ON C.IDENTIFIER = RC.FKCLIENT_T";
-//@formatter:on
+  //@formatter:on
 
-//@formatter:off
+  //@formatter:off
   protected static final String SELECT_ALLEGATION = "SELECT \n"
       + " RC.FKREFERL_T         AS REFERRAL_ID,\n" 
       + " ALG.IDENTIFIER        AS ALLEGATION_ID,\n"
@@ -147,10 +148,11 @@ public class ReferralHistoryIndexerJob
       + "JOIN CLIENT_T       CLV  ON CLV.IDENTIFIER = ALG.FKCLIENT_T \n"
       + "LEFT JOIN CLIENT_T  CLP  ON CLP.IDENTIFIER = ALG.FKCLIENT_0 \n"
       + "WITH UR ";
-//@formatter:on
+  //@formatter:on
 
-//@formatter:off
-  protected static final String SELECT_REFERRAL = "SELECT "
+  //@formatter:off
+  protected static final String SELECT_REFERRAL = 
+      "SELECT "
       + " RFL.IDENTIFIER        AS REFERRAL_ID,\n"
       + " RFL.REF_RCV_DT        AS START_DATE,\n" 
       + " RFL.REFCLSR_DT        AS END_DATE,\n"
@@ -176,7 +178,7 @@ public class ReferralHistoryIndexerJob
       + "JOIN REFERL_T          RFL  ON RFL.IDENTIFIER = RC.FKREFERL_T \n"
       + "LEFT JOIN REPTR_T      RPT  ON RPT.FKREFERL_T = RFL.IDENTIFIER \n"
       + "LEFT JOIN STFPERST     STP  ON RFL.FKSTFPERST = STP.IDENTIFIER ";
-//@formatter:on
+   //@formatter:on
 
   /**
    * Allocate memory once for each thread and reuse per key range.
@@ -521,6 +523,7 @@ public class ReferralHistoryIndexerJob
           final PreparedStatement stmtSelReferral =
               con.prepareStatement(getInitialLoadQuery(schema));
           final PreparedStatement stmtSelAllegation = con.prepareStatement(SELECT_ALLEGATION)) {
+
         readClients(stmtInsClient, stmtSelClient, listClientReferralKeys, p);
         readReferrals(stmtSelReferral, mapReferrals);
         readAllegations(stmtSelAllegation, listAllegations);
@@ -597,7 +600,7 @@ public class ReferralHistoryIndexerJob
   @Override
   public String getPrepLastChangeSQL() {
     try {
-      return NeutronDB2Utils.prepLastChangeSQL(INSERT_CLIENT_LAST_CHG,
+      return NeutronDB2Utils.prepLastChangeSQL(INSERT_REFERRAL_LAST_CHG,
           determineLastSuccessfulRunTime());
     } catch (NeutronCheckedException e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR BUILDING LAST CHANGE SQL: {}", e.getMessage());
@@ -645,7 +648,6 @@ public class ReferralHistoryIndexerJob
     return new EsPersonReferral(rs);
   }
 
-  @SuppressWarnings("javadoc")
   protected void releaseLocalMemory(final List<EsPersonReferral> listAllegations,
       final Map<String, EsPersonReferral> mapReferrals,
       final List<MinClientReferral> listClientReferralKeys,
@@ -656,12 +658,10 @@ public class ReferralHistoryIndexerJob
     mapReferrals.clear();
   }
 
-  @SuppressWarnings("javadoc")
   public boolean isMonitorDb2() {
     return monitorDb2;
   }
 
-  @SuppressWarnings("javadoc")
   public void setMonitorDb2(boolean monitorDb2) {
     this.monitorDb2 = monitorDb2;
   }

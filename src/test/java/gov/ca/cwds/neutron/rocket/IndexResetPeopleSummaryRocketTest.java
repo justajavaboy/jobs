@@ -4,23 +4,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-
-import java.util.Date;
 
 import org.junit.Test;
 
 import gov.ca.cwds.dao.cms.ReplicatedOtherAdultInPlacemtHomeDao;
 import gov.ca.cwds.data.persistence.cms.rep.ReplicatedOtherAdultInPlacemtHome;
 import gov.ca.cwds.jobs.Goddard;
-import gov.ca.cwds.neutron.exception.NeutronRuntimeException;
 
-public class IndexResetPeopleRocketTest
+public class IndexResetPeopleSummaryRocketTest
     extends Goddard<ReplicatedOtherAdultInPlacemtHome, ReplicatedOtherAdultInPlacemtHome> {
 
   ReplicatedOtherAdultInPlacemtHomeDao dao;
-  IndexResetRocket target;
+  IndexResetPeopleSummaryRocket target;
 
   @Override
   public void setup() throws Exception {
@@ -28,12 +23,12 @@ public class IndexResetPeopleRocketTest
 
     flightPlan.setDropIndex(true);
     dao = new ReplicatedOtherAdultInPlacemtHomeDao(sessionFactory);
-    target = new IndexResetPeopleRocket(dao, esDao, mapper, flightPlan);
+    target = new IndexResetPeopleSummaryRocket(dao, esDao, mapper, flightPlan);
   }
 
   @Test
   public void type() throws Exception {
-    assertThat(IndexResetRocket.class, notNullValue());
+    assertThat(IndexResetPeopleSummaryRocket.class, notNullValue());
   }
 
   @Test
@@ -42,22 +37,16 @@ public class IndexResetPeopleRocketTest
   }
 
   @Test
-  public void executeJob_Args__Date() throws Exception {
-    final Date lastRunDate = new Date();
-    final Date actual = target.launch(lastRunDate);
-    final Date expected = lastRunDate;
+  public void getIndexSettingsLocation_A$() throws Exception {
+    final String actual = target.getIndexSettingsLocation();
+    final String expected = "/elasticsearch/setting/people-summary-index-settings.json";
     assertThat(actual, is(equalTo(expected)));
   }
 
-  @Test(expected = NeutronRuntimeException.class)
-  public void executeJob__explode() throws Exception {
-    flightPlan.setDropIndex(true);
-    doThrow(new IllegalStateException()).when(esDao).deleteIndex(any(String.class));
-    doThrow(new IllegalStateException()).when(esDao).getConfig();
-
-    final Date lastRunDate = new Date();
-    final Date actual = target.launch(lastRunDate);
-    final Date expected = lastRunDate;
+  @Test
+  public void getDocumentMappingLocation_A$() throws Exception {
+    final String actual = target.getDocumentMappingLocation();
+    final String expected = "/elasticsearch/mapping/map_person_summary.json";
     assertThat(actual, is(equalTo(expected)));
   }
 
