@@ -53,9 +53,20 @@ public class EsCaseRelatedPersonTest extends Goddard {
   @Test
   public void toString_A$() throws Exception {
     String actual = target.toString();
-    String expected =
-        "gov.ca.cwds.data.persistence.cms.EsCaseRelatedPerson@35ff072c[\n  relatedPersonId=<null>\n  parentPersonId=<null>\n  caseId=<null>\n  focusChildId=<null>\n  parentId=<null>\n  startDate=<null>\n  endDate=<null>\n  county=<null>\n  serviceComponent=<null>\n  caseLastUpdated=<null>\n  focusChildFirstName=<null>\n  focusChildLastName=<null>\n  focusChildLastUpdated=<null>\n  focusChildSensitivityIndicator=<null>\n  worker=gov.ca.cwds.data.persistence.cms.rep.EmbeddableStaffWorker@50b38342[\n  workerId=<null>\n  workerFirstName=<null>\n  workerLastName=<null>\n  workerLastUpdated=<null>\n]\n  parentFirstName=<null>\n  parentLastName=<null>\n  parentRelationship=<null>\n  parentLastUpdated=<null>\n  parentSourceTable=<null>\n  parentSensitivityIndicator=<null>\n  accessLimitation=gov.ca.cwds.data.persistence.cms.rep.EmbeddableAccessLimitation@183ef89a\n]";
-    assertThat(actual, is(equalTo(expected)));
+    // String expected =
+    // "gov.ca.cwds.data.persistence.cms.EsCaseRelatedPerson@35ff072c[\n relatedPersonId=<null>\n
+    // parentPersonId=<null>\n caseId=<null>\n focusChildId=<null>\n parentId=<null>\n
+    // startDate=<null>\n endDate=<null>\n county=<null>\n serviceComponent=<null>\n
+    // caseLastUpdated=<null>\n focusChildFirstName=<null>\n focusChildLastName=<null>\n
+    // focusChildLastUpdated=<null>\n focusChildSensitivityIndicator=<null>\n
+    // worker=gov.ca.cwds.data.persistence.cms.rep.EmbeddableStaffWorker@50b38342[\n
+    // workerId=<null>\n workerFirstName=<null>\n workerLastName=<null>\n
+    // workerLastUpdated=<null>\n]\n parentFirstName=<null>\n parentLastName=<null>\n
+    // parentRelationship=<null>\n parentLastUpdated=<null>\n parentSourceTable=<null>\n
+    // parentSensitivityIndicator=<null>\n
+    // accessLimitation=gov.ca.cwds.data.persistence.cms.rep.EmbeddableAccessLimitation@183ef89a\n]";
+    // assertThat(actual, is(equalTo(expected)));
+    assertThat(actual, is(notNullValue()));
   }
 
   @Test
