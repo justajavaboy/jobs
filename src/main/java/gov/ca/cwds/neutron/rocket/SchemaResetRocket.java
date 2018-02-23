@@ -68,7 +68,7 @@ public class SchemaResetRocket
    */
   protected void refreshSchema() throws NeutronCheckedException {
     if (!isLargeDataSet()) {
-      LOGGER.warn("\n\n\n   REFRESH SCHEMA!!\n\n\n");
+      LOGGER.warn("\n\n\n   ********** REFRESH SCHEMA!! ********** \n\n\n");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();
       getOrCreateTransaction(); // HACK
 
@@ -76,11 +76,9 @@ public class SchemaResetRocket
       final String targetTransactionalSchema =
           ((String) session.getSessionFactory().getProperties().get("hibernate.default_schema"))
               .replaceFirst("CWSRS", "CWSNS").replaceAll("\"", "");
-
       LOGGER.info("CALL SCHEMA REFRESH: target schema: {}", targetTransactionalSchema);
 
-      // HACK: The proc currently lives in NS4 but affects the target schema.
-      final ProcedureCall proc = session.createStoredProcedureCall("CWSNS4.SPREFRSNS1");
+      final ProcedureCall proc = session.createStoredProcedureCall("CWSTMP.SPREFDBS");
       proc.registerStoredProcedureParameter("SCHEMANM", String.class, ParameterMode.IN);
       proc.registerStoredProcedureParameter("RETSTATUS", String.class, ParameterMode.OUT);
       proc.registerStoredProcedureParameter("RETMESSAG", String.class, ParameterMode.OUT);
@@ -95,7 +93,7 @@ public class SchemaResetRocket
       if (StringUtils.isNotBlank(returnStatus) && returnStatus.charAt(0) != '0') {
         CheeseRay.runtime(LOGGER, "SCHEMA REFRESH ERROR! {}", returnMsg);
       } else {
-        LOGGER.warn("SCHEMA REFRESH KICKED OFF!!!");
+        LOGGER.warn("SCHEMA REFRESH STARTED!!!");
       }
     } else {
       LOGGER.warn("SAFETY! REFRESH PROHIBITED ON LARGE DATA SETS!");

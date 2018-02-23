@@ -167,7 +167,8 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
   public void initScheduler_Args__Injector() throws Exception {
     final Injector injector = mock(Injector.class);
     when(injector.getInstance(RocketFactory.class)).thenReturn(rocketFactory);
-    target.getSettings().setExposeJmx(false);
+
+    LaunchCommand.getSettings().setExposeJmx(false);
     target.setInjector(injector);
     target.initScheduler();
   }
@@ -185,7 +186,7 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
 
   @Test
   public void getFlightRecorder_Args__() throws Exception {
-    AtomFlightRecorder actual = target.getFlightRecorder();
+    final AtomFlightRecorder actual = target.getFlightRecorder();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -196,7 +197,7 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
 
   @Test
   public void getNeutronScheduler_Args__() throws Exception {
-    AtomLaunchDirector actual = target.getNeutronScheduler();
+    final AtomLaunchDirector actual = target.getNeutronScheduler();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -212,7 +213,7 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
 
   @Test
   public void getInstance_Args__() throws Exception {
-    LaunchCommand actual = LaunchCommand.getInstance();
+    final LaunchCommand actual = LaunchCommand.getInstance();
     assertThat(actual, is(notNullValue()));
   }
 
@@ -239,8 +240,8 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
   @Test
   public void handleTimeFile_Args__FlightPlan__DateFormat__Date__StandardFlightSchedule()
       throws Exception {
-    DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-    Date now = new Date();
+    final DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+    final Date now = new Date();
     StandardFlightSchedule sched = StandardFlightSchedule.REFERRAL;
     target.handleSchedulerModeTimeFile(flightPlan, fmt, now, sched);
   }
@@ -284,51 +285,51 @@ public class LaunchCommandTest extends Goddard<TestNormalizedEntity, TestDenorma
   @Test
   public void startSchedulerMode_Args__() throws Exception {
     LaunchCommand.getSettings().setExposeJmx(false);
-    LaunchCommand actual = LaunchCommand.startSchedulerMode();
+    final LaunchCommand actual = LaunchCommand.startSchedulerMode();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getInjectorMaker_Args__() throws Exception {
-    Function<FlightPlan, Injector> actual = LaunchCommand.getInjectorMaker();
+    final Function<FlightPlan, Injector> actual = LaunchCommand.getInjectorMaker();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void setInjectorMaker_Args__Function() throws Exception {
-    Function<FlightPlan, Injector> makeLaunchCommand = mock(Function.class);
+    final Function<FlightPlan, Injector> makeLaunchCommand = mock(Function.class);
     LaunchCommand.setInjectorMaker(makeLaunchCommand);
   }
 
   @Test
   public void getInjector_Args__() throws Exception {
-    Injector actual = target.getInjector();
-    Injector expected = null;
+    final Injector actual = target.getInjector();
+    final Injector expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setInjector_Args__Injector() throws Exception {
-    Injector injector = mock(Injector.class);
+    final Injector injector = mock(Injector.class);
     target.setInjector(injector);
   }
 
   @Test
   public void getSettings_Args__() throws Exception {
-    LaunchCommandSettings actual = LaunchCommand.getSettings();
+    final LaunchCommandSettings actual = LaunchCommand.getSettings();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getStandardFlightPlan_Args__() throws Exception {
-    FlightPlan actual = LaunchCommand.getStandardFlightPlan();
+    final FlightPlan actual = LaunchCommand.getStandardFlightPlan();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void setStandardFlightPlan_Args__FlightPlan() throws Exception {
-    FlightPlan standardFlightPlan = mock(FlightPlan.class);
-    LaunchCommand.setStandardFlightPlan(standardFlightPlan);
+    final FlightPlan plan = mock(FlightPlan.class);
+    LaunchCommand.setStandardFlightPlan(plan);
   }
 
   // @Test
