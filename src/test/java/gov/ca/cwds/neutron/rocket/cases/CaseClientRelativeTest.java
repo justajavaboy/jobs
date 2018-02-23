@@ -150,7 +150,7 @@ public class CaseClientRelativeTest extends Goddard {
 
   @Test
   public void equals_Args__Object() throws Exception {
-    Object obj = null;
+    final Object obj = null;
     final boolean actual = target.equals(obj);
     final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
@@ -194,20 +194,20 @@ public class CaseClientRelativeTest extends Goddard {
 
   public void test_toString_A$() throws Exception {
     final String actual = target.toString();
-    String expected = null;
+    final String expected = null;
     assertEquals(expected, actual);
   }
 
   public void test_hashCode_A$() throws Exception {
-    int actual = target.hashCode();
-    int expected = 0;
+    final int actual = target.hashCode();
+    final int expected = 0;
     assertEquals(expected, actual);
   }
 
   public void test_equals_A$Object() throws Exception {
-    Object obj = null;
-    boolean actual = target.equals(obj);
-    boolean expected = false;
+    final Object obj = null;
+    final boolean actual = target.equals(obj);
+    final boolean expected = false;
     assertEquals(expected, actual);
   }
 
