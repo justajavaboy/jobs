@@ -75,14 +75,12 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
   public void normalize_A$Map() throws Exception {
     final Map<Object, ReplicatedRelationships> map = new HashMap<>();
     final ReplicatedRelationships actual = target.normalize(map);
-
     final ReplicatedRelationships expected = new ReplicatedRelationships();
     expected.setId(DEFAULT_CLIENT_ID);
     // expected.getReplicatedEntity().setReplicationDate(new Date());
     // expected.getReplicatedEntity().setReplicationOperation(CmsReplicationOperation.I);
     // expected.setReplicationDate(new Date());
     // expected.setReplicationOperation(CmsReplicationOperation.I);
-
     // assertThat(actual, is(equalTo(expected)));
     assertThat(actual, is(notNullValue()));
   }
@@ -123,7 +121,7 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
 
   @Test
   public void setThisReplicationDate_A$Date() throws Exception {
-    final Date thisReplicationDate = mock(Date.class);
+    final Date thisReplicationDate = new Date();
     target.setThisReplicationDate(thisReplicationDate);
   }
 
@@ -149,7 +147,7 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
 
   @Test
   public void setRelatedReplicationDate_A$Date() throws Exception {
-    final Date relatedReplicationDate = mock(Date.class);
+    final Date relatedReplicationDate = new Date();
     target.setRelatedReplicationDate(relatedReplicationDate);
   }
 
@@ -171,10 +169,8 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
   public void compare_A$EsRelationship$EsRelationship() throws Exception {
     final EsRelationship o1 = new EsRelationship();
     o1.setThisLegacyId(DEFAULT_CLIENT_ID);
-
     final EsRelationship o2 = new EsRelationship();
     o2.setThisLegacyId(DEFAULT_CLIENT_ID);
-
     final int actual = target.compare(o1, o2);
     final int expected = 0;
     assertThat(actual, is(equalTo(expected)));
@@ -184,7 +180,6 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
   public void compareTo_A$EsRelationship() throws Exception {
     final EsRelationship o = new EsRelationship();
     o.setThisLegacyId(DEFAULT_CLIENT_ID);
-
     final int actual = target.compareTo(o);
     final int expected = 0;
     assertThat(actual, is(equalTo(expected)));
@@ -208,6 +203,214 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
   public void toString_A$() throws Exception {
     String actual = target.toString();
     assertThat(actual, is(notNullValue()));
+  }
+
+  @Test
+  public void getThisLegacyId_A$() throws Exception {
+    String actual = target.getThisLegacyId();
+    String expected = DEFAULT_CLIENT_ID;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setThisLegacyId_A$String() throws Exception {
+    String thisLegacyId = null;
+    target.setThisLegacyId(thisLegacyId);
+  }
+
+  @Test
+  public void getThisFirstName_A$() throws Exception {
+    String actual = target.getThisFirstName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setThisFirstName_A$String() throws Exception {
+    String thisFirstName = null;
+    target.setThisFirstName(thisFirstName);
+  }
+
+  @Test
+  public void getThisLastName_A$() throws Exception {
+    String actual = target.getThisLastName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setThisLastName_A$String() throws Exception {
+    String thisLastName = null;
+    target.setThisLastName(thisLastName);
+  }
+
+  @Test
+  public void getRelCode_A$() throws Exception {
+    Short actual = target.getRelCode();
+    Short expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelCode_A$Short() throws Exception {
+    Short relCode = null;
+    target.setRelCode(relCode);
+  }
+
+  @Test
+  public void getRelatedLegacyId_A$() throws Exception {
+    String actual = target.getRelatedLegacyId();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelatedLegacyId_A$String() throws Exception {
+    String relatedLegacyId = null;
+    target.setRelatedLegacyId(relatedLegacyId);
+  }
+
+  @Test
+  public void getRelatedFirstName_A$() throws Exception {
+    String actual = target.getRelatedFirstName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelatedFirstName_A$String() throws Exception {
+    String relatedFirstName = null;
+    target.setRelatedFirstName(relatedFirstName);
+  }
+
+  @Test
+  public void getRelatedLastName_A$() throws Exception {
+    String actual = target.getRelatedLastName();
+    String expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelatedLastName_A$String() throws Exception {
+    String relatedLastName = null;
+    target.setRelatedLastName(relatedLastName);
+  }
+
+  @Test
+  public void getReverseRelationship_A$() throws Exception {
+    Boolean actual = target.getReverseRelationship();
+    Boolean expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setReverseRelationship_A$Boolean() throws Exception {
+    Boolean reverseRelationship = null;
+    target.setReverseRelationship(reverseRelationship);
+  }
+
+  @Test
+  public void getThisLegacyLastUpdated_A$() throws Exception {
+    Date actual = target.getThisLegacyLastUpdated();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setThisLegacyLastUpdated_A$Date() throws Exception {
+    Date thisLegacyLastUpdated = new Date();
+    target.setThisLegacyLastUpdated(thisLegacyLastUpdated);
+  }
+
+  @Test
+  public void getRelatedLegacyLastUpdated_A$() throws Exception {
+    Date actual = target.getRelatedLegacyLastUpdated();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelatedLegacyLastUpdated_A$Date() throws Exception {
+    Date relatedLegacyLastUpdated = new Date();
+    target.setRelatedLegacyLastUpdated(relatedLegacyLastUpdated);
+  }
+
+  @Test
+  public void getRelationshipReplicationOperation_A$() throws Exception {
+    CmsReplicationOperation actual = target.getRelationshipReplicationOperation();
+    CmsReplicationOperation expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelationshipReplicationOperation_A$CmsReplicationOperation() throws Exception {
+    CmsReplicationOperation relationshipReplicationOperation = CmsReplicationOperation.U;
+    target.setRelationshipReplicationOperation(relationshipReplicationOperation);
+  }
+
+  @Test
+  public void getThisClientReplicationOperation_A$() throws Exception {
+    CmsReplicationOperation actual = target.getThisClientReplicationOperation();
+    CmsReplicationOperation expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setThisClientReplicationOperation_A$CmsReplicationOperation() throws Exception {
+    CmsReplicationOperation thisClientReplicationOperation = CmsReplicationOperation.U;
+    target.setThisClientReplicationOperation(thisClientReplicationOperation);
+  }
+
+  @Test
+  public void getRelatedClientReplicationOperation_A$() throws Exception {
+    CmsReplicationOperation actual = target.getRelatedClientReplicationOperation();
+    CmsReplicationOperation expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelatedClientReplicationOperation_A$CmsReplicationOperation() throws Exception {
+    CmsReplicationOperation relatedClientReplicationOperation = CmsReplicationOperation.U;
+    target.setRelatedClientReplicationOperation(relatedClientReplicationOperation);
+  }
+
+  @Test
+  public void getRelationshipReplicationDate_A$() throws Exception {
+    Date actual = target.getRelationshipReplicationDate();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelationshipReplicationDate_A$Date() throws Exception {
+    Date relationshipReplicationDate = new Date();
+    target.setRelationshipReplicationDate(relationshipReplicationDate);
+  }
+
+  @Test
+  public void getThisClientReplicationDate_A$() throws Exception {
+    Date actual = target.getThisClientReplicationDate();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setThisClientReplicationDate_A$Date() throws Exception {
+    Date thisClientReplicationDate = new Date();
+    target.setThisClientReplicationDate(thisClientReplicationDate);
+  }
+
+  @Test
+  public void getRelatedClientReplicationDate_A$() throws Exception {
+    Date actual = target.getRelatedClientReplicationDate();
+    Date expected = null;
+    assertThat(actual, is(equalTo(expected)));
+  }
+
+  @Test
+  public void setRelatedClientReplicationDate_A$Date() throws Exception {
+    Date relatedClientReplicationDate = new Date();
+    target.setRelatedClientReplicationDate(relatedClientReplicationDate);
   }
 
 }
