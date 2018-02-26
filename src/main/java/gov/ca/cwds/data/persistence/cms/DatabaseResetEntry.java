@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -24,40 +25,78 @@ import gov.ca.cwds.neutron.rocket.ClientSQLResource;
 @Entity
 @Table(name = "DBREFSTA")
 //@formatter:off
-@NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfter",
+@NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.DatabaseResetEntry.findAllUpdatedAfter",
     query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
-        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
-        + "ORDER BY CLT_IDENTIFIER, CLA_IDENTIFIER, ADR_IDENTIFIER \n"
-        + "FOR READ ONLY WITH UR ",
-    resultClass = DatabaseResetEntry.class, readOnly = true)
-
-@NamedNativeQuery(
-    name = "gov.ca.cwds.data.persistence.cms.EsClientAddress.findAllUpdatedAfterWithLimitedAccess",
-        query = "SELECT " + ClientSQLResource.LAST_CHG_COLUMNS + "\n"
-        + "FROM {h-schema}VW_LST_CLIENT_ADDRESS x \n"
-        + "WHERE (1=1 OR x.LAST_CHG > :after) \n"
-        + "AND x.CLT_SENSTV_IND != 'N' \n"
-        + "ORDER BY CLT_IDENTIFIER, CLA_IDENTIFIER, ADR_IDENTIFIER \n"
-        + "FOR READ ONLY WITH UR ",
+        + " SELECT r.SCHEMA_NM, r.START_TS, r.END_TS, r.REF_STATUS \n"
+        + " FROM ( \n"
+        + "     SELECT r1.SCHEMA_NM, MAX(r1.START_TS) AS LAST_START \n"
+        + "     FROM CWSTMP.DBREFSTA r1 \n"
+        + "     WHERE r1.SCHEMA_NM = :schema_name \n"
+        + "     GROUP BY SCHEMA_NM \n"
+        + " ) d \n"
+        + " JOIN CWSTMP.DBREFSTA r ON d.SCHEMA_NM = r.SCHEMA_NM AND d.LAST_START = r.START_TS \n"
+        + " ORDER BY SCHEMA_NM, START_TS \n"
+        + " WITH UR",
     resultClass = DatabaseResetEntry.class, readOnly = true)
 //@formatter:on
 public class DatabaseResetEntry implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  @Column(name = "CLT_CONF_EFIND")
-  protected String cltConfidentialityInEffectIndicator;
+  @Id
+  @Column(name = "SCHEMA_NM")
+  protected String schemaName;
 
-  @Type(type = "date")
-  @Column(name = "CLT_CREATN_DT")
-  protected Date cltCreationDate;
+  @Id
+  @Type(type = "timestamp")
+  @Column(name = "START_TS")
+  protected Date startTime;
 
-  @Column(name = "CLT_CURRCA_IND")
-  protected String cltCurrCaChildrenServIndicator;
+  @Type(type = "timestamp")
+  @Column(name = "END_TS")
+  protected Date endTime;
 
-  @Column(name = "CLT_COTH_DESC")
-  protected String cltCurrentlyOtherDescription;
+  /**
+   * status: R = running, F = failed, S = succeeded
+   */
+  @Column(name = "REF_STATUS")
+  protected String refreshStatus;
+
+  // =====================
+  // ACCESSORS:
+  // =====================
+
+  public String getSchemaName() {
+    return schemaName;
+  }
+
+  public void setSchemaName(String schemaName) {
+    this.schemaName = schemaName;
+  }
+
+  public Date getStartTime() {
+    return startTime;
+  }
+
+  public void setStartTime(Date startTime) {
+    this.startTime = startTime;
+  }
+
+  public Date getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(Date endTime) {
+    this.endTime = endTime;
+  }
+
+  public String getRefreshStatus() {
+    return refreshStatus;
+  }
+
+  public void setRefreshStatus(String refreshStatus) {
+    this.refreshStatus = refreshStatus;
+  }
 
   // =====================
   // IDENTITY:

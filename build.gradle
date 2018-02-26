@@ -29,7 +29,7 @@ project.ext {
     powerMockVersion = "1.7.3"
 }
 
-version = 0.42
+version = 0.43
 
 repositories {
     mavenCentral()
@@ -111,7 +111,7 @@ dependencies {
 	
 	testCompile 'com.github.tlrx:elasticsearch-test:1.2.1'
 	// testCompile group: 'org.elasticsearch.test', name: 'framework', version: 'elasticsearchVersion'
-    // testCompile 'org.jacoco:jacoco:0.7.9'
+    // testCompile 'org.jacoco:jacoco:0.8.0'
 }
 
 shadowJar {
