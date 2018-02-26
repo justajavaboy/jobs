@@ -15,7 +15,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.annotations.NamedNativeQuery;
 import org.hibernate.annotations.Type;
 
+import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.neutron.rocket.ClientSQLResource;
+import gov.ca.cwds.rest.api.domain.DomainChef;
 
 /**
  * Entity bean for view CWSTMP.DBREFSTA.
@@ -39,7 +41,7 @@ import gov.ca.cwds.neutron.rocket.ClientSQLResource;
         + " WITH UR",
     resultClass = DatabaseResetEntry.class, readOnly = true)
 //@formatter:on
-public class DatabaseResetEntry implements Serializable {
+public class DatabaseResetEntry implements PersistentObject {
 
   private static final long serialVersionUID = 1L;
 
@@ -96,6 +98,11 @@ public class DatabaseResetEntry implements Serializable {
 
   public void setRefreshStatus(String refreshStatus) {
     this.refreshStatus = refreshStatus;
+  }
+
+  @Override
+  public Serializable getPrimaryKey() {
+    return new VarargPrimaryKey(schemaName, DomainChef.cookTimestamp(startTime));
   }
 
   // =====================
