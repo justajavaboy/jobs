@@ -612,7 +612,11 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   public void test_reduceCase_A$ReplicatedPersonCases$EsCaseRelatedPerson$Map$Map()
       throws Exception {
     final ReplicatedPersonCases cases = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
+
     final EsCaseRelatedPerson rawCase = new EsCaseRelatedPerson();
+    rawCase.setCaseId("1234543abc");
+    rawCase.setFocusChildId(DEFAULT_CLIENT_ID);
+
     final Map<String, Map<String, FocusChildParent>> mapFocusChildParents = new HashMap<>();
     final Map<String, FocusChildParent> mapParents = new HashMap<>();
     FocusChildParent parent =
