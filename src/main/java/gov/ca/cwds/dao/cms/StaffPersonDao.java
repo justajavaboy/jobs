@@ -2,7 +2,6 @@ package gov.ca.cwds.dao.cms;
 
 import java.util.List;
 
-import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -51,14 +50,15 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
 
     try {
       txn = txn != null ? txn : session.beginTransaction();
-
       if (TransactionStatus.NOT_ACTIVE == txn.getStatus() || !txn.isActive()) {
         txn.begin();
       }
 
       session.clear();
-      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName).setCacheable(false)
-          .setFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
+      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName)
+          // .setCacheable(false)
+          .setFlushMode(FlushMode.MANUAL).setReadOnly(true)
+          // .setCacheMode(CacheMode.IGNORE)
           .setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
       final ImmutableList.Builder<StaffPerson> entities = new ImmutableList.Builder<>();
       entities.addAll(query.list());

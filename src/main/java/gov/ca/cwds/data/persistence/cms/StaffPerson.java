@@ -316,4 +316,16 @@ public class StaffPerson extends CmsPersistentObject
     return EqualsBuilder.reflectionEquals(this, obj, false);
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
 }

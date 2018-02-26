@@ -58,9 +58,14 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
       super(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
     }
 
+    // Map<String, StaffPerson>
+    public void addStaffWorker(StaffPerson worker) {
+      getStaffWorkers().put(worker.getId(), worker);
+    }
+
   }
 
-  CaseRocket target;
+  TestCaseRocket target;
   ReplicatedPersonCasesDao dao;
   ReplicatedClientDao clientDao;
   StaffPersonDao staffPersonDao;
@@ -151,7 +156,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     when(rsSelClient.getString("SENSTV_IND")).thenReturn("N");
     when(rsSelClient.getString("CLIENT_OPERATION")).thenReturn("U");
 
-    target = new CaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
+    target =
+        new TestCaseRocket(dao, esDao, clientDao, staffPersonDao, lastRunFile, mapper, flightPlan);
   }
 
   @Test
@@ -248,7 +254,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test(expected = NeutronCheckedException.class)
   public void readStaffWorkers_Args___T__NeutronException() throws Exception {
-    target = new CaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
+    target = new TestCaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
     target.readStaffWorkers();
   }
 
@@ -483,7 +489,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_readStaffWorkers_A$_T$NeutronException() throws Exception {
     try {
-      target = new CaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
+      target = new TestCaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
       target.readStaffWorkers();
       fail("Expected exception was not thrown!");
     } catch (NeutronCheckedException e) {
@@ -516,6 +522,12 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_extractCase_A$ResultSet() throws Exception {
     target.readStaffWorkers();
+
+    final StaffPerson worker = new StaffPerson();
+    worker.setId("0X5");
+    worker.setFirstName("Betty");
+    worker.setLastName("Social");
+    target.addStaffWorker(worker);
 
     final EsCaseRelatedPerson actual = target.extractCase(rs);
 

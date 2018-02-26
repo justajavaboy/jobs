@@ -801,4 +801,8 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     LaunchCommand.launchOneWayTrip(CaseRocket.class, args);
   }
 
+  public Map<String, StaffPerson> getStaffWorkers() {
+    return staffWorkers;
+  }
+
 }
