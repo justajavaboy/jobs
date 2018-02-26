@@ -273,11 +273,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     target.pullNextRange(p);
   }
 
-  // @Test
-  // public void threadRetrieveByJdbc_Args__() throws Exception {
-  // target.threadRetrieveByJdbc();
-  // }
-
   @Test
   public void getClientDao_Args__() throws Exception {
     final ReplicatedClientDao actual = target.getClientDao();
@@ -340,14 +335,14 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   @Test
   public void test_getOptionalElementName_A$() throws Exception {
     final String actual = target.getOptionalElementName();
-    String expected = "cases";
+    final String expected = "cases";
     assertEquals(expected, actual);
   }
 
   @Test
   public void test_mustDeleteLimitedAccessRecords_A$() throws Exception {
-    boolean actual = target.mustDeleteLimitedAccessRecords();
-    boolean expected = true;
+    final boolean actual = target.mustDeleteLimitedAccessRecords();
+    final boolean expected = true;
     assertEquals(expected, actual);
   }
 
@@ -680,11 +675,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   }
 
   // @Test
-  // public void test_runMultiThreadIndexing_A$() throws Exception {
-  // target.runMultiThreadIndexing();
-  // }
-
-  // @Test
   // public void test_fetchLastRunResults_A$Date$Set() throws Exception {
   // Date lastRunDate = new Date();
   // Set<String> deletionResults = new HashSet<>();
@@ -693,10 +683,15 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
   // assertEquals(expected, actual);
   // }
 
-  // @Test
-  // public void test_threadRetrieveByJdbc_A$() throws Exception {
-  // target.threadRetrieveByJdbc();
-  // }
+  @Test
+  public void test_runMultiThreadIndexing_A$() throws Exception {
+    target.runMultiThreadIndexing();
+  }
+
+  @Test
+  public void test_threadRetrieveByJdbc_A$() throws Exception {
+    target.threadRetrieveByJdbc();
+  }
 
   @Test
   public void test_getClientDao_A$() throws Exception {
