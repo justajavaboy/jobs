@@ -631,7 +631,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
     final Map<String, Map<String, FocusChildParent>> mapFocusChildParents = new HashMap<>();
     final Map<String, FocusChildParent> mapParents = new HashMap<>();
-    FocusChildParent parent =
+    final FocusChildParent parent =
         new FocusChildParent(DEFAULT_CLIENT_ID, "abc1234567", (short) 205, "Robert", "Plant", "N");
     mapParents.put("abc1234567", parent);
     mapFocusChildParents.put(DEFAULT_CLIENT_ID, mapParents);
@@ -665,7 +665,9 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     listFocusChildParents.add(
         new FocusChildParent(DEFAULT_CLIENT_ID, "abc1234567", (short) 205, "Robert", "Plant", "N"));
 
-    final List listCaseClients = new ArrayList();
+    final List<Pair<String, String>> listCaseClients = new ArrayList<>();
+    listCaseClients.add(Pair.of(DEFAULT_CLIENT_ID, "abc1234567"));
+
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     final Map mapClientCases = new HashMap();
@@ -677,11 +679,11 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_verify_A$Map() throws Exception {
-    Map<String, ReplicatedPersonCases> mapReadyClientCases =
+    final Map<String, ReplicatedPersonCases> mapReadyClientCases =
         new HashMap<String, ReplicatedPersonCases>();
     mapReadyClientCases.put(DEFAULT_CLIENT_ID, new ReplicatedPersonCases(DEFAULT_CLIENT_ID));
-    boolean actual = target.verify(mapReadyClientCases);
-    boolean expected = true;
+    final boolean actual = target.verify(mapReadyClientCases);
+    final boolean expected = true;
     assertEquals(expected, actual);
   }
 
@@ -695,15 +697,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     } catch (NeutronCheckedException e) {
     }
   }
-
-  // @Test
-  // public void test_fetchLastRunResults_A$Date$Set() throws Exception {
-  // Date lastRunDate = new Date();
-  // Set<String> deletionResults = new HashSet<>();
-  // List<ReplicatedPersonCases> actual = target.fetchLastRunResults(lastRunDate, deletionResults);
-  // List<ReplicatedPersonCases> expected = null;
-  // assertEquals(expected, actual);
-  // }
 
   @Test
   public void test_runMultiThreadIndexing_A$() throws Exception {

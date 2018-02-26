@@ -791,6 +791,10 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
     return clientDao;
   }
 
+  public Map<String, StaffPerson> getStaffWorkers() {
+    return staffWorkers;
+  }
+
   /**
    * Rocket entry point.
    * 
@@ -799,10 +803,6 @@ public class CaseRocket extends InitialLoadJdbcRocket<ReplicatedPersonCases, EsC
    */
   public static void main(String... args) throws Exception {
     LaunchCommand.launchOneWayTrip(CaseRocket.class, args);
-  }
-
-  public Map<String, StaffPerson> getStaffWorkers() {
-    return staffWorkers;
   }
 
 }
