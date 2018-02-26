@@ -246,13 +246,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     assertThat(actual, is(equalTo(expected)));
   }
 
-  // @Test
-  // public void readStaffWorkers_Args__() throws Exception {
-  // Map<String, StaffPerson> actual = target.readStaffWorkers();
-  // Map<String, StaffPerson> expected = null;
-  // assertThat(actual, is(equalTo(expected)));
-  // }
-
   @Test(expected = NeutronCheckedException.class)
   public void readStaffWorkers_Args___T__NeutronException() throws Exception {
     target = new CaseRocket(dao, esDao, clientDao, null, lastRunFile, mapper, flightPlan);
@@ -527,6 +520,8 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_extractCase_A$ResultSet() throws Exception {
+    target.readStaffWorkers();
+
     final EsCaseRelatedPerson actual = target.extractCase(rs);
 
     // EsCaseRelatedPerson expected = new EsCaseRelatedPerson();
@@ -599,8 +594,22 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void test_addFocusChildren_A$Map$Map() throws Exception {
+    final String caseId = "12345670x5";
+    target.readStaffWorkers();
+
+    final ReplicatedClient client = new ReplicatedClient();
+    client.setId(DEFAULT_CLIENT_ID);
+
+    final EsCaseRelatedPerson caseRelatedPerson = new EsCaseRelatedPerson();
+    caseRelatedPerson.setCaseId(caseId);
+    caseRelatedPerson.setFocusChildId(DEFAULT_CLIENT_ID);
+
     final Map<String, EsCaseRelatedPerson> mapCases = new HashMap<String, EsCaseRelatedPerson>();
+    mapCases.put(caseId, caseRelatedPerson);
+
     final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
+    mapClients.put(DEFAULT_CLIENT_ID, client);
+
     target.addFocusChildren(mapCases, mapClients);
   }
 
@@ -609,7 +618,6 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
       throws Exception {
     final ReplicatedPersonCases cases = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
     final EsCaseRelatedPerson rawCase = new EsCaseRelatedPerson();
-    final Map<String, ReplicatedClient> mapClients = new HashMap<String, ReplicatedClient>();
     final Map<String, Map<String, FocusChildParent>> mapFocusChildParents = new HashMap<>();
     target.reduceCase(cases, rawCase, mapFocusChildParents);
   }
