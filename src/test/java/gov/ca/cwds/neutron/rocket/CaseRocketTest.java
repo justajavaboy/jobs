@@ -614,6 +614,12 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
     final ReplicatedPersonCases cases = new ReplicatedPersonCases(DEFAULT_CLIENT_ID);
     final EsCaseRelatedPerson rawCase = new EsCaseRelatedPerson();
     final Map<String, Map<String, FocusChildParent>> mapFocusChildParents = new HashMap<>();
+    final Map<String, FocusChildParent> mapParents = new HashMap<>();
+    FocusChildParent parent =
+        new FocusChildParent(DEFAULT_CLIENT_ID, "abc1234567", (short) 205, "Robert", "Plant", "N");
+    mapParents.put("abc1234567", parent);
+    mapFocusChildParents.put(DEFAULT_CLIENT_ID, mapParents);
+
     target.reduceCase(cases, rawCase, mapFocusChildParents);
   }
 
