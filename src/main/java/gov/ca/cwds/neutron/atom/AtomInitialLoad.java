@@ -146,7 +146,8 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
     final String threadName =
         "extract_" + nextThreadNumber() + "_" + p.getLeft() + "_" + p.getRight();
     nameThread(threadName);
-    getLogger().info("BEGIN: extract thread {}", threadName);
+    final Logger log = getLogger();
+    log.info("BEGIN: extract thread {}", threadName);
     getFlightLog().markRangeStart(p);
 
     try (Connection con = getJobDao().getSessionFactory().getSessionFactoryOptions()
@@ -156,7 +157,7 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
 
       final String query = getInitialLoadQuery(getDBSchemaName()).replaceAll(":fromId", p.getLeft())
           .replaceAll(":toId", p.getRight());
-      getLogger().info("query: {}", query);
+      log.info("query: {}", query);
       NeutronDB2Utils.enableParallelism(con);
 
       try (Statement stmt = con.createStatement()) {
@@ -168,11 +169,11 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
         con.commit();
       }
 
-      getLogger().info("RANGE COMPLETED SUCCESSFULLY! {}-{}", p.getLeft(), p.getRight());
+      log.info("RANGE COMPLETED SUCCESSFULLY! {}-{}", p.getLeft(), p.getRight());
     } catch (Exception e) {
       fail();
-      throw CheeseRay.runtime(getLogger(), e, "FAILED TO PULL RANGE! {}-{} : {}", p.getLeft(),
-          p.getRight(), e.getMessage());
+      throw CheeseRay.runtime(log, e, "FAILED TO PULL RANGE! {}-{} : {}", p.getLeft(), p.getRight(),
+          e.getMessage());
     } finally {
       getFlightLog().markRangeComplete(p);
       nameThread(RandomStringUtils.random(10, "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890"));
@@ -240,8 +241,9 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
    * Refresh DB2 materialized query tables (MQT) by calling a stored procedure.
    */
   default void refreshMQT() {
+    final Logger log = getLogger();
     if (getFlightPlan().isRefreshMqt() && StringUtils.isNotBlank(getMQTName())) {
-      getLogger().warn("REFRESH MQT!");
+      log.warn("REFRESH MQT!");
       final Session session = getJobDao().getSessionFactory().getCurrentSession();
       getOrCreateTransaction(); // HACK
       final String schema =
@@ -257,10 +259,10 @@ public interface AtomInitialLoad<T extends PersistentObject, M extends ApiGroupN
 
       final String returnStatus = (String) proc.getOutputParameterValue("RETSTATUS");
       final String returnMsg = (String) proc.getOutputParameterValue("RETMESSAG");
-      getLogger().info("refresh MQT proc: status: {}, msg: {}", returnStatus, returnMsg);
+      log.info("refresh MQT proc: status: {}, msg: {}", returnStatus, returnMsg);
 
       if (returnStatus.charAt(0) != '0') {
-        CheeseRay.runtime(getLogger(), "MQT REFRESH ERROR! {}", returnMsg);
+        CheeseRay.runtime(log, "MQT REFRESH ERROR! {}", returnMsg);
       }
     }
   }

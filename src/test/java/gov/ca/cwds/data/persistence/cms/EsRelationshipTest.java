@@ -74,7 +74,21 @@ public class EsRelationshipTest extends Goddard<ReplicatedRelationships, EsRelat
   @Test
   public void normalize_A$Map() throws Exception {
     final Map<Object, ReplicatedRelationships> map = new HashMap<>();
+    final ReplicatedRelationships rel = new ReplicatedRelationships();
+    rel.setId(DEFAULT_CLIENT_ID);
+    map.put(DEFAULT_CLIENT_ID, rel);
+
+    target.setThisClientReplicationOperation(CmsReplicationOperation.U);
+    target.setRelatedClientReplicationOperation(CmsReplicationOperation.U);
+    target.setRelationshipReplicationOperation(CmsReplicationOperation.U);
+    target.setThisFirstName("Boy");
+    target.setThisLastName("George");
+    target.setRelatedFirstName("Homer");
+    target.setRelatedLastName("Simpson");
+    target.setRelatedLegacyId("1234567yca");
+
     final ReplicatedRelationships actual = target.normalize(map);
+
     final ReplicatedRelationships expected = new ReplicatedRelationships();
     expected.setId(DEFAULT_CLIENT_ID);
     // expected.getReplicatedEntity().setReplicationDate(new Date());

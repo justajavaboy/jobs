@@ -82,21 +82,6 @@ public class ReplicatedRelationships implements RetrovillePerson, CmsReplicatedE
   }
 
   @Override
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this, false);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
-  }
-
-  @Override
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, true);
-  }
-
-  @Override
   public String getLegacyId() {
     return id;
   }
@@ -110,6 +95,21 @@ public class ReplicatedRelationships implements RetrovillePerson, CmsReplicatedE
   @Override
   public EmbeddableCmsReplicatedEntity getReplicatedEntity() {
     return embeddableCmsReplicatedEntity;
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE, true);
   }
 
 }

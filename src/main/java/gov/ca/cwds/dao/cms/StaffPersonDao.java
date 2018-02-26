@@ -18,6 +18,7 @@ import gov.ca.cwds.data.BaseDaoImpl;
 import gov.ca.cwds.data.DaoException;
 import gov.ca.cwds.data.persistence.cms.StaffPerson;
 import gov.ca.cwds.inject.CmsSessionFactory;
+import gov.ca.cwds.neutron.enums.NeutronIntegerDefaults;
 
 /**
  * Hibernate DAO for DB2 {@link StaffPerson}.
@@ -55,11 +56,12 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
         txn.begin();
       }
 
-      final Query<StaffPerson> query =
-          session.getNamedQuery(namedQueryName).setCacheable(false).setFlushMode(FlushMode.MANUAL)
-              .setReadOnly(true).setCacheMode(CacheMode.IGNORE).setFetchSize(5000);
+      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName).setCacheable(false)
+          .setFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
+          .setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
       final ImmutableList.Builder<StaffPerson> entities = new ImmutableList.Builder<>();
       entities.addAll(query.list());
+      session.flush();
       txn.commit();
       return entities.build();
     } catch (HibernateException h) {
