@@ -56,6 +56,7 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
         txn.begin();
       }
 
+      session.clear();
       final Query<StaffPerson> query = session.getNamedQuery(namedQueryName).setCacheable(false)
           .setFlushMode(FlushMode.MANUAL).setReadOnly(true).setCacheMode(CacheMode.IGNORE)
           .setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
