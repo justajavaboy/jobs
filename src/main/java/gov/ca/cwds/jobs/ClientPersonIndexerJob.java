@@ -172,9 +172,9 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
   public boolean validateAddresses(final ReplicatedClient client,
       final ElasticSearchPerson person) {
     final String clientId = person.getId();
-    final Map<String, ReplicatedAddress> repAddresses =
-        client.getClientAddresses().stream().flatMap(ca -> ca.getAddresses().stream())
-            .collect(Collectors.toMap(ReplicatedAddress::getId, a -> a));
+    final Map<String, ReplicatedAddress> repAddresses = client.getClientAddresses().stream()
+        .filter(a -> a.getEffEndDt() == null).flatMap(ca -> ca.getAddresses().stream())
+        .collect(Collectors.toMap(ReplicatedAddress::getId, a -> a));
 
     final Map<String, ElasticSearchPersonAddress> docAddresses = person.getAddresses().stream()
         .collect(Collectors.toMap(ElasticSearchPersonAddress::getId, a -> a));

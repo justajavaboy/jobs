@@ -109,7 +109,14 @@ public final class NeutronJdbcUtils {
   public static void prepHibernateLastChange(final Session session, final Date lastRunTime,
       final String sql, final Function<Connection, PreparedStatement> func) {
     final Work work = new WorkPrepareLastChange(lastRunTime, sql, func);
-    session.clear(); // Fixes Hibernate "duplicate object" bug
+
+    try {
+      // May fail without a transaction.
+      session.clear(); // Fixes Hibernate "duplicate object" bug
+    } catch (Exception e) {
+      LOGGER.warn("'clear' without transaction", e);
+    }
+
     session.doWork(work);
     session.clear();
   }

@@ -55,8 +55,7 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
       }
 
       session.clear();
-      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName)
-          // .setCacheable(false)
+      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName).setCacheable(false)
           .setFlushMode(FlushMode.MANUAL).setReadOnly(true)
           // .setCacheMode(CacheMode.IGNORE)
           .setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
@@ -66,7 +65,9 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
       txn.commit();
       return entities.build();
     } catch (HibernateException h) {
-      txn.rollback();
+      if (txn != null) {
+        txn.rollback();
+      }
       final String message = h.getMessage() + ". Transaction Status: " + txn.getStatus();
       throw new DaoException(message, h);
     }
