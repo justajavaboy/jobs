@@ -162,6 +162,7 @@ public class CaseRocketTest extends Goddard<ReplicatedPersonCases, EsCaseRelated
 
   @Test
   public void type() throws Exception {
+    // Objects.requireNonNull(obj, message)
     assertThat(CaseRocket.class, notNullValue());
   }
 
