@@ -440,12 +440,9 @@ public class EsRelationship
         isClientAdded ? map.get(this.thisLegacyId) : new ReplicatedRelationships(this.thisLegacyId);
 
     // INT-1037: Omit deleted relationships and clients.
-    if (this.thisClientReplicationOperation != null
-        && this.thisClientReplicationOperation != CmsReplicationOperation.D
-        && this.relatedClientReplicationOperation != null
-        && this.relatedClientReplicationOperation != CmsReplicationOperation.D
-        && this.relationshipReplicationOperation != null
-        && this.relationshipReplicationOperation != CmsReplicationOperation.D) {
+    if (CmsReplicationOperation.isActiveRecord(this.thisClientReplicationOperation)
+        && CmsReplicationOperation.isActiveRecord(this.relatedClientReplicationOperation)
+        && CmsReplicationOperation.isActiveRecord(this.relationshipReplicationOperation)) {
       final ElasticSearchPersonRelationship rel = new ElasticSearchPersonRelationship();
       ret.addRelation(rel);
 
