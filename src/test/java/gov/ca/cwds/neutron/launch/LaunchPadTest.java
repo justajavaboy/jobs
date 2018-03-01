@@ -33,15 +33,12 @@ public class LaunchPadTest extends Goddard {
 
   StandardFlightSchedule sched;
   LaunchPad target;
-  // File tempFile = tempFolder.newFile("tempFile.txt");
-
 
   @Override
   @Before
   public void setup() throws Exception {
     super.setup();
 
-    flightPlan = new FlightPlan();
     when(launchDirector.getFlightRecorder()).thenReturn(flightRecorder);
 
     sched = StandardFlightSchedule.CLIENT;
@@ -243,8 +240,9 @@ public class LaunchPadTest extends Goddard {
     FileUtils.writeStringToFile(logFile,
         "It's alive!\nWe have a winner!\nLifetime supply of Twinkies!");
 
-    flightPlan
-        .setBaseDirectory(tempFolder.getRoot().getAbsolutePath() + File.separator + "jobrunner");
+    final String location = tempFolder.getRoot().getAbsolutePath() + File.separator + "jobrunner";
+    flightPlan.setBaseDirectory(location);
+    when(flightPlan.getBaseDirectory()).thenReturn(location);
 
     final String actual = target.logs();
     assertThat(actual, is(notNullValue()));
