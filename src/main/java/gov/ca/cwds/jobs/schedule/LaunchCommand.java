@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -49,6 +50,10 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LaunchCommand.class);
 
+  protected static final List<String> DB_PROPERTY_LIST =
+      Collections.unmodifiableList(asList("DB_NS_USER", "DB_NS_PASSWORD", "DB_NS_JDBC_URL",
+          "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA"));
+
   /**
    * Singleton instance. One launch director to rule them all!
    */
@@ -77,8 +82,6 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   private AtomCommandCenterConsole cmdControlManager;
 
   private boolean fatalError;
-  public static final List<String> DB_PROPERTY_LIST = asList("DB_NS_USER", "DB_NS_PASSWORD",
-      "DB_NS_JDBC_URL", "DB_CMS_USER", "DB_CMS_PASSWORD", "DB_CMS_JDBC_URL", "DB_CMS_SCHEMA");
 
   private LaunchCommand() {
     // no-op
@@ -334,8 +337,8 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * 
    * @param props list of system properties
    */
-  public static void setSysPropsFromEnvVars(List<String> props) {
-    for (String propName : props) {
+  public static void setSysPropsFromEnvVars() {
+    for (String propName : DB_PROPERTY_LIST) {
       // Get from Env Variables by Prop Name.
       String envVarValue = System.getenv(propName);
       if (envVarValue != null) {
@@ -449,7 +452,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    */
   public static <T extends BasePersonRocket<?, ?>> void launchOneWayTrip(final Class<T> klass,
       String... args) throws NeutronCheckedException {
-    setSysPropsFromEnvVars(DB_PROPERTY_LIST);
+    setSysPropsFromEnvVars();
     standardFlightPlan = parseCommandLine(args);
 
     System.setProperty("LAUNCH_DIR",
@@ -520,7 +523,7 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
    * @throws Exception unhandled error
    */
   public static void main(String[] args) throws Exception {
-    setSysPropsFromEnvVars(DB_PROPERTY_LIST);
+    setSysPropsFromEnvVars();
     standardFlightPlan = parseCommandLine(args);
     final String baseDir = standardFlightPlan.getBaseDirectory();
     LaunchCommand.settings.setBaseDirectory(baseDir);

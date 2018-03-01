@@ -170,7 +170,7 @@ public class SystemCodesLoaderJob {
     LOGGER.info("Loading system codes from legacy to new system...");
 
     try {
-      LaunchCommand.setSysPropsFromEnvVars(LaunchCommand.DB_PROPERTY_LIST);
+      LaunchCommand.setSysPropsFromEnvVars();
       final Injector injector = Guice.createInjector(new SystemCodesLoaderModule());
 
       // Initialize system code cache.
