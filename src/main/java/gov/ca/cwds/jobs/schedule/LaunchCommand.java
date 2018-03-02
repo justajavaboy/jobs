@@ -334,8 +334,6 @@ public class LaunchCommand implements AutoCloseable, AtomLaunchCommand {
   /**
    * Populates list of System properties from corresponding Env Variables. Will not create/update
    * property if null.
-   * 
-   * @param props list of system properties
    */
   public static void setSysPropsFromEnvVars() {
     for (String propName : DB_PROPERTY_LIST) {
