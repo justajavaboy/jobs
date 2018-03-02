@@ -409,16 +409,12 @@ public final class ElasticTransformer {
     return ret;
   }
 
-  protected static ElasticSearchSystemCode buildClientCounty(ApiPersonAware p) {
-    ElasticSearchSystemCode ret = null;
+  protected static List<ElasticSearchSystemCode> buildClientCounties(ApiPersonAware p) {
+    List<ElasticSearchSystemCode> ret = new ArrayList<>();
+
     if (p instanceof ApiClientCountyAware) {
       final ApiClientCountyAware countyAware = (ApiClientCountyAware) p;
-      final Short county = countyAware.getClientCounty();
-      if (county != null) {
-        ret = new ElasticSearchSystemCode();
-        ret.setId(county.toString());
-        ret.setDescription(SystemCodeCache.global().getSystemCodeShortDescription(county));
-      }
+      ret = countyAware.getClientCounties();
     }
     return ret;
   }
@@ -506,8 +502,13 @@ public final class ElasticTransformer {
     // Sealed and sensitive.
     ret.setSensitivityIndicator(p.getSensitivityIndicator());
 
-    // Set client county
-    ret.setClientCounty(buildClientCounty(p));
+    // Set client counties
+    List<ElasticSearchSystemCode> clientCounties = buildClientCounties(p);
+    ret.setClientCounties(clientCounties);
+    // this is only added for backward compatibility
+    if (!clientCounties.isEmpty()) {
+      ret.setClientCounty(clientCounties.get(0));
+    }
 
     // Set race/ethnicity
     ret.setCleintRace(buildRaceEthnicity(p));
