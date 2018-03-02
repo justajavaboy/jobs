@@ -96,9 +96,9 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
 
   public static final String DEFAULT_CLIENT_ID = "abc1234567";
 
-  public final AtomicBoolean isRunwayClear = new AtomicBoolean(false);
+  public static final AtomicBoolean isRunwayClear = new AtomicBoolean(false);
 
-  public final Lock lock = new ReentrantLock();
+  public static final Lock lock = new ReentrantLock();
 
   @BeforeClass
   public static void setupClass() {
@@ -344,7 +344,6 @@ public abstract class Goddard<T extends PersistentObject, M extends ApiGroupNorm
     when(scheduler.getListenerManager()).thenReturn(listenerManager);
 
     mbean = mock(VoxLaunchPadMBean.class);
-
     markTestDone();
   }
 

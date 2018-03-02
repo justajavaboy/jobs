@@ -253,7 +253,7 @@ public class LaunchPadTest extends Goddard {
 
       final String actual = target.logs();
       assertThat(actual, is(notNullValue()));
-      Thread.sleep(500);
+      Thread.sleep(100);
 
     } catch (Exception e) {
       // Weird behavior with temporary folder.
