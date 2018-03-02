@@ -212,7 +212,10 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
         .append(File.separator).append(flightSchedule.getRocketName()).append(".log");
 
     final StringWriter sw = new StringWriter();
-    final Path pathIn = Paths.get(buf.toString());
+    final String elPath = buf.toString();
+    final Path pathIn = Paths.get(elPath);
+    LOGGER.info("log path: {}", elPath);
+
     try (final Stream<String> lines = Files.lines(pathIn)) {
       final PrintWriter w = new PrintWriter(sw);
       lines.sequential().forEach(w::println);
