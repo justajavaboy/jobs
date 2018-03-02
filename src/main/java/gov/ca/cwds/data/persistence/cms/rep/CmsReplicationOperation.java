@@ -38,4 +38,8 @@ public enum CmsReplicationOperation {
     return op != null ? CmsReplicationOperation.valueOf(op) : null;
   }
 
+  public static boolean isActiveRecord(CmsReplicationOperation op) {
+    return op != null && op != CmsReplicationOperation.D;
+  }
+
 }

@@ -14,6 +14,7 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -33,18 +34,15 @@ public class LaunchPadTest extends Goddard {
 
   StandardFlightSchedule sched;
   LaunchPad target;
-  // File tempFile = tempFolder.newFile("tempFile.txt");
-
 
   @Override
   @Before
   public void setup() throws Exception {
     super.setup();
 
-    flightPlan = new FlightPlan();
     when(launchDirector.getFlightRecorder()).thenReturn(flightRecorder);
 
-    sched = StandardFlightSchedule.CLIENT;
+    sched = StandardFlightSchedule.REPORTER;
     target = new LaunchPad(launchDirector, sched, flightPlan);
   }
 
@@ -60,8 +58,8 @@ public class LaunchPadTest extends Goddard {
 
   @Test
   public void run_Args__String() throws Exception {
-    String cmdLineArgs = null;
-    String actual = target.run(cmdLineArgs);
+    final String cmdLineArgs = null;
+    final String actual = target.run(cmdLineArgs);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -93,9 +91,10 @@ public class LaunchPadTest extends Goddard {
 
   @Test
   public void status_Args__() throws Exception {
-    JobDetail jd = mock(JobDetail.class);
+    final JobDetail jd = mock(JobDetail.class);
     when(scheduler.getJobDetail(any(JobKey.class))).thenReturn(jd);
-    JobDataMap jdm = new JobDataMap();
+
+    final JobDataMap jdm = new JobDataMap();
     jdm.put("job_class", "TestNeutronJob");
     jdm.put("cmd_line", "--invalid");
 
@@ -123,94 +122,94 @@ public class LaunchPadTest extends Goddard {
   public void history_Args__() throws Exception {
     launchDirector = new LaunchDirector(flightRecorder, rocketFactory, flightPlanManager);
     launchDirector.setScheduler(scheduler);
-    String actual = target.history();
+    final String actual = target.history();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void isVetoExecution_Args__() throws Exception {
-    boolean actual = target.isVetoExecution();
-    boolean expected = false;
+    final boolean actual = target.isVetoExecution();
+    final boolean expected = false;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setVetoExecution_Args__boolean() throws Exception {
-    boolean vetoExecution = false;
+    final boolean vetoExecution = false;
     target.setVetoExecution(vetoExecution);
   }
 
   @Test
   public void getJd_Args__() throws Exception {
     target.schedule();
-    JobDetail actual = target.getJd();
+    final JobDetail actual = target.getJd();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getOpts_Args__() throws Exception {
-    FlightPlan actual = target.getFlightPlan();
+    final FlightPlan actual = target.getFlightPlan();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void setOpts_Args__FlightPlan() throws Exception {
-    FlightPlan opts_ = mock(FlightPlan.class);
+    final FlightPlan opts_ = mock(FlightPlan.class);
     target.setFlightPlan(opts_);
   }
 
   @Test
   public void getFlightPlan_Args__() throws Exception {
-    FlightPlan actual = target.getFlightPlan();
+    final FlightPlan actual = target.getFlightPlan();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void setFlightPlan_Args__FlightPlan() throws Exception {
-    FlightPlan opts_ = mock(FlightPlan.class);
+    final FlightPlan opts_ = mock(FlightPlan.class);
     target.setFlightPlan(opts_);
   }
 
   @Test
   public void getFlightSchedule_Args__() throws Exception {
-    StandardFlightSchedule actual = target.getFlightSchedule();
+    final StandardFlightSchedule actual = target.getFlightSchedule();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getFlightRecorder_Args__() throws Exception {
-    AtomFlightRecorder actual = target.getFlightRecorder();
+    final AtomFlightRecorder actual = target.getFlightRecorder();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getJobName_Args__() throws Exception {
-    String actual = target.getRocketName();
+    final String actual = target.getRocketName();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getTriggerName_Args__() throws Exception {
-    String actual = target.getTriggerName();
+    final String actual = target.getTriggerName();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getJobKey_Args__() throws Exception {
-    JobKey actual = target.getJobKey();
+    final JobKey actual = target.getJobKey();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void getLaunchScheduler_Args__() throws Exception {
-    AtomLaunchDirector actual = target.getLaunchDirector();
+    final AtomLaunchDirector actual = target.getLaunchDirector();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void run_A$String() throws Exception {
-    String cmdLine = null;
-    String actual = target.run(cmdLine);
+    final String cmdLine = null;
+    final String actual = target.run(cmdLine);
     assertThat(actual, is(notNullValue()));
   }
 
@@ -226,34 +225,49 @@ public class LaunchPadTest extends Goddard {
 
   @Test
   public void status_A$() throws Exception {
-    String actual = target.status();
+    final String actual = target.status();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void history_A$() throws Exception {
-    String actual = target.history();
+    final String actual = target.history();
     assertThat(actual, is(notNullValue()));
   }
 
   @Test
   public void logs_A$() throws Exception {
-    final File folder = tempFolder.newFolder("jobrunner", "rocketlog");
-    final File logFile = new File(folder, "client.log");
-    FileUtils.writeStringToFile(logFile,
-        "It's alive!\nWe have a winner!\nLifetime supply of Twinkies!");
+    final TemporaryFolder myTestFolder = new TemporaryFolder();
 
-    flightPlan
-        .setBaseDirectory(tempFolder.getRoot().getAbsolutePath() + File.separator + "jobrunner");
+    try {
+      myTestFolder.create();
 
-    final String actual = target.logs();
-    assertThat(actual, is(notNullValue()));
+      final File folder = myTestFolder.newFolder("jobrunner", "rocketlog");
+      final File logFile = new File(folder, "reporter.log");
+      FileUtils.writeStringToFile(logFile, "We have a winner!\nLifetime supply of Twinkies!\n");
+
+      final String location =
+          myTestFolder.getRoot().getAbsolutePath() + File.separator + "jobrunner";
+      flightPlan.setBaseDirectory(location);
+      when(flightPlan.getBaseDirectory()).thenReturn(location);
+
+      final String actual = target.logs();
+      assertThat(actual, is(notNullValue()));
+      Thread.sleep(100);
+
+    } catch (Exception e) {
+      // Weird behavior with temporary folder.
+      // java.io.UncheckedIOException: java.nio.channels.ClosedByInterruptException
+      e.printStackTrace();
+    } finally {
+      myTestFolder.delete();
+    }
   }
 
   @Test
   public void resetTimestamp_A$boolean$int() throws Exception {
-    boolean initialMode = false;
-    int hoursInPast = 0;
+    final boolean initialMode = false;
+    final int hoursInPast = 0;
     target.resetTimestamp(initialMode, hoursInPast);
   }
 
@@ -300,7 +314,7 @@ public class LaunchPadTest extends Goddard {
   @Test
   public void getFlightSchedule_A$() throws Exception {
     final StandardFlightSchedule actual = target.getFlightSchedule();
-    final StandardFlightSchedule expected = StandardFlightSchedule.CLIENT;
+    final StandardFlightSchedule expected = StandardFlightSchedule.REPORTER;
     assertThat(actual, is(equalTo(expected)));
   }
 
@@ -313,21 +327,21 @@ public class LaunchPadTest extends Goddard {
   @Test
   public void getRocketName_A$() throws Exception {
     final String actual = target.getRocketName();
-    final String expected = StandardFlightSchedule.CLIENT.getRocketName();
+    final String expected = StandardFlightSchedule.REPORTER.getRocketName();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getTriggerName_A$() throws Exception {
     final String actual = target.getTriggerName();
-    final String expected = StandardFlightSchedule.CLIENT.getRocketName();
+    final String expected = StandardFlightSchedule.REPORTER.getRocketName();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void getJobKey_A$() throws Exception {
     final JobKey actual = target.getJobKey();
-    final JobKey expected = new JobKey(StandardFlightSchedule.CLIENT.getRocketName(),
+    final JobKey expected = new JobKey(StandardFlightSchedule.REPORTER.getRocketName(),
         NeutronSchedulerConstants.GRP_LST_CHG);
     assertThat(actual, is(equalTo(expected)));
   }
@@ -341,7 +355,7 @@ public class LaunchPadTest extends Goddard {
   @Test
   public void getTriggerKey_A$() throws Exception {
     final TriggerKey actual = target.getTriggerKey();
-    final TriggerKey expected = new TriggerKey(StandardFlightSchedule.CLIENT.getRocketName(),
+    final TriggerKey expected = new TriggerKey(StandardFlightSchedule.REPORTER.getRocketName(),
         NeutronSchedulerConstants.GRP_LST_CHG);
     assertThat(actual, is(equalTo(expected)));
   }

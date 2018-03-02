@@ -212,12 +212,13 @@ public class LaunchPad implements VoxLaunchPadMBean, AtomLaunchPad {
         .append(File.separator).append(flightSchedule.getRocketName()).append(".log");
 
     final StringWriter sw = new StringWriter();
-    final Path pathIn = Paths.get(buf.toString());
-    try (final Stream<String> lines = Files.lines(pathIn)) {
-      final PrintWriter w = new PrintWriter(sw);
+    final String elPath = buf.toString();
+    final Path pathIn = Paths.get(elPath);
+    LOGGER.info("log path: {}", elPath);
+
+    try (final Stream<String> lines = Files.lines(pathIn);
+        final PrintWriter w = new PrintWriter(sw)) {
       lines.sequential().forEach(w::println);
-      w.flush();
-      w.close();
     } catch (Exception e) {
       throw CheeseRay.runtime(LOGGER, e, "ERROR READING LOGS! {}", flightSchedule.getRocketName());
     }
