@@ -68,7 +68,8 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
       if (txn != null) {
         txn.rollback();
       }
-      final String message = h.getMessage() + ". Transaction Status: " + txn.getStatus();
+      final String message = h.getMessage() + ". Transaction Status: "
+          + (txn != null ? txn.getStatus().toString() : "unknown");
       throw new DaoException(message, h);
     }
   }
