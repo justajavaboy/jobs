@@ -651,8 +651,6 @@ public abstract class BaseEsClient
       ret.setReplicationDate(getCltReplicationDate());
       ret.setReplicationOperation(getCltReplicationOperation());
       ret.setLastUpdatedTime(getCltLastUpdatedTime());
-
-      ret.addClientCounty(getClientCounty());
     }
 
     // Client Address:
@@ -721,6 +719,9 @@ public abstract class BaseEsClient
 
     // Client races
     ret.addClientRace(this.clientEthnicityCode);
+
+    // Add client county
+    ret.addClientCounty(getClientCounty());
 
     map.put(ret.getId(), ret);
     return ret;
