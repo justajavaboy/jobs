@@ -87,9 +87,14 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
         + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedClient.class)
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findByTemp",
-    query = "\nSELECT \n" + "    c.IDENTIFIER \n" + "  , TRIM(c.COM_FST_NM) AS COM_FST_NM \n"
-        + "  , TRIM(c.COM_LST_NM) AS COM_LST_NM \n" + "  , c.SENSTV_IND \n" + "  , c.LST_UPD_TS \n"
-        + "  , c.IBMSNAP_LOGMARKER \n" + "  , c.IBMSNAP_OPERATION \n"
+    query = "SELECT \n" 
+        + "    c.IDENTIFIER \n" 
+        + "  , TRIM(c.COM_FST_NM) AS COM_FST_NM \n"
+        + "  , TRIM(c.COM_LST_NM) AS COM_LST_NM \n" 
+        + "  , c.SENSTV_IND \n" 
+        + "  , c.LST_UPD_TS \n"
+        + "  , c.IBMSNAP_LOGMARKER \n" 
+        + "  , c.IBMSNAP_OPERATION \n"
         + " FROM {h-schema}GT_ID GT \n"
         + " JOIN {h-schema}CLIENT_T C ON C.IDENTIFIER = GT.IDENTIFIER \n"
         + " FOR READ ONLY WITH UR ",
@@ -403,7 +408,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
       String description = null;
       boolean isHispanicCode = false;
 
-      SystemCode systemCode = SystemCodeCache.global().getSystemCode(codeId);
+      final SystemCode systemCode = SystemCodeCache.global().getSystemCode(codeId);
       if (systemCode != null) {
         description = systemCode.getShortDescription();
         isHispanicCode = HISPANIC_CODE_OTHER_ID.equals(systemCode.getOtherCd());
@@ -427,14 +432,14 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
 
   @Override
   public List<ElasticSearchSystemCode> getClientCounties() {
-    List<ElasticSearchSystemCode> clientCounties = new ArrayList<>();
-
     if (this.clientCounties == null || this.clientCounties.isEmpty()) {
-      return clientCounties;
+      return new ArrayList<ElasticSearchSystemCode>();
     }
 
+    final List<ElasticSearchSystemCode> clientCounties =
+        new ArrayList<>(this.clientCounties.size());
     for (Short county : this.clientCounties) {
-      ElasticSearchSystemCode countySysCode = new ElasticSearchSystemCode();
+      final ElasticSearchSystemCode countySysCode = new ElasticSearchSystemCode();
       countySysCode.setId(county.toString());
       countySysCode.setDescription(SystemCodeCache.global().getSystemCodeShortDescription(county));
       clientCounties.add(countySysCode);
