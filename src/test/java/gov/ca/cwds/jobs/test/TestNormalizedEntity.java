@@ -25,6 +25,7 @@ import gov.ca.cwds.data.es.ElasticSearchPersonAka;
 import gov.ca.cwds.data.es.ElasticSearchPersonScreening;
 import gov.ca.cwds.data.es.ElasticSearchRaceAndEthnicity;
 import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
+import gov.ca.cwds.data.es.ElasticSearchSystemCode;
 import gov.ca.cwds.data.persistence.PersistentObject;
 import gov.ca.cwds.data.std.ApiAddressAware;
 import gov.ca.cwds.data.std.ApiGroupNormalizer;
@@ -213,8 +214,12 @@ public class TestNormalizedEntity extends ApiObjectIdentity
   }
 
   @Override
-  public Short getClientCounty() {
-    return (short) 1115;
+  public List<ElasticSearchSystemCode> getClientCounties() {
+    List<ElasticSearchSystemCode> counties = new ArrayList<>();
+    final ElasticSearchSystemCode county = new ElasticSearchSystemCode();
+    county.setId("1115");
+    counties.add(county);
+    return counties;
   }
 
   @Override

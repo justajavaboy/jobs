@@ -3,6 +3,7 @@ package gov.ca.cwds.data.persistence.cms.rep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
  * 
  * @author CWDS API Team
  */
-//@formatter:off
+// @formatter:off
 @NamedNativeQuery(
     name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findAllUpdatedAfter",
     query = "select z.IDENTIFIER, z.ADPTN_STCD, TRIM(z.ALN_REG_NO) ALN_REG_NO, z.BIRTH_DT, "
@@ -82,19 +83,13 @@ import gov.ca.cwds.rest.api.domain.cms.SystemCodeCache;
         + "z.TR_MBVRT_B, z.TRBA_CLT_B, z.SOC158_IND, z.DTH_DT_IND, "
         + "TRIM(z.EMAIL_ADDR) EMAIL_ADDR, z.ADJDEL_IND, z.ETH_UD_CD, "
         + "z.HISP_UD_CD, z.SOCPLC_CD, z.CL_INDX_NO, z.IBMSNAP_OPERATION, z.IBMSNAP_LOGMARKER "
-        + "from {h-schema}CLIENT_T z \n"
-        + "WHERE z.IBMSNAP_LOGMARKER >= :after \n"
+        + "from {h-schema}CLIENT_T z \n" + "WHERE z.IBMSNAP_LOGMARKER >= :after \n"
         + "FOR READ ONLY WITH UR",
     resultClass = ReplicatedClient.class)
 @NamedNativeQuery(name = "gov.ca.cwds.data.persistence.cms.rep.ReplicatedClient.findByTemp",
-    query = "\nSELECT \n" 
-        + "    c.IDENTIFIER \n" 
-        + "  , TRIM(c.COM_FST_NM) AS COM_FST_NM \n"
-        + "  , TRIM(c.COM_LST_NM) AS COM_LST_NM \n" 
-        + "  , c.SENSTV_IND \n" 
-        + "  , c.LST_UPD_TS \n"
-        + "  , c.IBMSNAP_LOGMARKER \n" 
-        + "  , c.IBMSNAP_OPERATION \n"
+    query = "\nSELECT \n" + "    c.IDENTIFIER \n" + "  , TRIM(c.COM_FST_NM) AS COM_FST_NM \n"
+        + "  , TRIM(c.COM_LST_NM) AS COM_LST_NM \n" + "  , c.SENSTV_IND \n" + "  , c.LST_UPD_TS \n"
+        + "  , c.IBMSNAP_LOGMARKER \n" + "  , c.IBMSNAP_OPERATION \n"
         + " FROM {h-schema}GT_ID GT \n"
         + " JOIN {h-schema}CLIENT_T C ON C.IDENTIFIER = GT.IDENTIFIER \n"
         + " FOR READ ONLY WITH UR ",
@@ -129,7 +124,7 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
   private Map<String, ElasticSearchSafetyAlert> safetyAlerts = new HashMap<>();
 
   @Transient
-  private Short clientCountyId;
+  private Set<Short> clientCounties = new HashSet<>();
 
   @Transient
   private String openCaseId;
@@ -176,13 +171,10 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
     }
   }
 
-  @Override
-  public Short getClientCounty() {
-    return clientCountyId;
-  }
-
-  public void setClientCounty(Short clinetCountyId) {
-    this.clientCountyId = clinetCountyId;
+  public void addClientCounty(Short clinetCountyId) {
+    if (clinetCountyId != null) {
+      this.clientCounties.add(clinetCountyId);
+    }
   }
 
   public List<Short> getClientRaces() {
@@ -427,6 +419,28 @@ public class ReplicatedClient extends BaseClient implements ApiPersonAware,
         raceCodes.add(esCode);
       }
     }
+  }
+
+  // ==================================
+  // ApiClientCountyAware
+  // ==================================
+
+  @Override
+  public List<ElasticSearchSystemCode> getClientCounties() {
+    List<ElasticSearchSystemCode> clientCounties = new ArrayList<>();
+
+    if (this.clientCounties == null || this.clientCounties.isEmpty()) {
+      return clientCounties;
+    }
+
+    for (Short county : this.clientCounties) {
+      ElasticSearchSystemCode countySysCode = new ElasticSearchSystemCode();
+      countySysCode.setId(county.toString());
+      countySysCode.setDescription(SystemCodeCache.global().getSystemCodeShortDescription(county));
+      clientCounties.add(countySysCode);
+    }
+
+    return clientCounties;
   }
 
   @Override

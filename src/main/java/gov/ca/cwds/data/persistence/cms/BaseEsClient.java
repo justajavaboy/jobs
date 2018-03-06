@@ -2,7 +2,6 @@ package gov.ca.cwds.data.persistence.cms;
 
 import static gov.ca.cwds.neutron.util.transform.JobTransformUtils.ifNull;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -345,7 +344,7 @@ public abstract class BaseEsClient
   protected String adrCity;
 
   @Column(name = "ADR_EMRG_TELNO")
-  protected BigDecimal adrEmergencyNumber;
+  protected Long adrEmergencyNumber;
 
   @Type(type = "integer")
   @Column(name = "ADR_EMRG_EXTNO")
@@ -359,7 +358,7 @@ public abstract class BaseEsClient
   protected Short adrGovernmentEntityCd;
 
   @Column(name = "ADR_MSG_TEL_NO")
-  protected BigDecimal adrMessageNumber;
+  protected Long adrMessageNumber;
 
   @Type(type = "integer")
   @Column(name = "ADR_MSG_EXT_NO")
@@ -369,7 +368,7 @@ public abstract class BaseEsClient
   protected String adrHeaderAddress;
 
   @Column(name = "ADR_PRM_TEL_NO")
-  protected BigDecimal adrPrimaryNumber;
+  protected Long adrPrimaryNumber;
 
   @Type(type = "integer")
   @Column(name = "ADR_PRM_EXT_NO")
@@ -542,14 +541,14 @@ public abstract class BaseEsClient
 
     ret.adrId = ifNull(rs.getString("ADR_IDENTIFIER"));
     ret.adrCity = ifNull(rs.getString("ADR_CITY_NM"));
-    ret.adrEmergencyNumber = rs.getBigDecimal("ADR_EMRG_TELNO");
+    ret.adrEmergencyNumber = rs.getLong("ADR_EMRG_TELNO");
     ret.adrEmergencyExtension = rs.getInt("ADR_EMRG_EXTNO");
     ret.adrFrgAdrtB = ifNull(rs.getString("ADR_FRG_ADRT_B"));
     ret.adrGovernmentEntityCd = rs.getShort("ADR_GVR_ENTC");
-    ret.adrMessageNumber = rs.getBigDecimal("ADR_MSG_TEL_NO");
+    ret.adrMessageNumber = rs.getLong("ADR_MSG_TEL_NO");
     ret.adrMessageExtension = rs.getInt("ADR_MSG_EXT_NO");
     ret.adrHeaderAddress = ifNull(rs.getString("ADR_HEADER_ADR"));
-    ret.adrPrimaryNumber = rs.getBigDecimal("ADR_PRM_TEL_NO");
+    ret.adrPrimaryNumber = rs.getLong("ADR_PRM_TEL_NO");
     ret.adrPrimaryExtension = rs.getInt("ADR_PRM_EXT_NO");
     ret.adrState = rs.getShort("ADR_STATE_C");
     ret.adrStreetName = ifNull(rs.getString("ADR_STREET_NM"));
@@ -652,8 +651,6 @@ public abstract class BaseEsClient
       ret.setReplicationDate(getCltReplicationDate());
       ret.setReplicationOperation(getCltReplicationOperation());
       ret.setLastUpdatedTime(getCltLastUpdatedTime());
-
-      ret.setClientCounty(getClientCounty());
     }
 
     // Client Address:
@@ -722,6 +719,9 @@ public abstract class BaseEsClient
 
     // Client races
     ret.addClientRace(this.clientEthnicityCode);
+
+    // Add client county
+    ret.addClientCounty(getClientCounty());
 
     map.put(ret.getId(), ret);
     return ret;
@@ -1240,11 +1240,11 @@ public abstract class BaseEsClient
     this.adrCity = adrCity;
   }
 
-  public BigDecimal getAdrEmergencyNumber() {
+  public Long getAdrEmergencyNumber() {
     return adrEmergencyNumber;
   }
 
-  public void setAdrEmergencyNumber(BigDecimal adrEmergencyNumber) {
+  public void setAdrEmergencyNumber(Long adrEmergencyNumber) {
     this.adrEmergencyNumber = adrEmergencyNumber;
   }
 
@@ -1272,11 +1272,11 @@ public abstract class BaseEsClient
     this.adrGovernmentEntityCd = adrGovernmentEntityCd;
   }
 
-  public BigDecimal getAdrMessageNumber() {
+  public Long getAdrMessageNumber() {
     return adrMessageNumber;
   }
 
-  public void setAdrMessageNumber(BigDecimal adrMessageNumber) {
+  public void setAdrMessageNumber(Long adrMessageNumber) {
     this.adrMessageNumber = adrMessageNumber;
   }
 
@@ -1296,11 +1296,11 @@ public abstract class BaseEsClient
     this.adrHeaderAddress = adrHeaderAddress;
   }
 
-  public BigDecimal getAdrPrimaryNumber() {
+  public Long getAdrPrimaryNumber() {
     return adrPrimaryNumber;
   }
 
-  public void setAdrPrimaryNumber(BigDecimal adrPrimaryNumber) {
+  public void setAdrPrimaryNumber(Long adrPrimaryNumber) {
     this.adrPrimaryNumber = adrPrimaryNumber;
   }
 

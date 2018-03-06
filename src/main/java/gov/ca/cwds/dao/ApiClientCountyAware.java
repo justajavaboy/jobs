@@ -1,6 +1,9 @@
 package gov.ca.cwds.dao;
 
 import java.io.Serializable;
+import java.util.List;
+
+import gov.ca.cwds.data.es.ElasticSearchSystemCode;
 
 /**
  * @author CWDS API Team
@@ -9,9 +12,9 @@ import java.io.Serializable;
 public interface ApiClientCountyAware extends Serializable {
 
   /**
-   * Get the unique identifier of this record.
+   * Get client counties
    * 
-   * @return primary key
+   * @return The client counties
    */
-  Short getClientCounty();
+  List<ElasticSearchSystemCode> getClientCounties();
 }

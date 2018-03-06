@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -57,9 +56,9 @@ public class EsClientTest extends Goddard {
     when(rs.getShort("CLT_RLGN_TPC")).thenReturn(shortZero);
     when(rs.getShort("CLT_S_LANG_TC")).thenReturn(shortZero);
 
-    when(rs.getBigDecimal("ADR_EMRG_TELNO")).thenReturn(BigDecimal.ZERO);
-    when(rs.getBigDecimal("ADR_MSG_TEL_NO")).thenReturn(BigDecimal.ZERO);
-    when(rs.getBigDecimal("ADR_PRM_TEL_NO")).thenReturn(BigDecimal.ZERO);
+    when(rs.getLong("ADR_EMRG_TELNO")).thenReturn(new Long(0));
+    when(rs.getLong("ADR_MSG_TEL_NO")).thenReturn(new Long(0));
+    when(rs.getLong("ADR_PRM_TEL_NO")).thenReturn(new Long(0));
 
     when(rs.getInt("ADR_EMRG_EXTNO")).thenReturn(0);
     when(rs.getInt("ADR_MSG_EXT_NO")).thenReturn(0);
@@ -217,7 +216,7 @@ public class EsClientTest extends Goddard {
     target.setAkaLastUpdatedOperation(CmsReplicationOperation.I);
     target.setAkaLastUpdatedId("0x5");
 
-    final Map<Object, ReplicatedClient> map = new HashMap<Object, ReplicatedClient>();
+    final Map<Object, ReplicatedClient> map = new HashMap<>();
     final ReplicatedClient rep = new ReplicatedClient();
     rep.setId(DEFAULT_CLIENT_ID);
 
@@ -1079,14 +1078,14 @@ public class EsClientTest extends Goddard {
 
   @Test
   public void getAdrEmergencyNumber_Args__() throws Exception {
-    BigDecimal actual = target.getAdrEmergencyNumber();
-    BigDecimal expected = null;
+    Long actual = target.getAdrEmergencyNumber();
+    Long expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setAdrEmergencyNumber_Args__BigDecimal() throws Exception {
-    BigDecimal adrEmergencyNumber = mock(BigDecimal.class);
+    Long adrEmergencyNumber = new Long(0);
     target.setAdrEmergencyNumber(adrEmergencyNumber);
   }
 
@@ -1131,14 +1130,14 @@ public class EsClientTest extends Goddard {
 
   @Test
   public void getAdrMessageNumber_Args__() throws Exception {
-    BigDecimal actual = target.getAdrMessageNumber();
-    BigDecimal expected = null;
+    Long actual = target.getAdrMessageNumber();
+    Long expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setAdrMessageNumber_Args__BigDecimal() throws Exception {
-    BigDecimal adrMessageNumber = mock(BigDecimal.class);
+    Long adrMessageNumber = new Long(0);
     target.setAdrMessageNumber(adrMessageNumber);
   }
 
@@ -1170,14 +1169,14 @@ public class EsClientTest extends Goddard {
 
   @Test
   public void getAdrPrimaryNumber_Args__() throws Exception {
-    BigDecimal actual = target.getAdrPrimaryNumber();
-    BigDecimal expected = null;
+    Long actual = target.getAdrPrimaryNumber();
+    Long expected = null;
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
   public void setAdrPrimaryNumber_Args__BigDecimal() throws Exception {
-    BigDecimal adrPrimaryNumber = mock(BigDecimal.class);
+    Long adrPrimaryNumber = new Long(0);
     target.setAdrPrimaryNumber(adrPrimaryNumber);
   }
 

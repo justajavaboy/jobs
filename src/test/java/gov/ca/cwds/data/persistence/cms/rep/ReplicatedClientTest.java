@@ -26,6 +26,7 @@ import gov.ca.cwds.data.es.ElasticSearchPersonAddress;
 import gov.ca.cwds.data.es.ElasticSearchPersonAka;
 import gov.ca.cwds.data.es.ElasticSearchRaceAndEthnicity;
 import gov.ca.cwds.data.es.ElasticSearchSafetyAlert;
+import gov.ca.cwds.data.es.ElasticSearchSystemCode;
 import gov.ca.cwds.data.persistence.cms.EsClientAddress;
 import gov.ca.cwds.data.std.ApiPhoneAware;
 import gov.ca.cwds.jobs.Goddard;
@@ -164,15 +165,15 @@ public class ReplicatedClientTest extends Goddard<ReplicatedClient, EsClientAddr
 
   @Test
   public void getClientCounty_Args__() throws Exception {
-    final Short actual = target.getClientCounty();
-    final Short expected = null;
+    final List<ElasticSearchSystemCode> actual = target.getClientCounties();
+    final List<ElasticSearchSystemCode> expected = new ArrayList<>();
     assertThat(actual, is(equalTo(expected)));
   }
 
   @Test
-  public void setClientCounty_Args__Short() throws Exception {
+  public void addClientCounty_Args__Short() throws Exception {
     final Short clientCountyId = null;
-    target.setClientCounty(clientCountyId);
+    target.addClientCounty(clientCountyId);
   }
 
   @Test
