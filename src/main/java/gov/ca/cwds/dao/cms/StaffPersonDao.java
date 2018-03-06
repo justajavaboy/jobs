@@ -55,9 +55,10 @@ public class StaffPersonDao extends BaseDaoImpl<StaffPerson> {
       }
 
       session.clear();
-      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName).setCacheable(false)
-          .setFlushMode(FlushMode.MANUAL).setReadOnly(true)
+      final Query<StaffPerson> query = session.getNamedQuery(namedQueryName)
+          // .setCacheable(false)
           // .setCacheMode(CacheMode.IGNORE)
+          .setFlushMode(FlushMode.MANUAL).setReadOnly(true)
           .setFetchSize(NeutronIntegerDefaults.FETCH_SIZE.getValue());
       final ImmutableList.Builder<StaffPerson> entities = new ImmutableList.Builder<>();
       entities.addAll(query.list());
