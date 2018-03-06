@@ -40,7 +40,7 @@ import gov.ca.cwds.neutron.util.jdbc.NeutronJdbcUtils;
 import gov.ca.cwds.neutron.util.transform.EntityNormalizer;
 
 /**
- * Rocket to load Client person data from CMS into ElasticSearch. The people-summary index.
+ * Rocket to load Client person data from CMS into ElasticSearch. This is the people-summary index.
  * 
  * @author CWDS API Team
  */
@@ -82,7 +82,7 @@ public class ClientPersonIndexerJob extends InitialLoadJdbcRocket<ReplicatedClie
     try {
       return NeutronDB2Utils.prepLastChangeSQL(ClientSQLResource.INSERT_CLIENT_LAST_CHG,
           determineLastSuccessfulRunTime());
-    } catch (NeutronCheckedException e) {
+    } catch (Exception e) {
       throw CheeseRay.runtime(LOGGER, e, "PEOPLE SUMMARY: ERROR BUILDING LAST CHANGE SQL! {}",
           e.getMessage());
     }
